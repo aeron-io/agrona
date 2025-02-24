@@ -21,10 +21,11 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 
 import static org.agrona.concurrent.status.CountersReader.COUNTER_LENGTH;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UnsafeBufferPositionTest
 {
+
     @Test
     void shouldWrapDirectBuffer()
     {
@@ -37,6 +38,75 @@ class UnsafeBufferPositionTest
             position.set(value);
             position.proposeMax(value + 42);
             assertEquals(value + 42, position.get());
+        }
+    }
+
+    @Test
+    void testPlain()
+    {
+        final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(5 * COUNTER_LENGTH));
+        final int counterId = 2;
+
+        try (UnsafeBufferPosition position = new UnsafeBufferPosition(buffer, counterId, null))
+        {
+            position.set(10);
+            assertEquals(10, position.get());
+
+            assertFalse(position.proposeMax(5));
+            assertEquals(10, position.get());
+            assertTrue(position.proposeMax(100));
+            assertEquals(100, position.get());
+        }
+    }
+
+    @Test
+    void testVolatile()
+    {
+        final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(5 * COUNTER_LENGTH));
+        final int counterId = 2;
+
+        try (UnsafeBufferPosition position = new UnsafeBufferPosition(buffer, counterId, null))
+        {
+            position.setVolatile(10);
+            assertEquals(10, position.getVolatile());
+
+
+        }
+    }
+
+    @Test
+    void testAcquireRelease()
+    {
+        final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(5 * COUNTER_LENGTH));
+        final int counterId = 2;
+
+        try (UnsafeBufferPosition position = new UnsafeBufferPosition(buffer, counterId, null))
+        {
+            position.setRelease(10);
+            assertEquals(10, position.getAcquire());
+
+            assertFalse(position.proposeMaxRelease(5));
+            assertEquals(10, position.getOpaque());
+            assertTrue(position.proposeMaxRelease(100));
+            assertEquals(100, position.getAcquire());
+        }
+    }
+
+    @Test
+    void testOpaque()
+    {
+        final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(5 * COUNTER_LENGTH));
+        final int counterId = 2;
+
+        try (UnsafeBufferPosition position = new UnsafeBufferPosition(buffer, counterId, null))
+        {
+            position.setOpaque(10);
+            assertEquals(10, position.getOpaque());
+
+            assertFalse(position.proposeMaxOpaque(5));
+            assertEquals(10, position.getOpaque());
+            assertTrue(position.proposeMaxOpaque(100));
+            assertEquals(100, position.getOpaque());
         }
     }
 }
