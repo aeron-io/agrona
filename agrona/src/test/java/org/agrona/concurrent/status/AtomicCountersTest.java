@@ -32,13 +32,79 @@ public class AtomicCountersTest
 
         assertEquals(0, counter.getPlain());
 
-        counter.incrementPlain();
+        assertEquals(0, counter.incrementPlain());
         assertEquals(1, counter.getPlain());
 
         counter.setPlain(42);
         assertEquals(42, counter.getPlain());
 
-        counter.decrementPlain();
+        assertEquals(42, counter.decrementPlain());
         assertEquals(41, counter.getPlain());
+
+        assertEquals(41, counter.getAndAddPlain(10));
+        assertEquals(51, counter.getPlain());
+    }
+
+    @Test
+    public void testVolatile()
+    {
+        final AtomicBuffer buffer = new UnsafeBuffer(new byte[8]);
+        final AtomicCounter counter = new AtomicCounter(buffer, 0);
+
+        assertEquals(0, counter.get());
+
+        assertEquals(0, counter.increment());
+        assertEquals(1, counter.get());
+
+        counter.set(42);
+        assertEquals(42, counter.get());
+
+        assertEquals(42, counter.decrement());
+        assertEquals(41, counter.get());
+
+        assertEquals(41, counter.getAndAdd(10));
+        assertEquals(51, counter.get());
+    }
+
+    @Test
+    public void testOpaque()
+    {
+        final AtomicBuffer buffer = new UnsafeBuffer(new byte[8]);
+        final AtomicCounter counter = new AtomicCounter(buffer, 0);
+
+        assertEquals(0, counter.getOpaque());
+
+        assertEquals(0, counter.incrementOpaque());
+        assertEquals(1, counter.getOpaque());
+
+        counter.setOpaque(42);
+        assertEquals(42, counter.getOpaque());
+
+        assertEquals(42, counter.decrementOpaque());
+        assertEquals(41, counter.getOpaque());
+
+        assertEquals(41, counter.getAndAddOpaque(10));
+        assertEquals(51, counter.getOpaque());
+    }
+
+    @Test
+    public void testReleaseAcquire()
+    {
+        final AtomicBuffer buffer = new UnsafeBuffer(new byte[8]);
+        final AtomicCounter counter = new AtomicCounter(buffer, 0);
+
+        assertEquals(0, counter.getAcquire());
+
+        assertEquals(0, counter.incrementRelease());
+        assertEquals(1, counter.getAcquire());
+
+        counter.setRelease(42);
+        assertEquals(42, counter.getAcquire());
+
+        assertEquals(42, counter.decrementRelease());
+        assertEquals(41, counter.getAcquire());
+
+        assertEquals(41, counter.getAndAddRelease(10));
+        assertEquals(51, counter.getAcquire());
     }
 }
