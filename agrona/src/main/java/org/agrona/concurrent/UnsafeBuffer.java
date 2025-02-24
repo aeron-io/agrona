@@ -573,7 +573,6 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
         return UnsafeApi.weakCompareAndSetLongPlain(byteArray, addressOffset + index, expectedValue, updateValue);
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -680,7 +679,6 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
 
         return UnsafeApi.getAndAddIntRelease(byteArray, addressOffset + index, increment);
     }
-
 
     /**
      * {@inheritDoc}
@@ -905,7 +903,6 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
 
         UnsafeApi.putCharVolatile(byteArray, addressOffset + index, value);
     }
-
 
     /**
      * {@inheritDoc}
