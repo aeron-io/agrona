@@ -521,6 +521,58 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
         return UnsafeApi.compareAndExchangeLong(byteArray, addressOffset + index, expectedValue, updateValue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public boolean weakCompareAndSetLong(final int index, final long expectedValue, final long updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_LONG);
+        }
+
+        return UnsafeApi.weakCompareAndSetLong(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean weakCompareAndSetLongRelease(final int index, final long expectedValue, final long updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_LONG);
+        }
+
+        return UnsafeApi.weakCompareAndSetLongRelease(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean weakCompareAndSetLongAcquire(final int index, final long expectedValue, final long updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_LONG);
+        }
+
+        return UnsafeApi.weakCompareAndSetLongAcquire(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean weakCompareAndSetLongPlain(final int index, final long expectedValue, final long updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_LONG);
+        }
+
+        return UnsafeApi.weakCompareAndSetLongPlain(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
 
     /**
      * {@inheritDoc}
@@ -696,6 +748,58 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
         }
 
         return UnsafeApi.compareAndExchangeInt(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean weakCompareAndSetInt(final int index, final int expectedValue, final int updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_LONG);
+        }
+
+        return UnsafeApi.weakCompareAndSetInt(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean weakCompareAndSetIntRelease(final int index, final int expectedValue, final int updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_LONG);
+        }
+
+        return UnsafeApi.weakCompareAndSetIntRelease(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean weakCompareAndSetIntAcquire(final int index, final int expectedValue, final int updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_LONG);
+        }
+
+        return UnsafeApi.weakCompareAndSetIntAcquire(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean weakCompareAndSetIntPlain(final int index, final int expectedValue, final int updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_LONG);
+        }
+
+        return UnsafeApi.weakCompareAndSetIntPlain(byteArray, addressOffset + index, expectedValue, updateValue);
     }
 
     /**

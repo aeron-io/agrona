@@ -17,6 +17,7 @@ package org.agrona.concurrent;
 
 import org.agrona.MutableDirectBuffer;
 import org.agrona.SystemUtil;
+import org.agrona.UnsafeApi;
 
 import static org.agrona.BitUtil.SIZE_OF_LONG;
 
@@ -232,6 +233,42 @@ public interface AtomicBuffer extends MutableDirectBuffer
     long compareAndExchangeLong(int index, long expectedValue, long updateValue);
 
     /**
+     *
+     * @param index
+     * @param expectedValue
+     * @param updateValue
+     * @return
+     */
+    boolean weakCompareAndSetLong(final int index, final long expectedValue, final long updateValue);
+
+    /**
+     *
+     * @param index
+     * @param expectedValue
+     * @param updateValue
+     * @return
+     */
+    boolean weakCompareAndSetLongRelease(final int index, final long expectedValue, final long updateValue);
+
+    /**
+     *
+     * @param index
+     * @param expectedValue
+     * @param updateValue
+     * @return
+     */
+    boolean weakCompareAndSetLongAcquire(final int index, final long expectedValue, final long updateValue);
+
+    /**
+     *
+     * @param index
+     * @param expectedValue
+     * @param updateValue
+     * @return
+     */
+    boolean weakCompareAndSetLongPlain(final int index, final long expectedValue, final long updateValue);
+
+    /**
      * Atomically exchange a value at a location returning the previous contents.
      * <p>
      * This call has sequential-consistent semantics.
@@ -385,8 +422,43 @@ public interface AtomicBuffer extends MutableDirectBuffer
      */
     int compareAndExchangeInt(int index, int expectedValue, int updateValue);
 
+    /**
+     *
+     * @param index
+     * @param expectedValue
+     * @param updateValue
+     * @return
+     */
+    boolean weakCompareAndSetInt(final int index, final int expectedValue, final int updateValue);
 
     /**
+     *
+     * @param index
+     * @param expectedValue
+     * @param updateValue
+     * @return
+     */
+    boolean weakCompareAndSetIntRelease(final int index, final int expectedValue, final int updateValue);
+
+    /**
+     *
+     * @param index
+     * @param expectedValue
+     * @param updateValue
+     * @return
+     */
+    boolean weakCompareAndSetIntAcquire(final int index, final int expectedValue, final int updateValue);
+
+    /**
+     *
+     * @param index
+     * @param expectedValue
+     * @param updateValue
+     * @return
+     */
+    boolean weakCompareAndSetIntPlain(final int index, final int expectedValue, final int updateValue);
+
+     /**
      * Atomically exchange a value at a location returning the previous contents.
      * <p>
      * This call has sequential-consistent semantics.
