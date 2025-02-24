@@ -38,7 +38,8 @@ class UnsafeBufferStatusIndicatorTest
     }
 
     @Test
-    public void testVolatile(){
+    public void testVolatile()
+    {
         final int counterId = 2;
         final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(5 * COUNTER_LENGTH));
         final UnsafeBufferStatusIndicator statusIndicator = new UnsafeBufferStatusIndicator(buffer, counterId);
@@ -48,7 +49,8 @@ class UnsafeBufferStatusIndicatorTest
     }
 
     @Test
-    public void testReleaseAcquire(){
+    public void testReleaseAcquire()
+    {
         final int counterId = 2;
         final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(5 * COUNTER_LENGTH));
         final UnsafeBufferStatusIndicator statusIndicator = new UnsafeBufferStatusIndicator(buffer, counterId);
@@ -58,7 +60,8 @@ class UnsafeBufferStatusIndicatorTest
     }
 
     @Test
-    public void testOpaque(){
+    public void testOpaque()
+    {
         final int counterId = 2;
         final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(5 * COUNTER_LENGTH));
         final UnsafeBufferStatusIndicator statusIndicator = new UnsafeBufferStatusIndicator(buffer, counterId);
