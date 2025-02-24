@@ -155,7 +155,6 @@ public class UnsafeBufferPosition extends Position
         UnsafeApi.putLong(byteArray, addressOffset, value);
     }
 
-
     /**
      * {@inheritDoc}
      */
