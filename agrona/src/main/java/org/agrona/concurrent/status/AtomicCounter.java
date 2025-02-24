@@ -544,6 +544,28 @@ public class AtomicCounter implements AutoCloseable
     }
 
     /**
+     * Adds an increment to the counter non-atomically.
+     * <p>
+     * This method is not atomic; it can suffer from lost-updates due to race conditions.
+     * <p>
+     * The load has plain memory semantics and the store has plain memory semantics.
+     * <p>
+     * The typical use-case for this method is when writer and reader are the same thread.
+     *
+     * @param increment to be added
+     * @return the previous value of the counter
+     * @since 2.1.0
+     */
+    public long getAndAddPlain(final long increment)
+    {
+        final byte[] array = byteArray;
+        final long offset = addressOffset;
+        final long currentValue = UnsafeApi.getLong(array, offset);
+        UnsafeApi.putLong(array, offset, currentValue + increment);
+        return currentValue;
+    }
+
+    /**
      * Get the current value of a counter and atomically set it to a new value.
      *
      * @param value to be set.
