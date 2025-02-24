@@ -623,7 +623,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     {
         if (SHOULD_BOUNDS_CHECK)
         {
-            boundsCheck0(index, SIZE_OF_LONG);
+            boundsCheck0(index, SIZE_OF_INT);
         }
 
         UnsafeApi.putIntOpaque(byteArray, addressOffset + index, value);
@@ -636,7 +636,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     {
         if (SHOULD_BOUNDS_CHECK)
         {
-            boundsCheck0(index, SIZE_OF_LONG);
+            boundsCheck0(index, SIZE_OF_INT);
         }
 
         return UnsafeApi.getIntOpaque(byteArray, addressOffset + index);
@@ -649,7 +649,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     {
         if (SHOULD_BOUNDS_CHECK)
         {
-            boundsCheck0(index, SIZE_OF_LONG);
+            boundsCheck0(index, SIZE_OF_INT);
         }
 
         final int oldValue = UnsafeApi.getIntOpaque(byteArray, addressOffset + index);

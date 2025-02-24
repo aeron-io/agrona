@@ -556,6 +556,54 @@ class AtomicBufferTest
     }
 
     @Test
+    void verifyIntOpaqueOperations()
+    {
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(new byte[4]);
+        final int index = 0;
+        assertEquals(0, unsafeBuffer.getIntOpaque(index));
+        unsafeBuffer.putIntOpaque(index, 10);
+        assertEquals(10, unsafeBuffer.getIntOpaque(index));
+        assertEquals(10, unsafeBuffer.addIntOpaque(0, 2));
+        assertEquals(12, unsafeBuffer.getIntOpaque(index));
+    }
+
+    @Test
+    void verifyIntReleaseAcquireOperations()
+    {
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(new byte[4]);
+        final int index = 0;
+        assertEquals(0, unsafeBuffer.getIntAcquire(index));
+        unsafeBuffer.putIntRelease(index, 10);
+        assertEquals(10, unsafeBuffer.getIntAcquire(index));
+        assertEquals(10, unsafeBuffer.addIntRelease(0, 2));
+        assertEquals(12, unsafeBuffer.getIntAcquire(index));
+    }
+
+    @Test
+    void verifyLongOpaqueOperations()
+    {
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(new byte[8]);
+        final int index = 0;
+        assertEquals(0, unsafeBuffer.getLongOpaque(index));
+        unsafeBuffer.putLongOpaque(index, 10);
+        assertEquals(10, unsafeBuffer.getLongOpaque(index));
+        assertEquals(10, unsafeBuffer.addLongOpaque(index, 2));
+        assertEquals(12, unsafeBuffer.getLongOpaque(index));
+    }
+
+    @Test
+    void verifyLongReleaseAcquireOperations()
+    {
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(new byte[8]);
+        final int index = 0;
+        assertEquals(0, unsafeBuffer.getLongAcquire(index));
+        unsafeBuffer.putLongRelease(index, 10);
+        assertEquals(10, unsafeBuffer.getLongAcquire(index));
+        assertEquals(10, unsafeBuffer.addLongRelease(index, 2));
+        assertEquals(12, unsafeBuffer.getLongAcquire(index));
+    }
+
+    @Test
     void verifyAlignmentShouldThrowForAByteArrayIfStrictAlignmentChecksAreEnabled()
     {
         assumeTrue(STRICT_ALIGNMENT_CHECKS);
