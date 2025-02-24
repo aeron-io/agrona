@@ -36,4 +36,34 @@ class UnsafeBufferStatusIndicatorTest
         unsafeBufferStatusIndicator.setVolatile(value);
         assertEquals(value, unsafeBufferStatusIndicator.getVolatile());
     }
+
+    @Test
+    public void testVolatile(){
+        final int counterId = 2;
+        final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(5 * COUNTER_LENGTH));
+        final UnsafeBufferStatusIndicator statusIndicator = new UnsafeBufferStatusIndicator(buffer, counterId);
+        assertEquals(0, statusIndicator.getVolatile());
+        statusIndicator.setVolatile(10);
+        assertEquals(10, statusIndicator.getVolatile());
+    }
+
+    @Test
+    public void testReleaseAcquire(){
+        final int counterId = 2;
+        final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(5 * COUNTER_LENGTH));
+        final UnsafeBufferStatusIndicator statusIndicator = new UnsafeBufferStatusIndicator(buffer, counterId);
+        assertEquals(0, statusIndicator.getAcquire());
+        statusIndicator.setRelease(10);
+        assertEquals(10, statusIndicator.getAcquire());
+    }
+
+    @Test
+    public void testOpaque(){
+        final int counterId = 2;
+        final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(5 * COUNTER_LENGTH));
+        final UnsafeBufferStatusIndicator statusIndicator = new UnsafeBufferStatusIndicator(buffer, counterId);
+        assertEquals(0, statusIndicator.getOpaque());
+        statusIndicator.setOpaque(10);
+        assertEquals(10, statusIndicator.getOpaque());
+    }
 }
