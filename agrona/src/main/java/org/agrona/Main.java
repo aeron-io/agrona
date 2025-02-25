@@ -16,12 +16,14 @@
 package org.agrona;
 
 /**
- *
+ * This is main.
  */
 public class Main
 {
     /**
-     * @param args bla
+     * The main.
+     *
+     * @param args great stuff.
      */
     public static void main(final String[] args)
     {

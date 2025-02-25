@@ -25,6 +25,15 @@ import java.lang.reflect.Method;
  */
 public class UnsafeApiBootstrap
 {
+
+    /**
+     * We don't want instances.
+     */
+    private UnsafeApiBootstrap()
+    {
+
+    }
+
     /**
      * Bootstrap method for arrayBaseOffset that will be called by the JVM when
      * the invokedynamic instruction is executed for the first time.
