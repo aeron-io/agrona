@@ -18,7 +18,7 @@ package org.agrona;
 /**
  * This is main.
  */
-public class Main
+public final class Main
 {
     /**
      * We don't want instances.

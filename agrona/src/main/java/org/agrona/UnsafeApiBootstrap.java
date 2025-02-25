@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 /**
  * Great stuff.
  */
-public class UnsafeApiBootstrap
+public final class UnsafeApiBootstrap
 {
 
     /**
