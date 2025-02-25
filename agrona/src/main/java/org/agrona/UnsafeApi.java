@@ -74,8 +74,9 @@ public final class UnsafeApi
      * See {@code jdk.internal.misc.Unsafe#arrayBaseOffset(java.lang.Class)}.
      * @param arg0 arg0
      * @return value
+     * @apiNote This method always returns a long regardless of the JDK version.
      */
-    public static int arrayBaseOffset(
+    public static long arrayBaseOffset(
         final Class<?> arg0)
     {
         throw new UnsupportedOperationException("'arrayBaseOffset' not implemented");

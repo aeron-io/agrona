@@ -102,7 +102,7 @@ class UnsafeApiTest
         Object[].class })
     void arrayBaseOffset(final Class<?> clazz)
     {
-        assertThat(UnsafeApi.arrayBaseOffset(clazz), greaterThan(0));
+        assertThat(UnsafeApi.arrayBaseOffset(clazz), greaterThan(0l));
     }
 
     @ParameterizedTest
@@ -224,7 +224,7 @@ class UnsafeApiTest
     void putLongUnaligned(final int offset)
     {
         final Object array = UnsafeApi.allocateUninitializedArray(byte.class, 32);
-        final int arrayBaseOffset = UnsafeApi.arrayBaseOffset(array.getClass());
+        final long arrayBaseOffset = UnsafeApi.arrayBaseOffset(array.getClass());
 
         final long value = ThreadLocalRandom.current().nextLong();
         UnsafeApi.putLongUnaligned(array, arrayBaseOffset + offset, value);

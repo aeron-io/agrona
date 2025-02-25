@@ -90,7 +90,7 @@ public class UnsafeApiSourceGenerator extends DefaultTask
     /**
      * Generate {@code org.agrona.UnsafeApi} source file.
      */
-    @SuppressWarnings({ "checkstyle:Regexp", "MethodLength" })
+    @SuppressWarnings({"checkstyle:Regexp", "MethodLength"})
     @TaskAction
     public void run()
     {
@@ -176,11 +176,29 @@ public class UnsafeApiSourceGenerator extends DefaultTask
                     {
                         buffer.append("     * @return value").append(lineSeparator);
                     }
+
+                    // Add special note for arrayBaseOffset method
+                    if (method.getName().equals("arrayBaseOffset"))
+                    {
+                        buffer.append("     * @apiNote This method always returns a long regardless of the JDK version.")
+                            .append(lineSeparator);
+                    }
+
                     buffer.append("     */").append(lineSeparator);
 
-                    buffer.append("    public static ")
-                        .append(TYPE_NAME.get(method.getReturnType())).append(' ')
-                        .append(method.getName()).append("(");
+                    buffer.append("    public static ");
+
+                    // Check if this is the arrayBaseOffset method and force long return type
+                    if (method.getName().equals("arrayBaseOffset"))
+                    {
+                        buffer.append("long");
+                    }
+                    else
+                    {
+                        buffer.append(TYPE_NAME.get(method.getReturnType()));
+                    }
+
+                    buffer.append(' ').append(method.getName()).append("(");
 
                     for (int i = 0; i < parameters.length; i++)
                     {
@@ -204,8 +222,8 @@ public class UnsafeApiSourceGenerator extends DefaultTask
             Files.writeString(
                 outputDirectory.toPath().resolve("org/agrona/UnsafeApi.java"),
                 code
-                .replace("$year", Integer.toString(LocalDate.now().getYear()))
-                .replace("$body", buffer),
+                    .replace("$year", Integer.toString(LocalDate.now().getYear()))
+                    .replace("$body", buffer),
                 StandardCharsets.US_ASCII,
                 StandardOpenOption.WRITE,
                 StandardOpenOption.CREATE,

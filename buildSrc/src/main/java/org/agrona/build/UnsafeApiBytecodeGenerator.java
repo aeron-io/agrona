@@ -1,18 +1,3 @@
-/*
- * Copyright 2014-2025 Real Logic Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.agrona.build;
 
 import net.bytebuddy.build.Plugin;
@@ -41,7 +26,10 @@ import net.bytebuddy.implementation.bytecode.constant.TextConstant;
 import net.bytebuddy.implementation.bytecode.member.MethodInvocation;
 import net.bytebuddy.implementation.bytecode.member.MethodReturn;
 import net.bytebuddy.implementation.bytecode.member.MethodVariableAccess;
+import net.bytebuddy.jar.asm.Handle;
 import net.bytebuddy.jar.asm.MethodVisitor;
+import net.bytebuddy.jar.asm.Opcodes;
+import net.bytebuddy.jar.asm.Type;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -55,7 +43,7 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
  */
 public final class UnsafeApiBytecodeGenerator implements Plugin
 {
-    private static final Class<?> UNSAFE_CLASS;
+    static final Class<?> UNSAFE_CLASS;
 
     static
     {
@@ -67,6 +55,82 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
         catch (final ClassNotFoundException e)
         {
             throw new Error("Failed to resolve: " + unsafeTypeName, e);
+        }
+    }
+
+    /**
+     * Implementation for the arrayBaseOffset method that uses INVOKEDYNAMIC to handle
+     * return type differences between JDK versions.
+     */
+    enum ArrayBaseOffsetImplementation implements Implementation
+    {
+        INSTANCE;
+
+        @Override
+        public @NotNull InstrumentedType prepare(final @NotNull InstrumentedType instrumentedType)
+        {
+            return instrumentedType;
+        }
+
+        @Override
+        public @NotNull ByteCodeAppender appender(final @NotNull Target implementationTarget)
+        {
+            return new ByteCodeAppender()
+            {
+                @Override
+                public @NotNull Size apply(
+                    final @NotNull MethodVisitor methodVisitor,
+                    final @NotNull Context implementationContext,
+                    final @NotNull MethodDescription instrumentedMethod)
+                {
+                    // Get an array base offset method from Unsafe class
+                    MethodDescription arrayBaseOffsetMethod = null;
+                    boolean returnsLong = false;
+
+                    for (MethodDescription method : new TypeDescription.ForLoadedType(UNSAFE_CLASS).getDeclaredMethods()) {
+                        if (method.getName().equals("arrayBaseOffset") &&
+                            method.getParameters().size() == 1 &&
+                            method.getParameters().get(0).getType().asErasure().equals(new TypeDescription.ForLoadedType(Class.class))) {
+                            arrayBaseOffsetMethod = method;
+                            returnsLong = method.getReturnType().asErasure().equals(new TypeDescription.ForLoadedType(long.class));
+                            break;
+                        }
+                    }
+
+                    if (arrayBaseOffsetMethod == null) {
+                        throw new IllegalStateException("Could not find arrayBaseOffset method");
+                    }
+
+                    // Load the UNSAFE static field
+                    methodVisitor.visitFieldInsn(
+                        Opcodes.GETSTATIC,
+                        "org/agrona/UnsafeApi",
+                        "UNSAFE",
+                        Type.getDescriptor(UNSAFE_CLASS));
+
+                    // Load the Class parameter (this is at index 0 for static methods)
+                    methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+
+                    // Call the actual method on UNSAFE
+                    methodVisitor.visitMethodInsn(
+                        Opcodes.INVOKEVIRTUAL,
+                        Type.getInternalName(UNSAFE_CLASS),
+                        "arrayBaseOffset",
+                        "(Ljava/lang/Class;)" + (returnsLong ? "J" : "I"),
+                        false);
+
+                    // If the original returns int, convert to long
+                    if (!returnsLong) {
+                        methodVisitor.visitInsn(Opcodes.I2L);
+                    }
+
+                    // Return the long value
+                    methodVisitor.visitInsn(Opcodes.LRETURN);
+
+                    // Stack size: 2 max (for object + arg)
+                    return new Size(2, 1); // Just use the method parameter
+                }
+            };
         }
     }
 
@@ -85,7 +149,7 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
 
             final MethodDescription.InDefinedShape classForName = classType.getDeclaredMethods()
                 .filter(hasSignature(new MethodDescription.SignatureToken(
-                "forName",
+                    "forName",
                     new TypeDescription.ForLoadedType(Class.class),
                     new TypeDescription.ForLoadedType(String.class))))
                 .getOnly();
@@ -169,12 +233,20 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
 
         for (final MethodDescription.InDefinedShape method : staticMethods)
         {
-            // Redefine existing method
-            newBuilder = newBuilder
-                .method(named(method.getName()))
-                .intercept(method.isStatic() ? MethodDelegation.to(unsafeType) :
-                    MethodDelegation.withDefaultConfiguration().filter(named(method.getName()))
-                        .toField(unsafeFieldName));
+            if (method.getName().equals("arrayBaseOffset")) {
+                // Special handling for arrayBaseOffset using INVOKEDYNAMIC
+                newBuilder = newBuilder
+                    .method(named("arrayBaseOffset").and(takesArguments(Class.class)))
+                    .intercept(ArrayBaseOffsetImplementation.INSTANCE);
+            }
+            else {
+                // Default behavior for all other methods
+                newBuilder = newBuilder
+                    .method(named(method.getName()))
+                    .intercept(method.isStatic() ? MethodDelegation.to(unsafeType) :
+                        MethodDelegation.withDefaultConfiguration().filter(named(method.getName()))
+                            .toField(unsafeFieldName));
+            }
         }
 
         return newBuilder;

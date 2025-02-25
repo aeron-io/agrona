@@ -42,7 +42,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("removal")
 public class ManyToManyConcurrentArrayQueue<E> extends AbstractConcurrentArrayQueue<E>
 {
-    private static final int SEQUENCES_ARRAY_BASE = UnsafeApi.arrayBaseOffset(long[].class);
+    private static final long SEQUENCES_ARRAY_BASE = UnsafeApi.arrayBaseOffset(long[].class);
 
     private final long[] sequences;
 

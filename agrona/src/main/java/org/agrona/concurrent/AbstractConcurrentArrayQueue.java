@@ -113,7 +113,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * Array base.
      */
-    protected static final int BUFFER_ARRAY_BASE;
+    protected static final long BUFFER_ARRAY_BASE;
     /**
      * Shift for scale.
      */
