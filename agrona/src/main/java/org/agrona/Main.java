@@ -21,6 +21,14 @@ package org.agrona;
 public class Main
 {
     /**
+     * We don't want instances.
+     */
+    private Main()
+    {
+
+    }
+
+    /**
      * The main.
      *
      * @param args great stuff.
