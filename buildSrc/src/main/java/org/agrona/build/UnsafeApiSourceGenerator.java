@@ -90,7 +90,7 @@ public class UnsafeApiSourceGenerator extends DefaultTask
     /**
      * Generate {@code org.agrona.UnsafeApi} source file.
      */
-    @SuppressWarnings({"checkstyle:Regexp", "MethodLength"})
+    @SuppressWarnings({ "checkstyle:Regexp", "MethodLength" })
     @TaskAction
     public void run()
     {
@@ -222,8 +222,8 @@ public class UnsafeApiSourceGenerator extends DefaultTask
             Files.writeString(
                 outputDirectory.toPath().resolve("org/agrona/UnsafeApi.java"),
                 code
-                    .replace("$year", Integer.toString(LocalDate.now().getYear()))
-                    .replace("$body", buffer),
+                .replace("$year", Integer.toString(LocalDate.now().getYear()))
+                .replace("$body", buffer),
                 StandardCharsets.US_ASCII,
                 StandardOpenOption.WRITE,
                 StandardOpenOption.CREATE,
