@@ -49,11 +49,10 @@ public final class UnsafeApiBootstrap
         final String methodName,
         final MethodType methodType) throws Throwable
     {
-
         System.out.println("UnsafeApiBootstrap.bootstrapArrayBaseOffset");
 
         // Get Unsafe class from method type
-        final Class<?> unsafeClass = methodType.parameterType(1);
+        final Class<?> unsafeClass = methodType.parameterType(0);
 
         try
         {
@@ -69,13 +68,7 @@ public final class UnsafeApiBootstrap
                 System.out.println("arrayBaseOffset returns long");
 
                 // Method already returns long, use it directly
-                final MethodHandle adapter = MethodHandles.permuteArguments(
-                    targetMethod,
-                    methodType,  // (Class, Unsafe) -> long
-                    1, 0        // Permute arguments: Unsafe first, then Class
-                );
-
-                return new ConstantCallSite(adapter);
+                return new ConstantCallSite(targetMethod);
             }
             else
             {
@@ -91,14 +84,7 @@ public final class UnsafeApiBootstrap
                     longReturnType
                 );
 
-                // Permute arguments from (Unsafe, Class) to (Class, Unsafe)
-                final MethodHandle adapter = MethodHandles.permuteArguments(
-                    convertedMethod,
-                    methodType,  // (Class, Unsafe) -> long
-                    1, 0        // Permute arguments: Unsafe first, then Class
-                );
-
-                return new ConstantCallSite(adapter);
+                return new ConstantCallSite(convertedMethod);
             }
         }
         catch (final Exception e)

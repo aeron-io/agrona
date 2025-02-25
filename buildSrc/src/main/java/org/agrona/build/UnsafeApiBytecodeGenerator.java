@@ -98,8 +98,6 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
                     final @NotNull Context implementationContext,
                     final @NotNull MethodDescription instrumentedMethod)
                 {
-                    // First load the Class parameter (at index 0 for static methods)
-                    methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
 
                     // Load the UNSAFE static field
                     methodVisitor.visitFieldInsn(
@@ -108,7 +106,10 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
                         "UNSAFE",
                         Type.getDescriptor(UNSAFE_CLASS));
 
-                    // Create a handle to the bootstrap method
+                    // First load the Class parameter (at index 0 for static methods)
+                    methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+
+                        // Create a handle to the bootstrap method
                     Handle bootstrapHandle = new Handle(
                         Opcodes.H_INVOKESTATIC,
                         "org/agrona/UnsafeApiBootstrap",
@@ -118,9 +119,9 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
 
                     // Generate the INVOKEDYNAMIC instruction
                     methodVisitor.visitInvokeDynamicInsn(
-                        "arrayBaseOffset",                        // Method name
-                        "(Ljava/lang/Class;Ljdk/internal/misc/Unsafe;)J", // Method descriptor
-                        bootstrapHandle                           // Bootstrap method handle
+                        "arrayBaseOffset",
+                        "(Ljdk/internal/misc/Unsafe;Ljava/lang/Class;)J",
+                        bootstrapHandle
                     );
 
                     // Return the long value
