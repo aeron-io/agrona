@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014-2025 Real Logic Limited.
+ * Copyright 2012 The Netty Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.agrona;
 
 
@@ -5,7 +21,7 @@ import java.lang.invoke.*;
 import java.lang.reflect.Method;
 
 /**
- * todo
+ * Great stuff.
  */
 public class UnsafeApiBootstrap
 {
@@ -13,55 +29,72 @@ public class UnsafeApiBootstrap
      * Bootstrap method for arrayBaseOffset that will be called by the JVM when
      * the invokedynamic instruction is executed for the first time.
      *
-     * @param lookup      The lookup context
-     * @param methodName  The name of the method to find
-     * @param methodType  The method type (signature) expected at the call site
-     * @return            A CallSite bound to the appropriate implementation
-     * @throws Throwable  If method resolution fails
+     * @param lookup     The lookup context
+     * @param methodName The name of the method to find
+     * @param methodType The method type (signature) expected at the call site
+     * @return A CallSite bound to the appropriate implementation
+     * @throws Throwable If method resolution fails
      */
     public static CallSite bootstrapArrayBaseOffset(
-        MethodHandles.Lookup lookup,
-        String methodName,
-        MethodType methodType) throws Throwable {
+        final MethodHandles.Lookup lookup,
+        final String methodName,
+        final MethodType methodType) throws Throwable
+    {
 
-        if (!methodName.equals("arrayBaseOffset") ||
-            !methodType.returnType().equals(long.class) ||
-            methodType.parameterCount() != 2) {
-            throw new IllegalArgumentException("Invalid method signature for arrayBaseOffset");
-        }
+        System.out.println("UnsafeApiBootstrap.bootstrapArrayBaseOffset");
 
-        Class<?> unsafeClass = methodType.parameterType(1);
+        // Get Unsafe class from method type
+        final Class<?> unsafeClass = methodType.parameterType(1);
 
-        MethodHandle mh;
-        try {
-            Method longMethod = unsafeClass.getMethod("arrayBaseOffset", Class.class);
-            if (longMethod.getReturnType() == long.class) {
-                mh = lookup.unreflect(longMethod);
-                // Ensure method handle has the expected type
-                mh = mh.asType(methodType);
-                return new ConstantCallSite(mh);
-            }
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-        }
+        try
+        {
+            // First try to find the method returning long (Java 25+)
+            final Method arrayBaseOffsetMethod = unsafeClass.getMethod("arrayBaseOffset", Class.class);
+            final MethodHandle targetMethod = lookup.unreflect(arrayBaseOffsetMethod);
 
-        try {
-            Method intMethod = unsafeClass.getMethod("arrayBaseOffset", Class.class);
-            if (intMethod.getReturnType() == int.class) {
-                // We need to convert the int return value to long
-                mh = lookup.unreflect(intMethod);
+            // Check if method returns long or int
+            final boolean returnsLong = arrayBaseOffsetMethod.getReturnType() == long.class;
 
-                MethodHandle filter = MethodHandles.explicitCastArguments(
-                    mh,
-                    mh.type().changeReturnType(long.class)
+            if (returnsLong)
+            {
+                System.out.println("arrayBaseOffset returns long");
+
+                // Method already returns long, use it directly
+                final MethodHandle adapter = MethodHandles.permuteArguments(
+                    targetMethod,
+                    methodType,  // (Class, Unsafe) -> long
+                    1, 0        // Permute arguments: Unsafe first, then Class
                 );
 
-                filter = filter.asType(methodType);
-                return new ConstantCallSite(filter);
+                return new ConstantCallSite(adapter);
             }
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            throw new RuntimeException("Could not find arrayBaseOffset method", e);
-        }
+            else
+            {
+                System.out.println("arrayBaseOffset returns int");
 
-        throw new RuntimeException("No suitable arrayBaseOffset method found");
+                // Method returns int, create an adapter to convert to long
+                final MethodType originalType = targetMethod.type();
+                final MethodType longReturnType = originalType.changeReturnType(long.class);
+
+                // Convert int to long
+                final MethodHandle convertedMethod = MethodHandles.explicitCastArguments(
+                    targetMethod,
+                    longReturnType
+                );
+
+                // Permute arguments from (Unsafe, Class) to (Class, Unsafe)
+                final MethodHandle adapter = MethodHandles.permuteArguments(
+                    convertedMethod,
+                    methodType,  // (Class, Unsafe) -> long
+                    1, 0        // Permute arguments: Unsafe first, then Class
+                );
+
+                return new ConstantCallSite(adapter);
+            }
+        }
+        catch (final Exception e)
+        {
+            throw new RuntimeException("Failed to create method handle for arrayBaseOffset", e);
+        }
     }
 }

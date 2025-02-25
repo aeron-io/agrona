@@ -102,7 +102,7 @@ class UnsafeApiTest
         Object[].class })
     void arrayBaseOffset(final Class<?> clazz)
     {
-        assertThat(UnsafeApi.arrayBaseOffset(clazz), greaterThan(0l));
+        assertThat(UnsafeApi.arrayBaseOffset(clazz), greaterThan(0L));
     }
 
     @ParameterizedTest

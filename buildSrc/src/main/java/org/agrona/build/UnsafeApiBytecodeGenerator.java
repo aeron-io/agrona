@@ -83,23 +83,8 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
                     final @NotNull Context implementationContext,
                     final @NotNull MethodDescription instrumentedMethod)
                 {
-                    // Get an array base offset method from Unsafe class
-                    MethodDescription arrayBaseOffsetMethod = null;
-                    boolean returnsLong = false;
-
-                    for (MethodDescription method : new TypeDescription.ForLoadedType(UNSAFE_CLASS).getDeclaredMethods()) {
-                        if (method.getName().equals("arrayBaseOffset") &&
-                            method.getParameters().size() == 1 &&
-                            method.getParameters().get(0).getType().asErasure().equals(new TypeDescription.ForLoadedType(Class.class))) {
-                            arrayBaseOffsetMethod = method;
-                            returnsLong = method.getReturnType().asErasure().equals(new TypeDescription.ForLoadedType(long.class));
-                            break;
-                        }
-                    }
-
-                    if (arrayBaseOffsetMethod == null) {
-                        throw new IllegalStateException("Could not find arrayBaseOffset method");
-                    }
+                    // First load the Class parameter (at index 0 for static methods)
+                    methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
 
                     // Load the UNSAFE static field
                     methodVisitor.visitFieldInsn(
@@ -108,31 +93,32 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
                         "UNSAFE",
                         Type.getDescriptor(UNSAFE_CLASS));
 
-                    // Load the Class parameter (this is at index 0 for static methods)
-                    methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-
-                    // Call the actual method on UNSAFE
-                    methodVisitor.visitMethodInsn(
-                        Opcodes.INVOKEVIRTUAL,
-                        Type.getInternalName(UNSAFE_CLASS),
-                        "arrayBaseOffset",
-                        "(Ljava/lang/Class;)" + (returnsLong ? "J" : "I"),
+                    // Create a handle to the bootstrap method
+                    Handle bootstrapHandle = new Handle(
+                        Opcodes.H_INVOKESTATIC,
+                        "org/agrona/UnsafeApiBootstrap",
+                        "bootstrapArrayBaseOffset",
+                        "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;",
                         false);
 
-                    // If the original returns int, convert to long
-                    if (!returnsLong) {
-                        methodVisitor.visitInsn(Opcodes.I2L);
-                    }
+                    // Generate the INVOKEDYNAMIC instruction
+                    methodVisitor.visitInvokeDynamicInsn(
+                        "arrayBaseOffset",                        // Method name
+                        "(Ljava/lang/Class;Ljdk/internal/misc/Unsafe;)J", // Method descriptor
+                        bootstrapHandle                           // Bootstrap method handle
+                    );
 
                     // Return the long value
                     methodVisitor.visitInsn(Opcodes.LRETURN);
 
-                    // Stack size: 2 max (for object + arg)
-                    return new Size(2, 1); // Just use the method parameter
+                    // We only need 2 stack slots (for the class and unsafe instance)
+                    // and 1 local variable (the class parameter)
+                    return new Size(2, 1);
                 }
             };
         }
     }
+
 
     enum GetUnsafeMethodByteCode implements ByteCodeAppender
     {
@@ -235,6 +221,8 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
         {
             if (method.getName().equals("arrayBaseOffset")) {
                 // Special handling for arrayBaseOffset using INVOKEDYNAMIC
+                // todo: I don't see any invoke dynamic here.
+                // I don't see the call to the UnsafeApiBootstrap.bootstrapArrayBaseOffset
                 newBuilder = newBuilder
                     .method(named("arrayBaseOffset").and(takesArguments(Class.class)))
                     .intercept(ArrayBaseOffsetImplementation.INSTANCE);
