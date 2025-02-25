@@ -28,8 +28,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Comparator;
+import java.util.stream.Stream;
 
 /**
  * This task generates {@code UnsafeApi.java} source file.
@@ -136,69 +136,75 @@ public class UnsafeApiSourceGenerator extends DefaultTask
             final StringBuilder buffer = new StringBuilder();
             final String lineSeparator = System.lineSeparator();
 
-            final Method[] methods = unsafeClass.getMethods();
-            Arrays.sort(methods, Comparator.comparing(Method::getName).thenComparingInt(Method::getParameterCount));
+            final Method[] methods = Stream.of(unsafeClass.getMethods())
+                .filter(method -> method.getDeclaringClass() == unsafeClass &&
+                !method.getName().endsWith("0") &&
+                !method.getName().equals("getUnsafe") &&
+                null == method.getAnnotation(Deprecated.class))
+                .sorted(Comparator.comparing(Method::getName).thenComparingInt(Method::getParameterCount))
+                .toArray(Method[]::new);
 
             for (final Method method : methods)
             {
-                if (method.getDeclaringClass() == unsafeClass &&
-                    !method.getName().endsWith("0") &&
-                    !method.getName().equals("getUnsafe") &&
-                    null == method.getAnnotation(Deprecated.class))
+                final Class<?>[] parameterTypes = method.getParameterTypes();
+                final Parameter[] parameters = method.getParameters();
+
+                buffer.append(lineSeparator).append("    /**");
+                buffer.append(lineSeparator).append("     * See {@code ").append(unsafeClass.getName())
+                    .append("#").append(method.getName());
+                if (parameterTypes.length > 0)
                 {
-                    final Class<?>[] parameterTypes = method.getParameterTypes();
-                    final Parameter[] parameters = method.getParameters();
-
-                    buffer.append(lineSeparator).append("    /**");
-                    buffer.append(lineSeparator).append("     * See {@code ").append(unsafeClass.getName())
-                        .append("#").append(method.getName());
-                    if (parameterTypes.length > 0)
-                    {
-                        buffer.append('(');
-                        for (int i = 0; i < parameters.length; i++)
-                        {
-                            if (i != 0)
-                            {
-                                buffer.append(", ");
-                            }
-                            buffer.append(parameterTypes[i].getTypeName());
-                        }
-                        buffer.append(')');
-                    }
-                    buffer.append("}.").append(lineSeparator);
-                    for (final Parameter parameter : parameters)
-                    {
-                        buffer.append("     * @param ").append(parameter.getName()).append(' ')
-                            .append(parameter.getName()).append(lineSeparator);
-                    }
-
-                    if (method.getReturnType() != void.class)
-                    {
-                        buffer.append("     * @return value").append(lineSeparator);
-                    }
-                    buffer.append("     */").append(lineSeparator);
-
-                    buffer.append("    public static ")
-                        .append(TYPE_NAME.get(method.getReturnType())).append(' ')
-                        .append(method.getName()).append("(");
-
+                    buffer.append('(');
                     for (int i = 0; i < parameters.length; i++)
                     {
-                        if (i > 0)
+                        if (i != 0)
                         {
-                            buffer.append(',');
+                            buffer.append(", ");
                         }
+                        buffer.append(parameterTypes[i].getTypeName());
+                    }
+                    buffer.append(')');
+                }
+                buffer.append("}.");
+                for (final Parameter parameter : parameters)
+                {
+                    buffer.append(lineSeparator).append("     * @param ").append(parameter.getName()).append(' ')
+                        .append(parameter.getName());
+                }
 
-                        buffer.append(lineSeparator).append("        final ")
-                            .append(TYPE_NAME.get(parameterTypes[i])).append(' ')
-                            .append(parameters[i].getName());
+                if (method.getReturnType() != void.class)
+                {
+                    buffer.append(lineSeparator).append("     * @return value");
+                }
+                buffer.append(lineSeparator).append("     */");
+
+                buffer.append(lineSeparator).append("    public static ");
+                if (method.getName().equals("arrayBaseOffset"))
+                {
+                    buffer.append(TYPE_NAME.get(int.class)); // JDK 25 changed to long
+                }
+                else
+                {
+                    buffer.append(TYPE_NAME.get(method.getReturnType()));
+                }
+                buffer.append(' ').append(method.getName()).append("(");
+
+                for (int i = 0; i < parameters.length; i++)
+                {
+                    if (i > 0)
+                    {
+                        buffer.append(',');
                     }
 
-                    buffer.append(')').append(lineSeparator).append("    {").append(lineSeparator)
-                        .append("        throw new UnsupportedOperationException(\"'")
-                        .append(method.getName()).append("' not implemented\");")
-                        .append(lineSeparator).append("    }").append(lineSeparator);
+                    buffer.append(lineSeparator).append("        final ")
+                        .append(TYPE_NAME.get(parameterTypes[i])).append(' ')
+                        .append(parameters[i].getName());
                 }
+
+                buffer.append(')').append(lineSeparator).append("    {").append(lineSeparator)
+                    .append("        throw new UnsupportedOperationException(\"'")
+                    .append(method.getName()).append("' not implemented\");")
+                    .append(lineSeparator).append("    }").append(lineSeparator);
             }
 
             Files.writeString(

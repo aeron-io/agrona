@@ -35,9 +35,12 @@ import net.bytebuddy.implementation.bytecode.ByteCodeAppender;
 import net.bytebuddy.implementation.bytecode.StackManipulation;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
 import net.bytebuddy.implementation.bytecode.assign.TypeCasting;
+import net.bytebuddy.implementation.bytecode.collection.ArrayFactory;
+import net.bytebuddy.implementation.bytecode.constant.ClassConstant;
 import net.bytebuddy.implementation.bytecode.constant.IntegerConstant;
 import net.bytebuddy.implementation.bytecode.constant.NullConstant;
 import net.bytebuddy.implementation.bytecode.constant.TextConstant;
+import net.bytebuddy.implementation.bytecode.member.FieldAccess;
 import net.bytebuddy.implementation.bytecode.member.MethodInvocation;
 import net.bytebuddy.implementation.bytecode.member.MethodReturn;
 import net.bytebuddy.implementation.bytecode.member.MethodVariableAccess;
@@ -46,6 +49,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
@@ -135,6 +139,84 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
         }
     }
 
+    enum ArrayBasedOffsetByteCode implements ByteCodeAppender
+    {
+        INSTANCE;
+
+        @Override
+        public @NotNull Size apply(
+            final @NotNull MethodVisitor methodVisitor,
+            final @NotNull Implementation.Context implementationContext,
+            final @NotNull MethodDescription instrumentedMethod)
+        {
+            final TypeDescription.ForLoadedType classType = new TypeDescription.ForLoadedType(Class.class);
+            final TypeDescription.ForLoadedType methodType = new TypeDescription.ForLoadedType(Method.class);
+            final TypeDescription.ForLoadedType numberType = new TypeDescription.ForLoadedType(Number.class);
+
+            final MethodDescription.InDefinedShape classForName = classType.getDeclaredMethods()
+                .filter(hasSignature(new MethodDescription.SignatureToken(
+                "forName",
+                    new TypeDescription.ForLoadedType(Class.class),
+                    new TypeDescription.ForLoadedType(String.class))))
+                .getOnly();
+            final MethodDescription.InDefinedShape classGetMethod = classType.getDeclaredMethods()
+                .filter(named("getMethod"))
+                .getOnly();
+            final MethodDescription.InDefinedShape methodInvoke = methodType.getDeclaredMethods()
+                .filter(named("invoke"))
+                .getOnly();
+            final MethodDescription.InDefinedShape numberIntValue =
+                numberType.getDeclaredMethods().filter(named("intValue")).getOnly();
+            final StackManipulation.Size operandStackSize = new StackManipulation.Compound(
+                new TextConstant(UNSAFE_CLASS.getName()),
+                MethodInvocation.invoke(classForName),
+                new TextConstant("arrayBaseOffset"),
+                ArrayFactory.forType(TypeDescription.Generic.OfNonGenericType.ForLoadedType.of(Class.class))
+                .withValues(List.of(ClassConstant.of(classType))),
+                MethodInvocation.invoke(classGetMethod),
+                MethodVariableAccess.REFERENCE.storeAt(1),
+
+                MethodVariableAccess.REFERENCE.loadFrom(1),
+                FieldAccess.forField(new FieldDescription.Latent(
+                implementationContext.getInstrumentedType(),
+                "UNSAFE",
+                ModifierContributor.Resolver.of(Ownership.STATIC, Visibility.PRIVATE, FieldManifestation.FINAL)
+                .resolve(),
+                TypeDescription.Generic.OfNonGenericType.ForLoadedType.of(UNSAFE_CLASS),
+                List.of())).read(),
+                ArrayFactory.forType(TypeDescription.Generic.OfNonGenericType.ForLoadedType.of(Object.class))
+                .withValues(List.of(MethodVariableAccess.REFERENCE.loadFrom(0))),
+                MethodInvocation.invoke(methodInvoke),
+                MethodVariableAccess.REFERENCE.storeAt(2),
+
+                MethodVariableAccess.REFERENCE.loadFrom(2),
+                TypeCasting.to(numberType),
+                MethodInvocation.invoke(numberIntValue),
+                MethodReturn.INTEGER
+            ).apply(methodVisitor, implementationContext);
+
+            return new Size(operandStackSize.getMaximalSize(), 3);
+        }
+    }
+
+
+    enum ArrayBasedOffsetImplementation implements Implementation
+    {
+        INSTANCE;
+
+        @Override
+        public @NotNull InstrumentedType prepare(final @NotNull InstrumentedType instrumentedType)
+        {
+            return instrumentedType;
+        }
+
+        @Override
+        public @NotNull ByteCodeAppender appender(final @NotNull Target implementationTarget)
+        {
+            return ArrayBasedOffsetByteCode.INSTANCE;
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -170,11 +252,20 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
         for (final MethodDescription.InDefinedShape method : staticMethods)
         {
             // Redefine existing method
-            newBuilder = newBuilder
-                .method(named(method.getName()))
-                .intercept(method.isStatic() ? MethodDelegation.to(unsafeType) :
-                    MethodDelegation.withDefaultConfiguration().filter(named(method.getName()))
-                        .toField(unsafeFieldName));
+            if (method.getName().equals("arrayBaseOffset"))
+            {
+                newBuilder = newBuilder
+                    .method(named("arrayBaseOffset"))
+                    .intercept(ArrayBasedOffsetImplementation.INSTANCE);
+            }
+            else
+            {
+                newBuilder = newBuilder
+                    .method(named(method.getName()))
+                    .intercept(method.isStatic() ? MethodDelegation.to(unsafeType) :
+                        MethodDelegation.withDefaultConfiguration().filter(named(method.getName()))
+                            .toField(unsafeFieldName));
+            }
         }
 
         return newBuilder;
