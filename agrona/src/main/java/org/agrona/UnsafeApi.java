@@ -26,6 +26,27 @@ public final class UnsafeApi
     {
     }
 
+    private static java.lang.invoke.CallSite bootstrapArrayBaseOffset(
+        final java.lang.invoke.MethodHandles.Lookup lookup,
+        final String methodName,
+        final java.lang.invoke.MethodType methodType) throws Throwable
+    {
+        final Class<?> clazz = methodType.parameterType(0);
+        final var method = clazz.getMethod("arrayBaseOffset", Class.class);
+        final var methodHandle = lookup.unreflect(method);
+        if (method.getReturnType() == int.class)
+        {
+            return new java.lang.invoke.ConstantCallSite(methodHandle);
+        }
+        else
+        {
+            final var intReturnType = methodHandle.type().changeReturnType(int.class);
+            final var castToIntMethodHandle =
+                java.lang.invoke.MethodHandles.explicitCastArguments(methodHandle, intReturnType);
+            return new java.lang.invoke.ConstantCallSite(castToIntMethodHandle);
+        }
+    }
+
     /**
      * See {@code jdk.internal.misc.Unsafe#addressSize}.
      * @return value
