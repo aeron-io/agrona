@@ -141,6 +141,24 @@ class AtomicBufferTest
 
     @ParameterizedTest
     @MethodSource("atomicBuffers")
+    void shouldCompareAndExchangeLongToNativeBuffer(final ByteBuffer buffer)
+    {
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(buffer);
+
+        buffer.putLong(INDEX, LONG_VALUE);
+
+        // success
+        assertEquals(LONG_VALUE, unsafeBuffer.compareAndExchangeLong(INDEX, LONG_VALUE, LONG_VALUE + 1));
+        assertEquals(LONG_VALUE + 1, unsafeBuffer.getLongVolatile(INDEX));
+
+        // failure
+        assertEquals(LONG_VALUE + 1,
+            unsafeBuffer.compareAndExchangeLong(INDEX, LONG_VALUE + 10, 21));
+        assertEquals(LONG_VALUE + 1, buffer.getLong(INDEX));
+    }
+
+    @ParameterizedTest
+    @MethodSource("atomicBuffers")
     void shouldGetAndSetLongToNativeBuffer(final ByteBuffer buffer)
     {
         final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(buffer);
@@ -249,6 +267,24 @@ class AtomicBufferTest
         assertTrue(unsafeBuffer.compareAndSetInt(INDEX, INT_VALUE, INT_VALUE + 1));
 
         assertThat(buffer.getInt(INDEX), is(INT_VALUE + 1));
+    }
+
+    @ParameterizedTest
+    @MethodSource("atomicBuffers")
+    void shouldCompareAndExchangeIntToNativeBuffer(final ByteBuffer buffer)
+    {
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(buffer);
+
+        buffer.putInt(INDEX, INT_VALUE);
+
+        // success
+        assertEquals(INT_VALUE, unsafeBuffer.compareAndExchangeInt(INDEX, INT_VALUE, INT_VALUE + 1));
+        assertEquals(INT_VALUE + 1, unsafeBuffer.getIntVolatile(INDEX));
+
+        // failure
+        assertEquals(INT_VALUE + 1,
+            unsafeBuffer.compareAndExchangeInt(INDEX, INT_VALUE + 10, 21));
+        assertEquals(INT_VALUE + 1, buffer.getInt(INDEX));
     }
 
     @ParameterizedTest

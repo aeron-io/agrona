@@ -219,6 +219,19 @@ public interface AtomicBuffer extends MutableDirectBuffer
     boolean compareAndSetLong(int index, long expectedValue, long updateValue);
 
     /**
+     * Atomic compare and exchange of a long given an expected value.
+     * <p>
+     * This call has sequential-consistent semantics.
+     *
+     * @param index         in bytes for where to put.
+     * @param expectedValue at to be compared.
+     * @param updateValue   to be exchanged.
+     * @return the old value no matter if the expected value was found.
+     * @since 2.1.0
+     */
+    long compareAndExchangeLong(int index, long expectedValue, long updateValue);
+
+    /**
      * Atomically exchange a value at a location returning the previous contents.
      * <p>
      * This call has sequential-consistent semantics.
@@ -358,6 +371,20 @@ public interface AtomicBuffer extends MutableDirectBuffer
      * @return successful or not.
      */
     boolean compareAndSetInt(int index, int expectedValue, int updateValue);
+
+    /**
+     * Atomic compare and exchange of a int given an expected value.
+     * <p>
+     * This call has sequential-consistent semantics.
+     *
+     * @param index         in bytes for where to put.
+     * @param expectedValue at to be compared.
+     * @param updateValue   to be exchanged.
+     * @return the old value no matter if the expected value was found.
+     * @since 2.1.0
+     */
+    int compareAndExchangeInt(int index, int expectedValue, int updateValue);
+
 
     /**
      * Atomically exchange a value at a location returning the previous contents.

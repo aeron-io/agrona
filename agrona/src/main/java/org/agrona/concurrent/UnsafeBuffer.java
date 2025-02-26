@@ -511,6 +511,20 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    public long compareAndExchangeLong(final int index, final long expectedValue, final long updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_LONG);
+        }
+
+        return UnsafeApi.compareAndExchangeLong(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
     public long getAndSetLong(final int index, final long value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -669,6 +683,19 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
         }
 
         return UnsafeApi.compareAndSetInt(byteArray, addressOffset + index, expectedValue, updateValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int compareAndExchangeInt(final int index, final int expectedValue, final int updateValue)
+    {
+        if (SHOULD_BOUNDS_CHECK)
+        {
+            boundsCheck0(index, SIZE_OF_INT);
+        }
+
+        return UnsafeApi.compareAndExchangeInt(byteArray, addressOffset + index, expectedValue, updateValue);
     }
 
     /**
