@@ -1,7 +1,7 @@
 [versions]
 bnd = "7.1.0"
 byteBuddy = "1.17.2"
-checkstyle = "10.21.3"
+checkstyle = "10.21.4"
 commons-codec = "1.15"
 commons-lang3 = "3.8.1"
 findbugs = "3.0.1"
