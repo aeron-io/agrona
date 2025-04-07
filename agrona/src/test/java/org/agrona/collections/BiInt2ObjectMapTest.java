@@ -192,9 +192,9 @@ class BiInt2ObjectMapTest
 
     static final class EntryCapture<V>
     {
-        public final int keyPartA;
-        public final int keyPartB;
-        public final V value;
+        final int keyPartA;
+        final int keyPartB;
+        final V value;
 
         EntryCapture(final int keyPartA, final int keyPartB, final V value)
         {
