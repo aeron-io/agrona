@@ -22,6 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,21 +31,22 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MarkFileTest
 {
     @TempDir
-    File serviceDirectory;
+    File tempDir;
     @TempDir
-    File alternativeDirectory;
+    File otherTempDir;
 
     @Test
     void shouldWaitForMarkFileToContainEnoughDataForVersionCheck() throws IOException
     {
         final String filename = "markfile.dat";
-        final Path markFilePath = serviceDirectory.toPath().resolve(filename);
+        final Path markFilePath = tempDir.toPath().resolve(filename);
         Files.createFile(markFilePath);
 
         try (FileChannel channel = FileChannel.open(markFilePath, StandardOpenOption.WRITE))
@@ -53,17 +55,17 @@ class MarkFileTest
         }
 
         assertThrows(IllegalStateException.class,
-            () -> new MarkFile(serviceDirectory, filename, 0, 16, 10, new SystemEpochClock(), (v) -> {}, (msg) -> {}));
+            () -> new MarkFile(tempDir, filename, 0, 16, 10, new SystemEpochClock(), (v) -> {}, (msg) -> {}));
     }
 
     @Test
     void shouldCreateLinkFileIfFileInDifferentLocation() throws IOException
     {
         final String linkFilename = "markfile.lnk";
-        final File markFileLocation = new File(alternativeDirectory, "markfile.dat");
+        final File markFileLocation = new File(otherTempDir, "markfile.dat");
 
-        MarkFile.ensureMarkFileLink(serviceDirectory, markFileLocation, linkFilename);
-        final File linkFileLocation = new File(serviceDirectory, linkFilename);
+        MarkFile.ensureMarkFileLink(tempDir, markFileLocation, linkFilename);
+        final File linkFileLocation = new File(tempDir, linkFilename);
         assertTrue(linkFileLocation.exists());
         final List<String> strings = Files.readAllLines(linkFileLocation.toPath());
         assertEquals(1, strings.size());
@@ -74,13 +76,62 @@ class MarkFileTest
     void shouldRemoveLinkFileIfMarkFileIsInServiceDirectory() throws IOException
     {
         final String linkFilename = "markfile.lnk";
-        final File markFileLocation = new File(serviceDirectory, "markfile.dat");
-        final File linkFileLocation = new File(serviceDirectory, linkFilename);
+        final File markFileLocation = new File(tempDir, "markfile.dat");
+        final File linkFileLocation = new File(tempDir, linkFilename);
 
         assertTrue(linkFileLocation.createNewFile());
         assertTrue(linkFileLocation.exists());
 
-        MarkFile.ensureMarkFileLink(serviceDirectory, markFileLocation, linkFilename);
+        MarkFile.ensureMarkFileLink(tempDir, markFileLocation, linkFilename);
         assertFalse(linkFileLocation.exists());
+    }
+
+    @Test
+    void shouldMapNewFile()
+    {
+        final File file = new File(tempDir, "new.file");
+
+        final int totalFileLength = 123000;
+        final MappedByteBuffer mappedByteBuffer = MarkFile.mapNewOrExistingMarkFile(
+            file,
+            false,
+            0,
+            8,
+            totalFileLength,
+            1000,
+            SystemEpochClock.INSTANCE,
+            (version) -> {},
+            (msg) -> {});
+
+        assertNotNull(mappedByteBuffer);
+        assertTrue(file.exists());
+        assertEquals(totalFileLength, file.length());
+        BufferUtil.free(mappedByteBuffer);
+    }
+
+    @Test
+    void shouldMapAndResizeExistingFile() throws IOException
+    {
+        final File file = new File(tempDir, "existing.file");
+        Files.createFile(file.toPath());
+        assertTrue(file.exists());
+        assertEquals(0, file.length());
+
+        final int totalFileLength = 256 * 1024;
+        final MappedByteBuffer mappedByteBuffer = MarkFile.mapNewOrExistingMarkFile(
+            file,
+            false,
+            0,
+            8,
+            totalFileLength,
+            1000,
+            SystemEpochClock.INSTANCE,
+            (version) -> {},
+            (msg) -> {});
+
+        assertNotNull(mappedByteBuffer);
+        assertTrue(file.exists());
+        assertEquals(totalFileLength, file.length());
+        BufferUtil.free(mappedByteBuffer);
     }
 }
