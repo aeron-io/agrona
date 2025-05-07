@@ -20,9 +20,11 @@ import org.agrona.concurrent.AtomicBuffer;
 import org.agrona.concurrent.CachedEpochClock;
 import org.agrona.concurrent.EpochClock;
 import org.agrona.concurrent.UnsafeBuffer;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
@@ -30,9 +32,29 @@ import org.mockito.InOrder;
 import java.io.PrintWriter;
 
 import static java.nio.ByteBuffer.allocateDirect;
-import static org.agrona.concurrent.errors.DistinctErrorLog.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.agrona.concurrent.errors.DistinctErrorLog.DistinctObservation;
+import static org.agrona.concurrent.errors.DistinctErrorLog.ENCODED_ERROR_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.FIRST_OBSERVATION_TIMESTAMP_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.INSUFFICIENT_SPACE;
+import static org.agrona.concurrent.errors.DistinctErrorLog.LAST_OBSERVATION_TIMESTAMP_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.LENGTH_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.OBSERVATION_COUNT_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.RECORD_ALIGNMENT;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 class DistinctErrorLogTest
 {
@@ -276,6 +298,60 @@ class DistinctErrorLogTest
             "2,10,20,org.agrona.concurrent.errors.DistinctErrorLogTest$TestEvent: event one" + System.lineSeparator() +
             "1,30,30,org.agrona.concurrent.errors.DistinctErrorLogTest$TestEvent: event two" + System.lineSeparator();
         assertEquals(expectedOutput, sb.toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "1024,1024", "1000,1024", "32,48", "2147483647,2147483647", "2147483623,2147483647" })
+    void shouldReportInsufficientSpaceIfNextOffsetPointsBeyondTheBufferEnd(final int nextOffset, final int capacity)
+    {
+        final AtomicBuffer buffer = mock(AtomicBuffer.class);
+        when(buffer.capacity()).thenReturn(capacity);
+        final DistinctErrorLog distinctErrorLog = new DistinctErrorLog(buffer, clock);
+        distinctErrorLog.nextOffset = nextOffset;
+
+        assertSame(INSUFFICIENT_SPACE, distinctErrorLog.newObservation(100, new Exception("test")));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "0,1024", "2147480000,2147483647" })
+    void shouldReportInsufficientSpaceIfExceptionDoesNotFitIntoTheEndOfTheBuffer(
+        final int nextOffset, final int capacity)
+    {
+        final AtomicBuffer buffer = mock(AtomicBuffer.class);
+        when(buffer.capacity()).thenReturn(capacity);
+        final DistinctErrorLog distinctErrorLog = new DistinctErrorLog(buffer, clock);
+        distinctErrorLog.nextOffset = nextOffset;
+
+        assertSame(INSUFFICIENT_SPACE, distinctErrorLog.newObservation(100, new Exception("test")));
+    }
+
+    @Test
+    void shouldWriteErrorAtEndOfTheBuffer()
+    {
+        final IllegalStateException exception = new IllegalStateException("my exception");
+        final byte[] encodedError = log.encodedError(exception);
+        final int encodedErrorLength = encodedError.length;
+        final int offset = 1024;
+        final long timestamp = 742394728347923L;
+
+        final AtomicBuffer buffer = mock(AtomicBuffer.class);
+        when(buffer.capacity()).thenReturn(offset + encodedErrorLength + ENCODED_ERROR_OFFSET);
+        final DistinctErrorLog distinctErrorLog = new DistinctErrorLog(buffer, clock);
+        distinctErrorLog.nextOffset = offset;
+
+        final DistinctObservation observation = distinctErrorLog.newObservation(timestamp, exception);
+        assertNotNull(observation);
+        assertEquals(offset, observation.offset());
+        assertEquals(exception, observation.throwable());
+
+        assertEquals(
+            distinctErrorLog.nextOffset,
+            BitUtil.align(offset + ENCODED_ERROR_OFFSET + encodedErrorLength, RECORD_ALIGNMENT));
+        assertThat(distinctErrorLog.nextOffset, Matchers.greaterThan(buffer.capacity()));
+
+        final InOrder inOrder = inOrder(buffer);
+        inOrder.verify(buffer).putBytes(eq(offset + ENCODED_ERROR_OFFSET), eq(encodedError));
+        inOrder.verify(buffer).putLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET, timestamp);
     }
 
     static class TestEvent extends RuntimeException

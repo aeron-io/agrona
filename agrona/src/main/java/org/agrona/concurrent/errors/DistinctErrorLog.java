@@ -59,7 +59,7 @@ import static org.agrona.BitUtil.align;
  *  +---------------------------------------------------------------+
  * </pre>
  */
-public class DistinctErrorLog
+public final class DistinctErrorLog
 {
     /**
      * Offset within a record at which the length field begins.
@@ -91,13 +91,13 @@ public class DistinctErrorLog
      */
     public static final int RECORD_ALIGNMENT = SIZE_OF_LONG;
 
-    private static final DistinctObservation INSUFFICIENT_SPACE = new DistinctObservation(null, 0);
+    static final DistinctObservation INSUFFICIENT_SPACE = new DistinctObservation(null, 0);
 
-    private int nextOffset = 0;
     private final EpochClock clock;
     private final AtomicBuffer buffer;
     private final Charset charset;
     private DistinctObservation[] distinctObservations = new DistinctObservation[0];
+    int nextOffset = 0;
 
     /**
      * Create a new error log that will be written to a provided {@link AtomicBuffer}.
@@ -152,10 +152,10 @@ public class DistinctErrorLog
      * then a new entry will be created. For subsequent observations of the same error type and stack trace a
      * counter and time of last observation will be updated.
      *
-     * @param observation to be logged as an error observation.
+     * @param exception to be logged as an error observation.
      * @return true if successfully logged otherwise false if insufficient space remaining in the log.
      */
-    public boolean record(final Throwable observation)
+    public boolean record(final Throwable exception)
     {
         final long timestampMs;
         DistinctObservation distinctObservation;
@@ -163,11 +163,11 @@ public class DistinctErrorLog
         timestampMs = clock.time();
         synchronized (this)
         {
-            distinctObservation = find(distinctObservations, observation);
+            distinctObservation = find(distinctObservations, exception);
 
             if (null == distinctObservation)
             {
-                distinctObservation = newObservation(timestampMs, observation);
+                distinctObservation = newObservation(timestampMs, exception);
                 if (INSUFFICIENT_SPACE == distinctObservation)
                 {
                     return false;
@@ -183,13 +183,13 @@ public class DistinctErrorLog
     }
 
     private static DistinctObservation find(
-        final DistinctObservation[] existingObservations, final Throwable observation)
+        final DistinctObservation[] existingObservations, final Throwable exception)
     {
         DistinctObservation existingObservation = null;
 
         for (final DistinctObservation o : existingObservations)
         {
-            if (equals(o.throwable, observation))
+            if (equals(o.throwable, exception))
             {
                 existingObservation = o;
                 break;
@@ -254,21 +254,19 @@ public class DistinctErrorLog
         return true;
     }
 
-    private DistinctObservation newObservation(final long timestampMs, final Throwable observation)
+    DistinctObservation newObservation(final long timestampMs, final Throwable exception)
     {
         final int offset = nextOffset;
-        if ((offset + ENCODED_ERROR_OFFSET) >= buffer.capacity())
+        if ((buffer.capacity() - ENCODED_ERROR_OFFSET - offset) <= 0)
         {
             return INSUFFICIENT_SPACE;
         }
 
-        final StringWriter stringWriter = new StringWriter();
-        observation.printStackTrace(new PrintWriter(stringWriter));
-        final byte[] encodedError = stringWriter.toString().getBytes(charset);
+        final byte[] encodedError = encodedError(exception);
 
         final int length = ENCODED_ERROR_OFFSET + encodedError.length;
 
-        if ((offset + length) > buffer.capacity())
+        if ((buffer.capacity() - offset - length) < 0)
         {
             return INSUFFICIENT_SPACE;
         }
@@ -277,11 +275,18 @@ public class DistinctErrorLog
         buffer.putLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET, timestampMs);
         nextOffset = align(offset + length, RECORD_ALIGNMENT);
 
-        final DistinctObservation distinctObservation = new DistinctObservation(observation, offset);
+        final DistinctObservation distinctObservation = new DistinctObservation(exception, offset);
         distinctObservations = prepend(distinctObservations, distinctObservation);
         buffer.putIntRelease(offset + LENGTH_OFFSET, length);
 
         return distinctObservation;
+    }
+
+    byte[] encodedError(final Throwable observation)
+    {
+        final StringWriter stringWriter = new StringWriter();
+        observation.printStackTrace(new PrintWriter(stringWriter));
+        return stringWriter.toString().getBytes(charset);
     }
 
     private static DistinctObservation[] prepend(
@@ -296,15 +301,7 @@ public class DistinctErrorLog
         return newObservations;
     }
 
-    static final class DistinctObservation
+    record DistinctObservation(Throwable throwable, int offset)
     {
-        final Throwable throwable;
-        final int offset;
-
-        DistinctObservation(final Throwable throwable, final int offset)
-        {
-            this.throwable = throwable;
-            this.offset = offset;
-        }
     }
 }
