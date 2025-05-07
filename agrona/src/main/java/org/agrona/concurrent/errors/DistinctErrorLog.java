@@ -257,20 +257,24 @@ public final class DistinctErrorLog
     DistinctObservation newObservation(final long timestampMs, final Throwable exception)
     {
         final int offset = nextOffset;
-        if ((buffer.capacity() - ENCODED_ERROR_OFFSET - offset) <= 0)
+        if (offset < 0) // handle overflow case
+        {
+            return INSUFFICIENT_SPACE;
+        }
+
+        final int remainingCapacity = buffer.capacity() - ENCODED_ERROR_OFFSET - offset;
+        if (remainingCapacity <= 0)
         {
             return INSUFFICIENT_SPACE;
         }
 
         final byte[] encodedError = encodedError(exception);
-
-        final int length = ENCODED_ERROR_OFFSET + encodedError.length;
-
-        if ((buffer.capacity() - offset - length) < 0)
+        if (remainingCapacity - encodedError.length < 0)
         {
             return INSUFFICIENT_SPACE;
         }
 
+        final int length = ENCODED_ERROR_OFFSET + encodedError.length;
         buffer.putBytes(offset + ENCODED_ERROR_OFFSET, encodedError);
         buffer.putLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET, timestampMs);
         nextOffset = align(offset + length, RECORD_ALIGNMENT);

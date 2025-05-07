@@ -44,6 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -301,7 +302,7 @@ class DistinctErrorLogTest
     }
 
     @ParameterizedTest
-    @CsvSource({ "1024,1024", "1000,1024", "32,48", "2147483647,2147483647", "2147483623,2147483647" })
+    @CsvSource({ "-1,1000000", "1024,1024", "1000,1024", "32,48", "2147483647,2147483647", "2147483623,2147483647" })
     void shouldReportInsufficientSpaceIfNextOffsetPointsBeyondTheBufferEnd(final int nextOffset, final int capacity)
     {
         final AtomicBuffer buffer = mock(AtomicBuffer.class);
@@ -330,28 +331,57 @@ class DistinctErrorLogTest
     {
         final IllegalStateException exception = new IllegalStateException("my exception");
         final byte[] encodedError = log.encodedError(exception);
-        final int encodedErrorLength = encodedError.length;
+        final int length = encodedError.length + ENCODED_ERROR_OFFSET;
         final int offset = 1024;
         final long timestamp = 742394728347923L;
 
         final AtomicBuffer buffer = mock(AtomicBuffer.class);
-        when(buffer.capacity()).thenReturn(offset + encodedErrorLength + ENCODED_ERROR_OFFSET);
+        when(buffer.capacity()).thenReturn(offset + length);
         final DistinctErrorLog distinctErrorLog = new DistinctErrorLog(buffer, clock);
         distinctErrorLog.nextOffset = offset;
 
         final DistinctObservation observation = distinctErrorLog.newObservation(timestamp, exception);
+        assertNotSame(INSUFFICIENT_SPACE, observation);
         assertNotNull(observation);
         assertEquals(offset, observation.offset());
         assertEquals(exception, observation.throwable());
 
-        assertEquals(
-            distinctErrorLog.nextOffset,
-            BitUtil.align(offset + ENCODED_ERROR_OFFSET + encodedErrorLength, RECORD_ALIGNMENT));
+        assertEquals(distinctErrorLog.nextOffset, BitUtil.align(offset + length, RECORD_ALIGNMENT));
         assertThat(distinctErrorLog.nextOffset, Matchers.greaterThan(buffer.capacity()));
 
         final InOrder inOrder = inOrder(buffer);
         inOrder.verify(buffer).putBytes(eq(offset + ENCODED_ERROR_OFFSET), eq(encodedError));
         inOrder.verify(buffer).putLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET, timestamp);
+        inOrder.verify(buffer).putIntRelease(offset + LENGTH_OFFSET, length);
+    }
+
+    @Test
+    void shouldWriteErrorAtEndOfTheBufferWithMaxIntCapacity()
+    {
+        final IllegalStateException exception = new IllegalStateException("my exception");
+        final byte[] encodedError = log.encodedError(exception);
+        final int length = encodedError.length + ENCODED_ERROR_OFFSET;
+        final int offset = BitUtil.align(Integer.MAX_VALUE - length, RECORD_ALIGNMENT) - RECORD_ALIGNMENT;
+        final long timestamp = 742394728347923L;
+
+        final AtomicBuffer buffer = mock(AtomicBuffer.class);
+        when(buffer.capacity()).thenReturn(Integer.MAX_VALUE);
+        final DistinctErrorLog distinctErrorLog = new DistinctErrorLog(buffer, clock);
+        distinctErrorLog.nextOffset = offset;
+
+        final DistinctObservation observation = distinctErrorLog.newObservation(timestamp, exception);
+        assertNotSame(INSUFFICIENT_SPACE, observation);
+        assertNotNull(observation);
+        assertEquals(offset, observation.offset());
+        assertEquals(exception, observation.throwable());
+
+        assertEquals(distinctErrorLog.nextOffset, BitUtil.align(offset + length, RECORD_ALIGNMENT));
+        assertThat(distinctErrorLog.nextOffset, Matchers.lessThan(0));
+
+        final InOrder inOrder = inOrder(buffer);
+        inOrder.verify(buffer).putBytes(eq(offset + ENCODED_ERROR_OFFSET), eq(encodedError));
+        inOrder.verify(buffer).putLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET, timestamp);
+        inOrder.verify(buffer).putIntRelease(offset + LENGTH_OFFSET, length);
     }
 
     static class TestEvent extends RuntimeException
