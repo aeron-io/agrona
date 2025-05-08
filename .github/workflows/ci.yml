@@ -100,6 +100,7 @@ jobs:
       - name: Setup BUILD_JAVA_HOME & BUILD_JAVA_VERSION (Linux/macOS)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         run: |
+          tree ${JAVA_HOME}
           ${JAVA_HOME}/bin/java -Xinternalversion
           echo "BUILD_JAVA_HOME=${JAVA_HOME}" >> $GITHUB_ENV
           echo "BUILD_JAVA_VERSION=${{ matrix.java }}" >> $GITHUB_ENV
