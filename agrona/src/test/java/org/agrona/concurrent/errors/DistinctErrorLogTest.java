@@ -358,10 +358,14 @@ class DistinctErrorLogTest
     @Test
     void shouldWriteErrorAtEndOfTheBufferWithMaxIntCapacity()
     {
-        final IllegalStateException exception = new IllegalStateException("my exception");
+        final Exception exception = new RuntimeException(new IllegalStateException("my exception"));
         final byte[] encodedError = log.encodedError(exception);
         final int length = encodedError.length + ENCODED_ERROR_OFFSET;
         final int offset = BitUtil.align(Integer.MAX_VALUE - length, RECORD_ALIGNMENT) - RECORD_ALIGNMENT;
+        assertThat(
+            "math does not work: offset=" + offset + ", length=" + length,
+            BitUtil.align(offset + length, RECORD_ALIGNMENT),
+            Matchers.lessThan(0));
         final long timestamp = 742394728347923L;
 
         final AtomicBuffer buffer = mock(AtomicBuffer.class);
