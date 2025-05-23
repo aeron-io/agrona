@@ -123,6 +123,16 @@ public final class SystemUtil
     }
 
     /**
+     * Is the operating system likely to be macOS based on {@link #osName()}.
+     *
+     * @return {@code true} if the operating system is likely to be macOS based on {@link #osName()}.
+     */
+    public static boolean isMac()
+    {
+        return OS_NAME.startsWith("mac");
+    }
+
+    /**
      * Is the operating system architecture ({@link #osArch()}) represents an x86-based system.
      *
      * @return {@code true} if the operating system architecture represents an x86-based system.

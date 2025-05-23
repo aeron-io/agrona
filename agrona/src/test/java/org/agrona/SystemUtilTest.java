@@ -232,20 +232,23 @@ class SystemUtilTest
     {
         assertTrue(SystemUtil.isLinux());
         assertFalse(SystemUtil.isWindows());
+        assertFalse(SystemUtil.isMac());
     }
 
     @Test
     @EnabledOnOs(OS.WINDOWS)
     void isWindowsReturnsTrueForWindows()
     {
-        assertFalse(SystemUtil.isLinux());
         assertTrue(SystemUtil.isWindows());
+        assertFalse(SystemUtil.isLinux());
+        assertFalse(SystemUtil.isMac());
     }
 
     @Test
     @EnabledOnOs(OS.MAC)
-    void onMacOsChecksReturnFalse()
+    void isMacOsReturnsTrueForMacBasedSystems()
     {
+        assertTrue(SystemUtil.isMac());
         assertFalse(SystemUtil.isLinux());
         assertFalse(SystemUtil.isWindows());
     }
