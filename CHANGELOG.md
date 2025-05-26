@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.2.0] - 2025-05-26
+### Changed
+* Protect against numeric overflow when recording errors at the end of the large buffer.
+* **CI:** Use `gradle/actions/setup-gradle` action for caching Gradle dependencies.
+* **CI:** Enable JDK 24 GA build.
+* Bump `Gradle` to 8.14.1.
+* Bump `Checkstyle` to 10.24.0.
+* Bump `ByteBuddy` to 1.17.5.
+* Bump `Shadow` to 8.3.6.
+* Bump `JUnit` to 5.12.2.
+* Bump `Mockito` to 5.18.0.
+* Bump `Guava TestLib` to 33.4.8-jre.
+
+### Added
+* Add `SystemUtil#isMac` method.
+* Add tests for file mapping.
+
 ## [2.1.0] - 2025-02-26
 ### Changed
 * Move `get` method declaration to the `ReadablePosition` class. ([eb3b7d284d](https://github.com/aeron-io/agrona/commit/eb3b7d284dcbb4c5f15ae70db0fe3d920d841588))
@@ -74,6 +91,7 @@
 * Stop allocating on addAll / removeAll on ObjectHashSet. ([#308](https://github.com/aeron-io/agrona/pull/308))
 * Run `Mockito` as Java agent to avoid warning on JDK 21+.
 
+[2.2.0]: https://github.com/aeron-io/agrona/releases/tag/2.2.0
 [2.1.0]: https://github.com/aeron-io/agrona/releases/tag/2.1.0
 [2.0.1]: https://github.com/aeron-io/agrona/releases/tag/2.0.1
 [2.0.0]: https://github.com/aeron-io/agrona/releases/tag/2.0.0
