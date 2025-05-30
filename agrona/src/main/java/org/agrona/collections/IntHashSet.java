@@ -592,8 +592,14 @@ public class IntHashSet extends AbstractSet<Integer>
 
         if (removed && sizeOfArrayValues > 0)
         {
-            @DoNotSub final int newCapacity =
-                Math.max(DEFAULT_INITIAL_CAPACITY, findNextPositivePowerOfTwo(sizeOfArrayValues));
+            @DoNotSub int proposedCapacity = findNextPositivePowerOfTwo(sizeOfArrayValues);
+
+            if (proposedCapacity == sizeOfArrayValues)
+            {
+                proposedCapacity = findNextPositivePowerOfTwo(sizeOfArrayValues + 1);
+            }
+
+            @DoNotSub final int newCapacity = Math.max(DEFAULT_INITIAL_CAPACITY, proposedCapacity);
             rehash(newCapacity);
         }
 
@@ -630,8 +636,14 @@ public class IntHashSet extends AbstractSet<Integer>
 
         if (removed && sizeOfArrayValues > 0)
         {
-            @DoNotSub final int newCapacity =
-                Math.max(DEFAULT_INITIAL_CAPACITY, findNextPositivePowerOfTwo(sizeOfArrayValues));
+            @DoNotSub int proposedCapacity = findNextPositivePowerOfTwo(sizeOfArrayValues);
+
+            if (proposedCapacity == sizeOfArrayValues)
+            {
+                proposedCapacity = findNextPositivePowerOfTwo(sizeOfArrayValues + 1);
+            }
+
+            @DoNotSub final int newCapacity = Math.max(DEFAULT_INITIAL_CAPACITY, proposedCapacity);
             rehash(newCapacity);
         }
 
