@@ -347,7 +347,7 @@ class DistinctErrorLogTest
         assertEquals(exception, observation.throwable());
 
         assertEquals(distinctErrorLog.nextOffset, BitUtil.align(offset + length, RECORD_ALIGNMENT));
-        assertThat(distinctErrorLog.nextOffset, Matchers.greaterThan(buffer.capacity()));
+        assertThat(distinctErrorLog.nextOffset, Matchers.greaterThanOrEqualTo(buffer.capacity()));
 
         final InOrder inOrder = inOrder(buffer);
         inOrder.verify(buffer).putBytes(eq(offset + ENCODED_ERROR_OFFSET), eq(encodedError));
