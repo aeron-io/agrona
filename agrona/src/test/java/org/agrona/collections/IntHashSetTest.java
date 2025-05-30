@@ -15,6 +15,7 @@
  */
 package org.agrona.collections;
 
+import org.agrona.BitUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -1072,6 +1073,39 @@ class IntHashSetTest
         assertTrue(testSet.contains(42));
         assertTrue(testSet.contains(500));
         assertFalse(testSet.contains(MISSING_VALUE));
+    }
+
+    @Test
+    public void retainAllRemovesNonMissingValuesLeavingCollectionSizedAsPowerOfTwo()
+    {
+        testSet.addAll(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        assertEquals(BitUtil.findNextPositivePowerOfTwo(INITIAL_CAPACITY), testSet.capacity());
+
+        final IntHashSet coll = new IntHashSet();
+        coll.addAll(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8));
+
+        testSet.retainAll(coll);
+        assertEquals(8, testSet.size());
+
+        assertTrue(testSet.capacity() > testSet.size());
+        // testSet.contains(9) (or any value not in testSet) would loop forever, because
+        // testSet.capacity() has been reduced such that there is no space for a sentinel missing value.
+    }
+
+    @Test
+    public void retainAllWithCollectionRemovesNonMissingValuesLeavingCollectionSizedAsPowerOfTwo()
+    {
+        testSet.addAll(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        assertEquals(BitUtil.findNextPositivePowerOfTwo(INITIAL_CAPACITY), testSet.capacity());
+
+        final List<Integer> coll = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8);
+
+        testSet.retainAll(coll);
+        assertEquals(8, testSet.size());
+
+        assertTrue(testSet.capacity() > testSet.size());
+        // testSet.contains(9) (or any value not in testSet) would loop forever, because
+        // testSet.capacity() has been reduced such that there is no space for a sentinel missing value.
     }
 
     @Test
