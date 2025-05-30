@@ -356,14 +356,15 @@ class DistinctErrorLogTest
     }
 
     @Test
-    void shouldWriteErrorAtEndOfTheBufferWithMaxIntCapacity()
+    void shouldWriteErrorAtEndOfTheBufferWithNextOffsetOverflow()
     {
         final Exception exception = new IllegalStateException("my exception");
         final byte[] encodedError = log.encodedError(exception);
         final int length = encodedError.length + ENCODED_ERROR_OFFSET;
-        final int endOffset = Integer.MAX_VALUE - length;
-        final int offset = BitUtil.isAligned(endOffset, RECORD_ALIGNMENT) ? endOffset :
-            BitUtil.align(endOffset, RECORD_ALIGNMENT) - RECORD_ALIGNMENT;
+        final int endOffset = Integer.MAX_VALUE - 1 - length;
+        final int offset = 1 + (BitUtil.isAligned(endOffset, RECORD_ALIGNMENT) ? endOffset :
+            BitUtil.align(endOffset, RECORD_ALIGNMENT) - RECORD_ALIGNMENT);
+        assertThat(offset + length, Matchers.greaterThan(0));
         assertThat(
             BitUtil.align(offset + length, RECORD_ALIGNMENT),
             Matchers.lessThan(0));
