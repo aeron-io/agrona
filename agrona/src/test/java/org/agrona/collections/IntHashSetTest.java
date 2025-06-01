@@ -36,10 +36,23 @@ import java.util.function.Predicate;
 
 import static org.agrona.collections.IntHashSet.MISSING_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 class IntHashSetTest
 {
@@ -77,8 +90,10 @@ class IntHashSetTest
     void addingAnElementTwiceDoesNothing()
     {
         assertTrue(testSet.add(1));
+        assertEquals(1, testSet.size());
 
         assertFalse(testSet.add(1));
+        assertEquals(1, testSet.size());
     }
 
     @Test
@@ -105,6 +120,7 @@ class IntHashSetTest
         assertTrue(testSet.remove(1));
 
         assertFalse(testSet.contains(1));
+        assertEquals(0, testSet.size());
     }
 
     @Test
@@ -1313,6 +1329,84 @@ class IntHashSetTest
         assertTrue(set.removeIf(i -> true));
 
         assertEquals(0, set.size());
+    }
+
+    @Test
+    public void removeIfInt()
+    {
+        final IntHashSet set = new IntHashSet();
+        set.add(4);
+        set.add(5);
+        set.add(MISSING_VALUE);
+
+        assertTrue(set.removeIfInt(i -> 5 == i));
+
+        assertEquals(2, set.size());
+        assertFalse(set.contains(5));
+        assertTrue(set.contains(4));
+        assertTrue(set.contains(MISSING_VALUE));
+    }
+
+    @Test
+    public void removeIf()
+    {
+        final IntHashSet set = new IntHashSet();
+        set.add(4);
+        set.add(5);
+        set.add(MISSING_VALUE);
+
+        assertTrue(set.removeIf(i -> 5 == i));
+
+        assertEquals(2, set.size());
+        assertFalse(set.contains(5));
+        assertTrue(set.contains(4));
+        assertTrue(set.contains(MISSING_VALUE));
+    }
+
+    @Test
+    void retailAllIntHashSetWhenNumberOfRemainingElementsIsAPowerOfTwo()
+    {
+        final IntHashSet set = new IntHashSet(16, 0.9f, true);
+        set.addAll(List.of(3, 8, 13, 10, 17, 2, 18, 38, 7, 21, 16, 99));
+        assertEquals(12, set.size());
+        assertEquals(16, set.capacity());
+
+        final IntHashSet other = new IntHashSet();
+        other.addAll(List.of(8, 10, 2, 18, 7, 21, 16, 99));
+
+        assertTrue(set.retainAll(other));
+        assertEquals(8, set.size());
+        assertEquals(16, set.capacity());
+
+        other.forEachInt(v -> assertTrue(set.contains(v)));
+        assertFalse(set.contains(3));
+        assertFalse(set.contains(13));
+        assertFalse(set.contains(17));
+        assertFalse(set.contains(38));
+    }
+
+    @Test
+    void retailAllCollectionWhenNumberOfRemainingElementsIsAPowerOfTwo()
+    {
+        final IntHashSet set = new IntHashSet(16, 0.9f, true);
+        set.addAll(List.of(3, 8, 13, 10, 17, 2, 18, 38, 7, 21, 16, 99));
+        assertEquals(12, set.size());
+        assertEquals(16, set.capacity());
+
+        final List<Integer> other = List.of(8, 10, 2, 18, 7, 21, 16, 99);
+
+        assertTrue(set.retainAll(other));
+        assertEquals(8, set.size());
+        assertEquals(16, set.capacity());
+
+        for (final Integer v : other)
+        {
+            assertTrue(set.contains(v));
+        }
+        assertFalse(set.contains(3));
+        assertFalse(set.contains(13));
+        assertFalse(set.contains(17));
+        assertFalse(set.contains(38));
     }
 
     private static void addTwoElements(final IntHashSet obj)
