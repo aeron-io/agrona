@@ -29,7 +29,6 @@ import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 
 import static org.agrona.BitUtil.findNextPositivePowerOfTwo;
-import static org.agrona.BitUtil.isPowerOfTwo;
 import static org.agrona.collections.CollectionUtil.validateLoadFactor;
 
 /**
@@ -594,8 +593,8 @@ public class IntHashSet extends AbstractSet<Integer>
         if (removed && sizeOfArrayValues > 0)
         {
             @DoNotSub final int newCapacity =
-                Math.max(DEFAULT_INITIAL_CAPACITY, findNextPositivePowerOfTwo(
-                isPowerOfTwo(sizeOfArrayValues) ? sizeOfArrayValues + 1 : sizeOfArrayValues));
+                Math.max(DEFAULT_INITIAL_CAPACITY,
+                findNextPositivePowerOfTwo(Math.round(sizeOfArrayValues / loadFactor)));
             rehash(newCapacity);
         }
 
@@ -633,8 +632,8 @@ public class IntHashSet extends AbstractSet<Integer>
         if (removed && sizeOfArrayValues > 0)
         {
             @DoNotSub final int newCapacity =
-                Math.max(DEFAULT_INITIAL_CAPACITY, findNextPositivePowerOfTwo(
-                isPowerOfTwo(sizeOfArrayValues) ? sizeOfArrayValues + 1 : sizeOfArrayValues));
+                Math.max(DEFAULT_INITIAL_CAPACITY,
+                findNextPositivePowerOfTwo(Math.round(sizeOfArrayValues / loadFactor)));
             rehash(newCapacity);
         }
 
