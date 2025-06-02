@@ -1274,6 +1274,7 @@ class IntHashSetTest
             set1.add(ThreadLocalRandom.current().nextInt(10, Integer.MAX_VALUE));
         }
         set1.add(MISSING_VALUE);
+        final int actualCapacity = set1.capacity();
 
         final IntHashSet set2 = new IntHashSet();
         set2.add(8);
@@ -1284,6 +1285,7 @@ class IntHashSetTest
         assertEquals(1, set1.size());
         assertTrue(set1.contains(9));
         assertFalse(set1.contains(MISSING_VALUE));
+        assertEquals(actualCapacity, set1.capacity());
     }
 
     @ParameterizedTest
@@ -1297,6 +1299,7 @@ class IntHashSetTest
             set.add(ThreadLocalRandom.current().nextInt(10, Integer.MAX_VALUE));
         }
         set.add(MISSING_VALUE);
+        final int actualCapacity = set.capacity();
 
         final List<Integer> list = Arrays.asList(8, 9);
 
@@ -1305,6 +1308,7 @@ class IntHashSetTest
         assertEquals(1, set.size());
         assertTrue(set.contains(9));
         assertFalse(set.contains(MISSING_VALUE));
+        assertEquals(actualCapacity, set.capacity());
     }
 
     @Test
