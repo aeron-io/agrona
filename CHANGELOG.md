@@ -2,8 +2,8 @@
 
 ## [2.2.1] - 2025-06-02
 ### Changed
-* Bump `JUnit` to 5.13.0.
 * `IntHashSet#retainAll(Collection)` and `IntHashSet#retainAll(IntHashSet)` no longer change the capacity of the set.
+* Bump `JUnit` to 5.13.0.
 
 ### Fixed
 * Infinite loop in `IntHashSet` when `retainAll` leaves collections with a power of two number of elements.
