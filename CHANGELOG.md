@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.1] - 2025-06-02
+### Changed
+* Bump `JUnit` to 5.13.0.
+* `IntHashSet#retainAll(Collection)` and `IntHashSet#retainAll(IntHashSet)` no longer change the capacity of the set.
+
+### Fixed
+* Infinite loop in `IntHashSet` when `retainAll` leaves collections with a power of two number of elements.
+
 ## [2.2.0] - 2025-05-26
 ### Changed
 * Protect against numeric overflow when recording errors at the end of the large buffer.
