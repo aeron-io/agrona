@@ -72,10 +72,10 @@ def getConfigProperty(final String projectPropertyName, final String envVarName)
 ext {
     isReleaseVersion = !agronaVersion.endsWith('-SNAPSHOT')
 
-    ossrhReleasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-    ossrhSnapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-    ossrhUsername = getConfigProperty('ossrhUsername', 'OSSRH_USERNAME')
-    ossrhPassword = getConfigProperty('ossrhPassword', 'OSSRH_PASSWORD')
+    sonatypeCentralPortalReleasesRepoUrl = 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/'
+    sonatypeCentralPortalSnapshotsRepoUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+    sonatypeCentralPortalUsername = getConfigProperty('sonatypeCentralPortalUsername', 'SONATYPE_CENTRAL_PORTAL_USERNAME')
+    sonatypeCentralPortalPassword = getConfigProperty('sonatypeCentralPortalPassword', 'SONATYPE_CENTRAL_PORTAL_PASSWORD')
 
     signingKey = getConfigProperty('signingKey', 'SIGNING_GPG_SECRET_KEY')         // NOTE: ASCII armored secret key
     signingPassword = getConfigProperty('signingPassword', 'SIGNING_GPG_PASSWORD') // NOTE: Plain text
@@ -357,11 +357,10 @@ project(':agrona') {
 
         repositories {
             maven {
-                name = 'MavenCentral'
-                url = !isReleaseVersion ? ossrhSnapshotsRepoUrl : ossrhReleasesRepoUrl
+                url = !isReleaseVersion ? sonatypeCentralPortalSnapshotsRepoUrl : sonatypeCentralPortalReleasesRepoUrl
                 credentials {
-                    username = ossrhUsername
-                    password = ossrhPassword
+                    username = sonatypeCentralPortalUsername
+                    password = sonatypeCentralPortalPassword
                 }
             }
         }
@@ -443,11 +442,10 @@ project(':agrona-agent') {
         }
         repositories {
             maven {
-                name = 'MavenCentral'
-                url = !isReleaseVersion ? ossrhSnapshotsRepoUrl : ossrhReleasesRepoUrl
+                url = !isReleaseVersion ? sonatypeCentralPortalSnapshotsRepoUrl : sonatypeCentralPortalReleasesRepoUrl
                 credentials {
-                    username = ossrhUsername
-                    password = ossrhPassword
+                    username = sonatypeCentralPortalUsername
+                    password = sonatypeCentralPortalPassword
                 }
             }
         }
@@ -561,6 +559,13 @@ tasks.register('tarTestLogs', Tar) {
     archiveBaseName.set('test_logs')
     from 'build/test_logs'
     compression = Compression.BZIP2
+}
+
+tasks.register('uploadArtifactsToCentralPortal', org.agrona.build.SonatypeCentralPortalUploadRepositoryTask) {
+    portalUsername.set(sonatypeCentralPortalUsername)
+    portalPassword.set(sonatypeCentralPortalPassword)
+    groupId.set(agronaGroup)
+    snapshotRelease.set(!isReleaseVersion)
 }
 
 wrapper {

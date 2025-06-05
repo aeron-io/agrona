@@ -20,5 +20,6 @@ repositories {
 
 dependencies {
     implementation libs.byteBuddy.gradle.plugin
+    implementation libs.json
     compileOnly libs.findbugs.annotations
 }
