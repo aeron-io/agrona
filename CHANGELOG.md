@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.2] - 2025-06-05
+### Changed
+* Publish release artifacts to Central Portal using OSSRH Staging API service.
+* Bump `Checkstyle` to 10.25.0.
+
 ## [2.2.1] - 2025-06-02
 ### Changed
 * `IntHashSet#retainAll(Collection)` and `IntHashSet#retainAll(IntHashSet)` no longer change the capacity of the set.
@@ -99,6 +104,7 @@
 * Stop allocating on addAll / removeAll on ObjectHashSet. ([#308](https://github.com/aeron-io/agrona/pull/308))
 * Run `Mockito` as Java agent to avoid warning on JDK 21+.
 
+[2.2.2]: https://github.com/aeron-io/agrona/releases/tag/2.2.2
 [2.2.1]: https://github.com/aeron-io/agrona/releases/tag/2.2.1
 [2.2.0]: https://github.com/aeron-io/agrona/releases/tag/2.2.0
 [2.1.0]: https://github.com/aeron-io/agrona/releases/tag/2.1.0
