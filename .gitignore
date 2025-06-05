@@ -27,6 +27,7 @@ build-local.properties
 .gradle/
 build/
 !buildSrc/
+!buildSrc/src
 
 # Benchmark timings
 timings.log
