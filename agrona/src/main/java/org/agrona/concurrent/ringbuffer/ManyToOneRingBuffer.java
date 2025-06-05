@@ -532,7 +532,7 @@ public final class ManyToOneRingBuffer implements RingBuffer
                 newTail += padding;
             }
         }
-        while (!buffer.compareAndSetLong(tailPositionIndex, tail, newTail));
+        while (!buffer.weakCompareAndSetLong(tailPositionIndex, tail, newTail));
 
         if (0 != padding)
         {
