@@ -23,6 +23,11 @@ package org.agrona.concurrent;
 public class SystemEpochNanoClock implements EpochNanoClock
 {
     /**
+     * As there is no instance state then this object can be used to save on allocation.
+     */
+    public static final SystemEpochNanoClock INSTANCE = new SystemEpochNanoClock();
+
+    /**
      * Create a new instance.
      */
     public SystemEpochNanoClock()
