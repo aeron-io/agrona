@@ -16,17 +16,15 @@
 package org.agrona.generation;
 
 import org.agrona.LangUtil;
-import org.agrona.SystemUtil;
 
-import javax.tools.*;
-import java.io.File;
-import java.io.FileWriter;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
@@ -37,11 +35,6 @@ import static java.util.stream.Collectors.toList;
  */
 public final class CompilerUtil
 {
-    /**
-     * Temporary directory for files.
-     */
-    private static final String TEMP_DIR_NAME = SystemUtil.tmpDirName();
-
     private CompilerUtil()
     {
     }
@@ -73,39 +66,6 @@ public final class CompilerUtil
     }
 
     /**
-     * Compile a {@link Map} of source files on disk resulting in a {@link Class} which is named.
-     *
-     * @param className to return after compilation.
-     * @param sources   to be compiled.
-     * @return the named class that is the result of the compilation.
-     * @throws ClassNotFoundException of the named class cannot be found.
-     * @throws IOException            if an error occurs when writing to disk.
-     */
-    public static Class<?> compileOnDisk(final String className, final Map<String, CharSequence> sources)
-        throws ClassNotFoundException, IOException
-    {
-        final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        if (null == compiler)
-        {
-            throw new IllegalStateException("JDK required to run tests. JRE is not sufficient.");
-        }
-
-        final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-        try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null))
-        {
-            final ArrayList<String> options = new ArrayList<>(Arrays.asList(
-                "-classpath", System.getProperty("java.class.path") + File.pathSeparator + TEMP_DIR_NAME));
-
-            final Collection<File> files = persist(sources);
-            final Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
-            final JavaCompiler.CompilationTask task = compiler.getTask(
-                null, fileManager, diagnostics, options, null, compilationUnits);
-
-            return compileAndLoad(className, diagnostics, fileManager, task);
-        }
-    }
-
-    /**
      * Compile and load a class.
      *
      * @param className   name of the class to compile.
@@ -126,7 +86,7 @@ public final class CompilerUtil
             return null;
         }
 
-        return fileManager.getClassLoader(null).loadClass(className);
+        return fileManager.getClassLoader(StandardLocation.CLASS_OUTPUT).loadClass(className);
     }
 
     /**
@@ -172,45 +132,6 @@ public final class CompilerUtil
         }
 
         return succeeded;
-    }
-
-    /**
-     * Persist source files to disc.
-     *
-     * @param sources to persist.
-     * @return a collection of {@link File} objects pointing to the persisted sources.
-     * @throws IOException in case of I/O errors.
-     */
-    public static Collection<File> persist(final Map<String, CharSequence> sources) throws IOException
-    {
-        final Collection<File> files = new ArrayList<>(sources.size());
-        for (final Map.Entry<String, CharSequence> entry : sources.entrySet())
-        {
-            final String fqClassName = entry.getKey();
-            String className = fqClassName;
-            Path path = Paths.get(TEMP_DIR_NAME);
-
-            final int indexOfLastDot = fqClassName.lastIndexOf('.');
-            if (indexOfLastDot != -1)
-            {
-                className = fqClassName.substring(indexOfLastDot + 1);
-
-                path = Paths.get(
-                    TEMP_DIR_NAME + fqClassName.substring(0, indexOfLastDot).replace('.', File.separatorChar));
-                Files.createDirectories(path);
-            }
-
-            final File file = new File(path.toString(), className + ".java");
-            files.add(file);
-
-            try (FileWriter out = new FileWriter(file))
-            {
-                out.append(entry.getValue());
-                out.flush();
-            }
-        }
-
-        return files;
     }
 
     private static Collection<CharSequenceJavaFileObject> wrap(final Map<String, CharSequence> sources)
