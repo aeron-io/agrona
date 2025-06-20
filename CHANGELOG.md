@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.3] - 2025-06-20
+### Changed
+* Publish release artifacts to Central Portal using OSSRH Staging API service.
+* Bump `ByteBuddy` to 1.17.6.
+* Bump `JUnit` to 5.13.1.
+* Bump `Gradle` to 8.14.2.
+
+### Added
+* Add `SystemEpochNanoClock#INSTANCE` constant.
+
+### Removed
+* Remove unused and broken `CompilerUtil#compileOnDisk` and `CompilerUtil#persist` methods.
+
 ## [2.2.2] - 2025-06-05
 ### Changed
 * Publish release artifacts to Central Portal using OSSRH Staging API service.
@@ -104,6 +117,7 @@
 * Stop allocating on addAll / removeAll on ObjectHashSet. ([#308](https://github.com/aeron-io/agrona/pull/308))
 * Run `Mockito` as Java agent to avoid warning on JDK 21+.
 
+[2.2.3]: https://github.com/aeron-io/agrona/releases/tag/2.2.3
 [2.2.2]: https://github.com/aeron-io/agrona/releases/tag/2.2.2
 [2.2.1]: https://github.com/aeron-io/agrona/releases/tag/2.2.1
 [2.2.0]: https://github.com/aeron-io/agrona/releases/tag/2.2.0
