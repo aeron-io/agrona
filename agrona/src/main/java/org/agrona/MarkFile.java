@@ -425,8 +425,8 @@ public class MarkFile implements AutoCloseable
                         byteBuffer,
                         epochClock,
                         timeoutMs,
-                        versionFieldOffset,
-                        timestampFieldOffset,
+                        versionFieldOffset - offset,
+                        timestampFieldOffset - offset,
                         versionCheck,
                         logger))
                     {

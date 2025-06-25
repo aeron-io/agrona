@@ -15,6 +15,7 @@
  */
 package org.agrona;
 
+import org.agrona.concurrent.EpochClock;
 import org.agrona.concurrent.SystemEpochClock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -27,11 +28,15 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Queue;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -133,5 +138,46 @@ class MarkFileTest
         assertTrue(file.exists());
         assertEquals(totalFileLength, file.length());
         BufferUtil.free(mappedByteBuffer);
+    }
+
+    @Test
+    void testDirectoryCreatingConstructor()
+    {
+        final File directory = new File(tempDir, "foo");
+        final Queue<Integer> versions = new ArrayDeque<>();
+        final EpochClock clock = SystemEpochClock.INSTANCE;
+        final Supplier<MarkFile> supplier = () -> new MarkFile(
+            directory,
+            "mark",
+            false,
+            false,
+            8,
+            16,
+            4096,
+            5_000,
+            clock,
+            versions::add,
+            null);
+
+        final MarkFile markFile1 = supplier.get();
+        markFile1.timestampOrdered(clock.time());
+        markFile1.signalReady(123);
+
+        assertNull(versions.poll());
+
+        final IllegalStateException ise = assertThrows(IllegalStateException.class, supplier::get);
+        assertEquals("active Mark file detected", ise.getMessage());
+        assertEquals(123, versions.poll());
+
+        markFile1.timestampOrdered(-1);
+        markFile1.close();
+
+        try (MarkFile markFile2 = supplier.get())
+        {
+            assertEquals(123, versions.poll());
+
+            markFile2.timestampOrdered(clock.time());
+            markFile2.signalReady(123);
+        }
     }
 }
