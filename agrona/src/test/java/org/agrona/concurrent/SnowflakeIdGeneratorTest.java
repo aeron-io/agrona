@@ -26,7 +26,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.agrona.concurrent.SnowflakeIdGenerator.*;
+import static org.agrona.concurrent.SnowflakeIdGenerator.MAX_NODE_ID_AND_SEQUENCE_BITS;
+import static org.agrona.concurrent.SnowflakeIdGenerator.NODE_ID_BITS_DEFAULT;
+import static org.agrona.concurrent.SnowflakeIdGenerator.SEQUENCE_BITS_DEFAULT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -82,15 +84,6 @@ class SnowflakeIdGeneratorTest
     }
 
     @Test
-    void shouldThrowExceptionIfTimestampOffsetIsNegative()
-    {
-        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> new SnowflakeIdGenerator(
-            NODE_ID_BITS_DEFAULT, SEQUENCE_BITS_DEFAULT, 0, -6, SystemEpochClock.INSTANCE));
-        assertEquals("must be >= 0: timestampOffsetMs=-6", exception.getMessage());
-    }
-
-    @Test
     void shouldThrowExceptionIfTimestampOffsetIsGreaterThanCurrentTime()
     {
         final EpochClock clock = () -> 42;
@@ -111,6 +104,20 @@ class SnowflakeIdGeneratorTest
             Arguments.arguments(8, MAX_NODE_ID_AND_SEQUENCE_BITS - 8),
             Arguments.arguments(12, 10),
             Arguments.arguments(3, 5));
+    }
+
+    @SuppressWarnings("Indentation")
+    @Test
+    void shouldThrowExceptionIfTimestampOffsetIsNegative()
+    {
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> new SnowflakeIdGenerator(
+            NODE_ID_BITS_DEFAULT,
+            SEQUENCE_BITS_DEFAULT,
+            0,
+            -6,
+            SystemEpochClock.INSTANCE));
+        assertEquals("must be >= 0: timestampOffsetMs=-6", exception.getMessage());
     }
 
     @ParameterizedTest
