@@ -4,6 +4,7 @@
 ### Changed
 * Bump `JUnit` to 5.13.2.
 * Bump `Checkstyle` to 10.26.0.
+* Bump `Shadow` to 8.3.7.
 
 ### Fixed
 * Fix possible IndexOutOfBoundsException in MarkFile constructor which creates the parent directory. ([#337](https://github.com/aeron-io/agrona/pull/337]))
