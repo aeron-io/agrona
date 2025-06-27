@@ -1,8 +1,15 @@
 # Changelog
 
+## [2.2.4] - 2025-06-27
+### Changed
+* Bump `JUnit` to 5.13.2.
+* Bump `Checkstyle` to 10.26.0.
+
+### Fixed
+* Fix possible IndexOutOfBoundsException in MarkFile constructor which creates the parent directory. ([#337](https://github.com/aeron-io/agrona/pull/337]))
+
 ## [2.2.3] - 2025-06-20
 ### Changed
-* Publish release artifacts to Central Portal using OSSRH Staging API service.
 * Bump `ByteBuddy` to 1.17.6.
 * Bump `JUnit` to 5.13.1.
 * Bump `Gradle` to 8.14.2.
@@ -117,6 +124,7 @@
 * Stop allocating on addAll / removeAll on ObjectHashSet. ([#308](https://github.com/aeron-io/agrona/pull/308))
 * Run `Mockito` as Java agent to avoid warning on JDK 21+.
 
+[2.2.4]: https://github.com/aeron-io/agrona/releases/tag/2.2.4
 [2.2.3]: https://github.com/aeron-io/agrona/releases/tag/2.2.3
 [2.2.2]: https://github.com/aeron-io/agrona/releases/tag/2.2.2
 [2.2.1]: https://github.com/aeron-io/agrona/releases/tag/2.2.1
