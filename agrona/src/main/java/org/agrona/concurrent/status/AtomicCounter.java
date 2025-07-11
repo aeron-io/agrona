@@ -680,14 +680,14 @@ public class AtomicCounter implements AutoCloseable
     /**
      * Set the value to a new proposedValue if greater than the current value.
      * <p>
-     * This call is not atomic and can suffer from lost updates to race conditions.
+     * This call is not atomic and can suffer from race conditions like lost updates.
      * <p>
      * The load has plain memory semantics and the store has release memory semantics.
      * <p>
      * The typical use-case is when there is one mutator thread, that calls this method, and one or more reader threads.
      *
      * @param proposedValue for the new max.
-     * @return true if a new max as been set otherwise false.
+     * @return true if a new max has been set otherwise false.
      * @since 2.1.0
      */
     public boolean proposeMaxRelease(final long proposedValue)
@@ -708,7 +708,7 @@ public class AtomicCounter implements AutoCloseable
     /**
      * Set the value to a new proposedValue if greater than the current value.
      * <p>
-     * This call is not atomic and can suffer from lost updates to race conditions.
+     * This call is not atomic and can suffer from race conditions like lost updates.
      * <p>
      * The load has plain memory semantics and the store has opaque memory semantics.
      * <p>
@@ -718,7 +718,7 @@ public class AtomicCounter implements AutoCloseable
      * requirements.
      *
      * @param proposedValue for the new max.
-     * @return true if a new max as been set otherwise false.
+     * @return true if a new max has been set otherwise false.
      * @since 2.1.0
      */
     public boolean proposeMaxOpaque(final long proposedValue)
