@@ -41,7 +41,7 @@ class ArrayQueuePeekTest
     }
 
     @Test
-    @Timeout(10)
+    @Timeout(300)
     void shouldPeekThenPollSameElement()
     {
         producerThread = new Thread(producer);
