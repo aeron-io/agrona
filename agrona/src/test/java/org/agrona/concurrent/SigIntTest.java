@@ -16,48 +16,21 @@
 package org.agrona.concurrent;
 
 import org.agrona.collections.MutableBoolean;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InOrder;
 import org.mockito.stubbing.Answer;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static org.agrona.concurrent.SigInt.NO_OP_SIGNAL_HANDLER;
-import static org.agrona.concurrent.SigInt.installHandler;
-import static org.agrona.concurrent.SigInt.raiseSignal;
-import static org.agrona.concurrent.SigInt.register;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.agrona.concurrent.SigInt.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 class SigIntTest
 {
-    private final Object[] originalSignalHandlers = new Object[2];
-
-    @BeforeEach
-    void before() throws Exception
-    {
-        originalSignalHandlers[0] = installHandler("INT", NO_OP_SIGNAL_HANDLER);
-        originalSignalHandlers[1] = installHandler("TERM", NO_OP_SIGNAL_HANDLER);
-    }
-
-    @AfterEach
-    void after() throws Exception
-    {
-        installHandler("INT", originalSignalHandlers[0]);
-        installHandler("TERM", originalSignalHandlers[1]);
-    }
-
     @Test
     void throwsNullPointerExceptionIfNameIsNull()
     {
@@ -67,64 +40,65 @@ class SigIntTest
     @Test
     void throwsNullPointerExceptionIfRunnableIsNull()
     {
-        assertThrowsExactly(NullPointerException.class, () -> register("INT", null));
+        assertThrowsExactly(NullPointerException.class, () -> register(null));
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "INT", "TERM" })
-    void shouldDelegateToExistingSignalHandler(final String name) throws Exception
+    void shouldReplaceExistingSignalHandler(final String name) throws Exception
     {
         final Thread.UncaughtExceptionHandler defaultUncaughtExceptionHandler =
             Thread.getDefaultUncaughtExceptionHandler();
         try
         {
-            final AtomicReference<Throwable> exception = new AtomicReference<>();
+            final CountDownLatch executed = new CountDownLatch(1);
             final Thread.UncaughtExceptionHandler exceptionHandler = mock(Thread.UncaughtExceptionHandler.class);
             doAnswer((Answer<Void>)invocation ->
             {
-                exception.set(invocation.getArgument(1));
+                executed.countDown();
                 return null;
             }).when(exceptionHandler).uncaughtException(any(), any());
             Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
 
-            final IllegalStateException firstError = new IllegalStateException("something went wrong");
-            final CountDownLatch first = new CountDownLatch(1);
-            assertSame(NO_OP_SIGNAL_HANDLER, register(
-                name,
-                () ->
-                {
-                    first.countDown();
-                    throw firstError;
-                }
-            ));
+            final MutableBoolean first = new MutableBoolean(false);
+            register(name, () -> first.set(true));
 
-            final MutableBoolean second = new MutableBoolean(false);
-            assertNotSame(NO_OP_SIGNAL_HANDLER, register(name, () -> second.set(true)));
+            final Runnable newHandler = mock(Runnable.class);
+            final IllegalStateException firstException = new IllegalStateException("something went wrong");
+            doThrow(firstException).when(newHandler).run();
 
-            final UncheckedIOException thirdError = new UncheckedIOException(new IOException("I/O error"));
-            assertNotSame(NO_OP_SIGNAL_HANDLER, register(
-                name,
-                () ->
-                {
-                    throw thirdError;
-                }));
+            register(name, newHandler);
 
             raiseSignal(name);
 
-            first.await();
-            assertTrue(second.get());
-            while (null == exception.get())
-            {
-                Thread.yield();
-            }
+            executed.await();
 
-            final Throwable actualError = exception.get();
-            assertSame(thirdError, actualError);
-            assertSame(firstError, actualError.getSuppressed()[0]);
+            final InOrder inOrder = inOrder(newHandler, exceptionHandler);
+            inOrder.verify(newHandler).run();
+            inOrder.verify(exceptionHandler).uncaughtException(any(), eq(firstException));
+            inOrder.verifyNoMoreInteractions();
+
+            assertFalse(first.get());
         }
         finally
         {
             Thread.setDefaultUncaughtExceptionHandler(defaultUncaughtExceptionHandler);
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "INT" })
+    void shouldReplaceExistingSignalHandlerNoException(final String name) throws Exception
+    {
+        final MutableBoolean first = new MutableBoolean(false);
+        register(name, () -> first.set(true));
+
+        final CountDownLatch executed = new CountDownLatch(1);
+        register(name, executed::countDown);
+
+        raiseSignal(name);
+
+        executed.await();
+        assertFalse(first.get());
     }
 }
