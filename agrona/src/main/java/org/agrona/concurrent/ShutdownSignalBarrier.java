@@ -57,9 +57,14 @@ public class ShutdownSignalBarrier
      */
     public void signal()
     {
+        final boolean found;
         synchronized (LATCHES)
         {
-            LATCHES.remove(latch);
+            found = LATCHES.remove(latch);
+        }
+
+        if (found)
+        {
             latch.countDown();
         }
     }
@@ -100,10 +105,16 @@ public class ShutdownSignalBarrier
 
     private static void signalAndClearAll()
     {
+        final Object[] latches;
         synchronized (LATCHES)
         {
-            LATCHES.forEach(CountDownLatch::countDown);
+            latches = LATCHES.toArray();
             LATCHES.clear();
+        }
+
+        for (final Object latch : latches)
+        {
+            ((CountDownLatch)latch).countDown();
         }
     }
 }
