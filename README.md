@@ -28,7 +28,6 @@ Utilities Include:
 * Queues - Lock-less implementations for low-latency applications.
 * Ring/Broadcast Buffers - implemented off-heap for IPC communication.
 * Simple Agent framework for concurrent services.
-* Signal handling to support "Ctrl + c" in a server application.
 * Scalable Timer Wheel - For scheduling timers at a given deadline with O(1) register and cancel time.
 * Code generation from annotated implementations specialised for primitive types.
 * Off-heap counters implementation for application telemetry, position tracking, and coordination.

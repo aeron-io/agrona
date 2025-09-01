@@ -17,7 +17,6 @@ package org.agrona.concurrent;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -94,12 +93,37 @@ class ShutdownSignalBarrierTest
 
     public static void main(final String[] args)
     {
-        final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
+        class MyResource implements AutoCloseable
+        {
+            private final String name;
 
-        System.out.println(Instant.now() + " awaiting...");
+            MyResource(final String name)
+            {
+                this.name = name;
+                System.out.println("Resource created: " + name);
+            }
 
-        barrier.await();
+            public void close()
+            {
+                System.out.println("Resource closed: " + name);
+            }
 
-        System.out.println(Instant.now() + " shutting down...");
+            public String toString()
+            {
+                return "MyResource{" +
+                    "name='" + name + '\'' +
+                    '}';
+            }
+        }
+
+        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
+            MyResource resource = new MyResource("test"))
+        {
+            System.out.println("Awaiting termination: " + resource + " ...");
+
+            barrier.await();
+        }
+
+        System.out.println("Shutdown complete!");
     }
 }

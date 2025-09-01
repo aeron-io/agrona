@@ -15,58 +15,77 @@
  */
 package org.agrona.concurrent;
 
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * One time barrier for blocking one or more threads until a SIGINT or SIGTERM signal is received from the operating
- * system or by programmatically calling {@link #signal()}. Useful for shutting down a service.
+ * One time witness for blocking one or more threads until:
+ * <ul>
+ *     <li>Thread blocked in {@link #await()} is interrupted.</li>
+ *     <li>JVM shutdown sequence begins (see {@link Runtime#addShutdownHook(Thread)}).</li>
+ *     <li>{@link #signal()} or {@link #signalAll()} is invoked programmatically.</li>
+ * </ul>
+ * Useful for shutting down a service.
+ *
+ * <p><em><strong>Note: </strong> {@link ShutdownSignalBarrier} must be closed last to ensure complete service(s)
+ * termination and to allow JVM to exit. Not calling {@link #close()} method might result in JVM hanging
+ * indefinitely.</em>
+ *
+ * <p>Here is an example on how to use this API correctly.
+ * <pre>
+ * {@code
+ * class UsageSample
+ * {
+ *   public static void main(final String[] args)
+ *   {
+ *     try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
+ *         MyService service = new MyService())
+ *     {
+ *          barrier.await();
+ *     }
+ *   }
+ * }
+ *
+ * class MyService implements AutoCloseable
+ * {
+ *     ...
+ * }
+ * }</pre>
+ *
+ * @see Runtime#addShutdownHook(Thread)
  */
-public class ShutdownSignalBarrier
+public final class ShutdownSignalBarrier implements AutoCloseable
 {
-    /**
-     * Signals the barrier will be registered for.
-     */
-    private static final String[] SIGNAL_NAMES = { "INT", "TERM" };
-    private static final ArrayList<CountDownLatch> LATCHES = new ArrayList<>();
+    private static final CopyOnWriteArrayList<ShutdownSignalBarrier> BARRIERS = new CopyOnWriteArrayList<>();
+    private static final Thread SIGNAL_ALL_SHUTDOWN_HOOK = new Thread(() ->
+    {
+        final Object[] barriers = signalAndClearAll();
+        awaitTermination(barriers);
+    }, "ShutdownSignalBarrier");
 
     static
     {
-        final Runnable handler = ShutdownSignalBarrier::signalAndClearAll;
-        for (final String name : SIGNAL_NAMES)
-        {
-            SigInt.register(name, handler);
-        }
+        Runtime.getRuntime().addShutdownHook(SIGNAL_ALL_SHUTDOWN_HOOK);
     }
 
-    private final CountDownLatch latch = new CountDownLatch(1);
+    private final CountDownLatch waitLatch = new CountDownLatch(1);
+    private final CountDownLatch closeLatch = new CountDownLatch(1);
 
     /**
-     * Construct and register the barrier ready for use.
+     * Construct and register the witness ready for use.
      */
     public ShutdownSignalBarrier()
     {
-        synchronized (LATCHES)
-        {
-            LATCHES.add(latch);
-        }
+        BARRIERS.add(this);
     }
 
     /**
-     * Programmatically signal awaiting threads on the latch associated with this barrier.
+     * Programmatically signal awaiting thread on the latch associated with this witness.
      */
     public void signal()
     {
-        final boolean found;
-        synchronized (LATCHES)
-        {
-            found = LATCHES.remove(latch);
-        }
-
-        if (found)
-        {
-            latch.countDown();
-        }
+        BARRIERS.remove(this);
+        waitLatch.countDown();
     }
 
     /**
@@ -74,18 +93,18 @@ public class ShutdownSignalBarrier
      */
     public void signalAll()
     {
-        signalAndClearAll();
+        if (Runtime.getRuntime().removeShutdownHook(SIGNAL_ALL_SHUTDOWN_HOOK))
+        {
+            signalAndClearAll();
+        }
     }
 
     /**
-     * Remove the barrier from the shutdown signals.
+     * Remove the witness from the shutdown signals.
      */
     public void remove()
     {
-        synchronized (LATCHES)
-        {
-            LATCHES.remove(latch);
-        }
+        BARRIERS.remove(this);
     }
 
     /**
@@ -95,7 +114,7 @@ public class ShutdownSignalBarrier
     {
         try
         {
-            latch.await();
+            waitLatch.await();
         }
         catch (final InterruptedException ignore)
         {
@@ -103,18 +122,62 @@ public class ShutdownSignalBarrier
         }
     }
 
-    private static void signalAndClearAll()
+    /**
+     * Close this {@link ShutdownSignalBarrier} to allow JVM termination.
+     */
+    public void close()
     {
-        final Object[] latches;
-        synchronized (LATCHES)
+        signal();
+        closeLatch.countDown();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String toString()
+    {
+        return "ShutdownSignalBarrier{" +
+            "waitLatch=" + waitLatch +
+            ", closeLatch=" + closeLatch +
+            '}';
+    }
+
+    private static Object[] signalAndClearAll()
+    {
+        final Object[] barriers = BARRIERS.toArray();
+        BARRIERS.clear();
+
+        for (final Object barrier : barriers)
         {
-            latches = LATCHES.toArray();
-            LATCHES.clear();
+            ((ShutdownSignalBarrier)barrier).waitLatch.countDown();
         }
 
-        for (final Object latch : latches)
+        return barriers;
+    }
+
+    private static void awaitTermination(final Object[] barriers)
+    {
+        boolean wasInterruped = false;
+        try
         {
-            ((CountDownLatch)latch).countDown();
+            for (final Object barrier : barriers)
+            {
+                try
+                {
+                    ((ShutdownSignalBarrier)barrier).closeLatch.await();
+                }
+                catch (final InterruptedException e)
+                {
+                    wasInterruped = true;
+                }
+            }
+        }
+        finally
+        {
+            if (wasInterruped)
+            {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }
