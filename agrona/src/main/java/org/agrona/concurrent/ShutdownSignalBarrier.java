@@ -31,7 +31,7 @@ import java.util.concurrent.CountDownLatch;
  * termination and to allow JVM to exit. Not calling {@link #close()} method might result in JVM hanging
  * indefinitely.</em>
  *
- * <p>Here is an example on how to use this API correctly.
+ * <p>Here is an example on how to use this API to await service termination.
  * <pre>
  * {@code
  * class UsageSample
@@ -49,6 +49,24 @@ import java.util.concurrent.CountDownLatch;
  * class MyService implements AutoCloseable
  * {
  *     ...
+ * }
+ * }</pre>
+ *
+ * <p>It is also possible to use barrier to implement a flag that is checked in the main thread.
+ * <pre>
+ * {@code
+ * class FlagSample
+ * {
+ *   public static void main(final String[] args)
+ *   {
+ *     try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier())
+ *     {
+ *          while (barrier.isActive())
+ *          {
+ *              ...
+ *          }
+ *     }
+ *   }
  * }
  * }</pre>
  *
@@ -70,6 +88,7 @@ public final class ShutdownSignalBarrier implements AutoCloseable
 
     private final CountDownLatch waitLatch = new CountDownLatch(1);
     private final CountDownLatch closeLatch = new CountDownLatch(1);
+    private volatile boolean active = true;
 
     /**
      * Construct and register the witness ready for use.
@@ -80,12 +99,24 @@ public final class ShutdownSignalBarrier implements AutoCloseable
     }
 
     /**
+     * Check if barrier is still active.
+     *
+     * @return {@code true} if the barrier is active or {@code false} if it was signalled.
+     * @see #signal()
+     * @see #signalAll()
+     */
+    public boolean isActive()
+    {
+        return active;
+    }
+
+    /**
      * Programmatically signal awaiting thread on the latch associated with this witness.
      */
     public void signal()
     {
         BARRIERS.remove(this);
-        waitLatch.countDown();
+        doSignal();
     }
 
     /**
@@ -93,10 +124,7 @@ public final class ShutdownSignalBarrier implements AutoCloseable
      */
     public void signalAll()
     {
-        if (Runtime.getRuntime().removeShutdownHook(SIGNAL_ALL_SHUTDOWN_HOOK))
-        {
-            signalAndClearAll();
-        }
+        signalAndClearAll();
     }
 
     /**
@@ -139,7 +167,14 @@ public final class ShutdownSignalBarrier implements AutoCloseable
         return "ShutdownSignalBarrier{" +
             "waitLatch=" + waitLatch +
             ", closeLatch=" + closeLatch +
+            ", active=" + active +
             '}';
+    }
+
+    private void doSignal()
+    {
+        waitLatch.countDown();
+        active = false;
     }
 
     private static Object[] signalAndClearAll()
@@ -149,7 +184,7 @@ public final class ShutdownSignalBarrier implements AutoCloseable
 
         for (final Object barrier : barriers)
         {
-            ((ShutdownSignalBarrier)barrier).waitLatch.countDown();
+            ((ShutdownSignalBarrier)barrier).doSignal();
         }
 
         return barriers;
@@ -169,6 +204,7 @@ public final class ShutdownSignalBarrier implements AutoCloseable
                 catch (final InterruptedException e)
                 {
                     wasInterruped = true;
+                    break;
                 }
             }
         }

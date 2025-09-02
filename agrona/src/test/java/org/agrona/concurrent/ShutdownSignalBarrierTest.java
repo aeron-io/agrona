@@ -24,6 +24,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ShutdownSignalBarrierTest
 {
@@ -88,6 +90,32 @@ class ShutdownSignalBarrierTest
         for (final Test test : data)
         {
             assertThat(test.awaitTimeNs.get(), greaterThanOrEqualTo(signalTimeNs));
+        }
+    }
+
+    @Test
+    void isActiveSignal()
+    {
+        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier())
+        {
+            assertTrue(barrier.isActive());
+
+            barrier.signal();
+
+            assertFalse(barrier.isActive());
+        }
+    }
+
+    @Test
+    void isActiveSignalAll()
+    {
+        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier())
+        {
+            assertTrue(barrier.isActive());
+
+            barrier.signalAll();
+
+            assertFalse(barrier.isActive());
         }
     }
 
