@@ -15,8 +15,10 @@
  */
 package org.agrona.concurrent;
 
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * One time witness for blocking one or more threads until:
@@ -59,9 +61,10 @@ import java.util.concurrent.CountDownLatch;
  * {
  *   public static void main(final String[] args)
  *   {
- *     try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier())
+ *     final AtomicBoolean running = new AtomicBoolean(true);
+ *     try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier(() -> running.set(false))
  *     {
- *          while (barrier.isActive())
+ *          while (running.get())
  *          {
  *              ...
  *          }
@@ -74,6 +77,19 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class ShutdownSignalBarrier implements AutoCloseable
 {
+    /**
+     * Interface for notification when is signaled.
+     */
+    @FunctionalInterface
+    public interface SignalHandler
+    {
+        /**
+         * Called when {@link #signal()} or {@link #signalAll()} is invoked.
+         */
+        void onSignal();
+    }
+
+    private static final SignalHandler NO_OP_SIGNAL_HANDLER = () -> {};
     private static final CopyOnWriteArrayList<ShutdownSignalBarrier> BARRIERS = new CopyOnWriteArrayList<>();
     private static final Thread SIGNAL_ALL_SHUTDOWN_HOOK = new Thread(() ->
     {
@@ -86,28 +102,29 @@ public final class ShutdownSignalBarrier implements AutoCloseable
         Runtime.getRuntime().addShutdownHook(SIGNAL_ALL_SHUTDOWN_HOOK);
     }
 
-    private final CountDownLatch waitLatch = new CountDownLatch(1);
-    private final CountDownLatch closeLatch = new CountDownLatch(1);
-    private volatile boolean active = true;
+    final CountDownLatch waitLatch = new CountDownLatch(1);
+    final CountDownLatch closeLatch = new CountDownLatch(1);
+    final AtomicBoolean signaled = new AtomicBoolean();
+    private final SignalHandler signalHandler;
 
     /**
      * Construct and register the witness ready for use.
      */
     public ShutdownSignalBarrier()
     {
-        BARRIERS.add(this);
+        this(NO_OP_SIGNAL_HANDLER);
     }
 
     /**
-     * Check if barrier is still active.
+     * Construct and register the witness ready for use with a signal handler.
      *
-     * @return {@code true} if the barrier is active or {@code false} if it was signalled.
-     * @see #signal()
-     * @see #signalAll()
+     * @param signalHandler to notify.
+     * @throws NullPointerException if {@code null == signalHandler}.
      */
-    public boolean isActive()
+    public ShutdownSignalBarrier(final SignalHandler signalHandler)
     {
-        return active;
+        this.signalHandler = Objects.requireNonNull(signalHandler);
+        BARRIERS.add(this);
     }
 
     /**
@@ -115,8 +132,12 @@ public final class ShutdownSignalBarrier implements AutoCloseable
      */
     public void signal()
     {
-        BARRIERS.remove(this);
-        doSignal();
+        if (signaled.compareAndSet(false, true))
+        {
+            BARRIERS.remove(this);
+            waitLatch.countDown();
+            signalHandler.onSignal();
+        }
     }
 
     /**
@@ -146,7 +167,14 @@ public final class ShutdownSignalBarrier implements AutoCloseable
         }
         catch (final InterruptedException ignore)
         {
-            Thread.currentThread().interrupt();
+            try
+            {
+                signal();
+            }
+            finally
+            {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -155,8 +183,14 @@ public final class ShutdownSignalBarrier implements AutoCloseable
      */
     public void close()
     {
-        signal();
-        closeLatch.countDown();
+        try
+        {
+            signal();
+        }
+        finally
+        {
+            closeLatch.countDown();
+        }
     }
 
     /**
@@ -167,14 +201,8 @@ public final class ShutdownSignalBarrier implements AutoCloseable
         return "ShutdownSignalBarrier{" +
             "waitLatch=" + waitLatch +
             ", closeLatch=" + closeLatch +
-            ", active=" + active +
+            ", signaled=" + signaled +
             '}';
-    }
-
-    private void doSignal()
-    {
-        waitLatch.countDown();
-        active = false;
     }
 
     private static Object[] signalAndClearAll()
@@ -182,9 +210,29 @@ public final class ShutdownSignalBarrier implements AutoCloseable
         final Object[] barriers = BARRIERS.toArray();
         BARRIERS.clear();
 
+        RuntimeException exception = null;
         for (final Object barrier : barriers)
         {
-            ((ShutdownSignalBarrier)barrier).doSignal();
+            try
+            {
+                ((ShutdownSignalBarrier)barrier).signal();
+            }
+            catch (final RuntimeException ex)
+            {
+                if (null == exception)
+                {
+                    exception = ex;
+                }
+                else
+                {
+                    exception.addSuppressed(ex);
+                }
+            }
+        }
+
+        if (null != exception)
+        {
+            throw exception;
         }
 
         return barriers;

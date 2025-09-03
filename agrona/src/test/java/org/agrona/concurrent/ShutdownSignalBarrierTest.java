@@ -15,43 +15,56 @@
  */
 package org.agrona.concurrent;
 
+import org.agrona.concurrent.ShutdownSignalBarrier.SignalHandler;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 class ShutdownSignalBarrierTest
 {
     @Test
     void signalAndAwait() throws InterruptedException
     {
-        final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
-
-        final AtomicLong awaitTimeNs = new AtomicLong();
-        final Thread thread = new Thread(() ->
+        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier())
         {
-            barrier.await();
-            awaitTimeNs.set(System.nanoTime());
-        });
+            final AtomicLong awaitTimeNs = new AtomicLong();
+            final Thread thread = new Thread(() ->
+            {
+                barrier.await();
+                awaitTimeNs.set(System.nanoTime());
+            });
 
-        thread.start();
+            thread.start();
 
-        Thread.sleep(356);
+            Thread.sleep(356);
 
-        assertEquals(0, awaitTimeNs.get());
-        final long signalTimeNs = System.nanoTime();
+            assertEquals(0, awaitTimeNs.get());
+            final long signalTimeNs = System.nanoTime();
 
-        barrier.signal();
+            barrier.signal();
 
-        thread.join();
-        assertThat(awaitTimeNs.get(), greaterThanOrEqualTo(signalTimeNs));
+            thread.join();
+            assertThat(awaitTimeNs.get(), greaterThanOrEqualTo(signalTimeNs));
+        }
     }
 
     @Test
@@ -91,32 +104,142 @@ class ShutdownSignalBarrierTest
         {
             assertThat(test.awaitTimeNs.get(), greaterThanOrEqualTo(signalTimeNs));
         }
+
+        for (final Test test : data)
+        {
+            test.barrier.close();
+        }
     }
 
     @Test
-    void isActiveSignal()
+    void notifySignalHandler()
     {
-        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier())
+        final AtomicInteger notified = new AtomicInteger(0);
+        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier(notified::getAndIncrement))
         {
-            assertTrue(barrier.isActive());
+            assertEquals(0, notified.get());
 
             barrier.signal();
+            assertEquals(1, notified.get());
+            assertTrue(barrier.signaled.get());
+            assertEquals(0, barrier.waitLatch.getCount());
+            assertEquals(1, barrier.closeLatch.getCount());
 
-            assertFalse(barrier.isActive());
+            barrier.signal();
+            assertEquals(1, notified.get());
         }
     }
 
     @Test
-    void isActiveSignalAll()
+    void notifySignalHandlerSignalAll()
     {
-        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier())
+        final AtomicInteger notified = new AtomicInteger(0);
+        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier(notified::getAndDecrement))
         {
-            assertTrue(barrier.isActive());
+            assertEquals(0, notified.get());
 
-            barrier.signalAll();
+            for (int i = 0; i < 100; i++)
+            {
+                barrier.signalAll();
+            }
 
-            assertFalse(barrier.isActive());
+            assertEquals(-1, notified.get());
+            assertTrue(barrier.signaled.get());
+            assertEquals(0, barrier.waitLatch.getCount());
+            assertEquals(1, barrier.closeLatch.getCount());
         }
+    }
+
+    @Test
+    void signalAllShouldNotifyAllSignalHandlers()
+    {
+        final SignalHandler signalHandler1 = mock(SignalHandler.class);
+        final SignalHandler signalHandler2 = mock(SignalHandler.class);
+        final IllegalArgumentException error1 = new IllegalArgumentException("error1");
+        doThrow(error1).when(signalHandler2).onSignal();
+        final SignalHandler signalHandler3 = mock(SignalHandler.class);
+        final UnsupportedOperationException error2 = new UnsupportedOperationException("error2");
+        doThrow(error2).when(signalHandler3).onSignal();
+
+        try (ShutdownSignalBarrier barrier1 = new ShutdownSignalBarrier(signalHandler1);
+            ShutdownSignalBarrier barrier2 = new ShutdownSignalBarrier(signalHandler2);
+            ShutdownSignalBarrier barrier3 = new ShutdownSignalBarrier(signalHandler3))
+        {
+            assertNotNull(barrier1);
+            assertNotNull(barrier2);
+
+            final IllegalArgumentException exception =
+                assertThrowsExactly(IllegalArgumentException.class, barrier3::signalAll);
+
+            assertSame(error1, exception);
+            final Throwable[] suppressed = exception.getSuppressed();
+            assertNotNull(suppressed);
+            assertEquals(1, suppressed.length);
+            assertSame(error2, suppressed[0]);
+            final InOrder inOrder = inOrder(signalHandler1, signalHandler2, signalHandler3);
+            inOrder.verify(signalHandler1).onSignal();
+            inOrder.verify(signalHandler2).onSignal();
+            inOrder.verify(signalHandler3).onSignal();
+            inOrder.verifyNoMoreInteractions();
+        }
+    }
+
+    @Test
+    void awaitShouldSignalIfThreadIsInterrupted()
+    {
+        assertFalse(Thread.interrupted());
+        try
+        {
+            final SignalHandler signalHandler = mock(SignalHandler.class);
+            doThrow(IllegalArgumentException.class).when(signalHandler).onSignal();
+            try (ShutdownSignalBarrier shutdownSignalBarrier = new ShutdownSignalBarrier(signalHandler))
+            {
+                Thread.currentThread().interrupt();
+
+                assertThrowsExactly(IllegalArgumentException.class, shutdownSignalBarrier::await);
+
+                verify(signalHandler).onSignal();
+                verifyNoMoreInteractions(signalHandler);
+            }
+        }
+        finally
+        {
+            assertTrue(Thread.interrupted());
+        }
+    }
+
+    @Test
+    void awaitShouldNotSignalIfLatchIsReleased() throws InterruptedException
+    {
+        final SignalHandler signalHandler = mock(SignalHandler.class);
+        try (ShutdownSignalBarrier shutdownSignalBarrier = new ShutdownSignalBarrier(signalHandler))
+        {
+            shutdownSignalBarrier.waitLatch.countDown();
+
+            shutdownSignalBarrier.await();
+
+            verifyNoInteractions(signalHandler);
+        }
+    }
+
+    @Test
+    void closeShouldSignal()
+    {
+        final SignalHandler signalHandler = mock(SignalHandler.class);
+        final RuntimeException error = new RuntimeException(new IndexOutOfBoundsException("1/0"));
+        doThrow(error).when(signalHandler).onSignal();
+        final ShutdownSignalBarrier shutdownSignalBarrier = new ShutdownSignalBarrier(signalHandler);
+
+        assertFalse(shutdownSignalBarrier.signaled.get());
+        assertEquals(1, shutdownSignalBarrier.waitLatch.getCount());
+        assertEquals(1, shutdownSignalBarrier.closeLatch.getCount());
+
+        final RuntimeException exception = assertThrowsExactly(RuntimeException.class, shutdownSignalBarrier::close);
+        assertSame(error, exception);
+
+        assertTrue(shutdownSignalBarrier.signaled.get());
+        assertEquals(0, shutdownSignalBarrier.waitLatch.getCount());
+        assertEquals(0, shutdownSignalBarrier.closeLatch.getCount());
     }
 
     public static void main(final String[] args)
