@@ -1,5 +1,66 @@
 # Changelog
 
+## [2.3.0-rc1] - 2025-09-03
+* **Breaking:** Deprecated `org.agrona.concurrent.SigInt` for removal. Use
+`org.agrona.concurrent.ShutdownSignalBarrier` instead.
+
+  _**NB:** `org.agrona.concurrent.SigInt.register(java.lang.Runnable)` is unsafe as it overrides `SIGINT` signal
+  handling of the JVM thus preventing shutdown hooks from being executed._
+
+* **Breaking:** Changed `org.agrona.concurrent.ShutdownSignalBarrier` to use shutdown hooks instead of signals.
+
+  Previously `ShutdownSignalBarrier` relied on intercepting `SIGINT` and `SIGTERM`
+  [OS signals](https://man7.org/linux/man-pages/man7/signal.7.html) by overriding JVM's signal handling which was
+  preventing shutdown hooks from be executed. This in turn was breaking applications and frameworks that relied on
+  shutdown hooks for clean termination.
+
+  New implementation uses shutdown hooks instead and requires `ShutdownSignalBarrier` to be explicitly closed
+  (typically last).
+
+  _**NB:** Failure to close `ShutdownSignalBarrier` might result in JVM not terminating._
+ 
+  As the result the code using `ShutdownSignalBarrier` needs to be updated:
+
+  - Old (before `2.3.0`):
+    ```java
+    class UsageSample
+    {
+        public static void main(final String[] args)
+        {
+            final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
+            try (MyService service = new MyService())
+            {
+                barrier.await();
+            }
+        }
+    }
+    ```
+
+  - New:
+    ```java
+    class UsageSample
+    {
+        public static void main(final String[] args)
+        {
+            try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
+                MyService service = new MyService())
+            {
+                barrier.await();
+            }
+        }
+    }
+    ```
+    In the above example `ShutdownSignalBarrier` is closed last to ensure that `service` terminates completely before
+    `ShutdownSignalBarrier` closes which in turn allows JVM to exit.
+
+* AtomicCounter minor javadoc improvements. ([#338](https://github.com/aeron-io/agrona/pull/338]))
+* Bump `Gradle` to 9.0.0.
+* Bump `ByteBuddy` to 1.17.7.
+* Bump `Checkstyle` to 11.0.1.
+* Bump `JUnit` to 5.13.4.
+* Bump `Mockito` to 5.19.0.
+* Bump `Shadow` to 9.1.0.
+
 ## [2.2.4] - 2025-06-27
 ### Changed
 * Bump `JUnit` to 5.13.2.
@@ -125,6 +186,7 @@
 * Stop allocating on addAll / removeAll on ObjectHashSet. ([#308](https://github.com/aeron-io/agrona/pull/308))
 * Run `Mockito` as Java agent to avoid warning on JDK 21+.
 
+[2.3.0-rc1]: https://github.com/aeron-io/agrona/releases/tag/2.3.0-rc1
 [2.2.4]: https://github.com/aeron-io/agrona/releases/tag/2.2.4
 [2.2.3]: https://github.com/aeron-io/agrona/releases/tag/2.2.3
 [2.2.2]: https://github.com/aeron-io/agrona/releases/tag/2.2.2
