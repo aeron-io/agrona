@@ -7,6 +7,43 @@
   _**NB:** `org.agrona.concurrent.SigInt.register(java.lang.Runnable)` is unsafe as it overrides `SIGINT` signal
   handling of the JVM thus preventing shutdown hooks from being executed._
 
+  Using `ShutdownSignalBarrier` instead of `org.agrona.concurrent.SigInt`:
+
+  - Old:
+    ```java
+    class FlagSample
+    {
+        public static void main(final String[] args)
+        {
+            final AtomicBoolean running = new AtomicBoolean(false);
+            SigInt.register(() -> running.set(false));
+              
+            while(running.get())
+            {
+                ...
+            }
+        }
+    }
+    ```
+
+  - New:
+    ```java
+    class FlagSample
+    {
+      public static void main(final String[] args)
+      {
+        final AtomicBoolean running = new AtomicBoolean(true);
+        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier(() -> running.set(false))
+        {
+             while (running.get())
+             {
+                 ...
+             }
+        }
+      }
+    }
+    ```
+
 * **Breaking:** Changed `org.agrona.concurrent.ShutdownSignalBarrier` to use shutdown hooks instead of signals.
 
   Previously `ShutdownSignalBarrier` relied on intercepting `SIGINT` and `SIGTERM`
