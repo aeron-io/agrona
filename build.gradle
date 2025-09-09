@@ -157,6 +157,9 @@ allprojects {
                   libs.commons.lang3,
                   libs.httpcore,
                   libs.plexus.utils
+
+            // Prevent ModuleVersionResolveException from 'baseline' task of `bnd` plugin
+            force "${agronaGroup}:agrona:${agronaVersion}"
         }
     }
 
@@ -303,20 +306,6 @@ project(':agrona') {
     byteBuddy {
         transformation {
             plugin = org.agrona.build.UnsafeApiBytecodeGenerator.class
-        }
-    }
-
-    configurations.matching { it.name == "baseline" }.all {
-        resolutionStrategy {
-            componentSelection {
-                all {
-                    if (candidate.group == "org.agrona" &&
-                            candidate.module == "agrona" &&
-                            candidate.version =~ /-rc\d+$/) {
-                        reject("Ignore release candidates for baseline")
-                    }
-                }
-            }
         }
     }
 
