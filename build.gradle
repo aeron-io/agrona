@@ -306,6 +306,20 @@ project(':agrona') {
         }
     }
 
+    configurations.matching { it.name == "baseline" }.all {
+        resolutionStrategy {
+            componentSelection {
+                all {
+                    if (candidate.group == "org.agrona" &&
+                            candidate.module == "agrona" &&
+                            candidate.version =~ /-rc\d+$/) {
+                        reject("Ignore release candidates for baseline")
+                    }
+                }
+            }
+        }
+    }
+
     jar {
         from sourceSets.generated.output
 
