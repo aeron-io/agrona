@@ -15,9 +15,11 @@
  */
 package org.agrona.concurrent;
 
+import java.io.PrintStream;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -94,7 +96,7 @@ public final class ShutdownSignalBarrier implements AutoCloseable
     private static final Thread SIGNAL_ALL_SHUTDOWN_HOOK = new Thread(() ->
     {
         final Object[] barriers = signalAndClearAll();
-        awaitTermination(barriers);
+        awaitTermination(barriers, 10, TimeUnit.SECONDS, System.out);
     }, "ShutdownSignalBarrier");
 
     static
@@ -238,23 +240,42 @@ public final class ShutdownSignalBarrier implements AutoCloseable
         return barriers;
     }
 
-    private static void awaitTermination(final Object[] barriers)
+    static void awaitTermination(
+        final Object[] barriers, final int timeout, final TimeUnit timeUnit, final PrintStream out)
     {
         boolean wasInterruped = false;
         try
         {
-            for (final Object barrier : barriers)
+            int completed = 0;
+            do
             {
-                try
+                for (int i = 0; i < barriers.length; i++)
                 {
-                    ((ShutdownSignalBarrier)barrier).closeLatch.await();
-                }
-                catch (final InterruptedException e)
-                {
-                    wasInterruped = true;
-                    break;
+                    final Object barrier = barriers[i];
+                    if (null != barrier)
+                    {
+                        try
+                        {
+                            if (((ShutdownSignalBarrier)barrier).closeLatch.await(timeout, timeUnit))
+                            {
+                                completed++;
+                                barriers[i] = null;
+                            }
+                            else
+                            {
+                                out.println("WARN: ShutdownSignalBarrier hasn't terminated in " +
+                                    timeUnit.toSeconds(timeout) + " seconds! Did you forget to call `close()` on it?");
+                            }
+                        }
+                        catch (final InterruptedException e)
+                        {
+                            wasInterruped = true;
+                            break;
+                        }
+                    }
                 }
             }
+            while (completed < barriers.length);
         }
         finally
         {

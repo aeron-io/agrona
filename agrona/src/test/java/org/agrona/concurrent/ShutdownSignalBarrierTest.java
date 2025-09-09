@@ -17,10 +17,13 @@ package org.agrona.concurrent;
 
 import org.agrona.concurrent.ShutdownSignalBarrier.SignalHandler;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,9 +35,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -240,6 +245,39 @@ class ShutdownSignalBarrierTest
         assertTrue(shutdownSignalBarrier.signaled.get());
         assertEquals(0, shutdownSignalBarrier.waitLatch.getCount());
         assertEquals(0, shutdownSignalBarrier.closeLatch.getCount());
+    }
+
+    @Test
+    void awaitTerminationShouldWarnOnTimeoutAndContinueWaiting()
+    {
+        assertFalse(Thread.interrupted());
+
+        final List<ShutdownSignalBarrier> barriers =
+            new ArrayList<>(List.of(new ShutdownSignalBarrier(), new ShutdownSignalBarrier()));
+        final PrintStream out = mock(PrintStream.class);
+        doAnswer(
+            invocationOnMock ->
+            {
+                final ShutdownSignalBarrier barrier = barriers.remove(0);
+                barrier.close();
+                return null;
+            })
+            .when(out)
+            .println(ArgumentMatchers.startsWith("WARN: ShutdownSignalBarrier hasn't terminated in"));
+
+        Thread.currentThread().interrupt();
+        try
+        {
+            ShutdownSignalBarrier.awaitTermination(
+                barriers.toArray(), 123, TimeUnit.MICROSECONDS, out);
+        }
+        finally
+        {
+            assertTrue(Thread.interrupted());
+        }
+
+        verify(out, times(2)).println(ArgumentMatchers.anyString());
+        verifyNoMoreInteractions(out);
     }
 
     public static void main(final String[] args)
