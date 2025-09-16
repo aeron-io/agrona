@@ -44,7 +44,7 @@ Build the project with [Gradle](http://gradle.org/) using this [build.gradle](ht
 
 You require the following to build Agrona:
 
-* The Latest release of Java 17. Agrona is tested with Java 17 and 21.
+* The Latest release of Java 17. Agrona is tested with Java 17, 21, 25 and the next available EA build.
 
 Full clean and build:
 
