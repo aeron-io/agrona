@@ -149,6 +149,7 @@ allprojects {
     configurations.configureEach {
         resolutionStrategy {
             failOnVersionConflict()
+            preferProjectModules()
 
             force libs.byteBuddy,
                   libs.byteBuddy.agent,
@@ -157,9 +158,6 @@ allprojects {
                   libs.commons.lang3,
                   libs.httpcore,
                   libs.plexus.utils
-
-            // Prevent ModuleVersionResolveException from 'baseline' task of `bnd` plugin
-            force "${agronaGroup}:agrona:${agronaVersion}"
         }
     }
 
