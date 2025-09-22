@@ -149,7 +149,6 @@ allprojects {
     configurations.configureEach {
         resolutionStrategy {
             failOnVersionConflict()
-            preferProjectModules()
 
             force libs.byteBuddy,
                   libs.byteBuddy.agent,
@@ -254,7 +253,6 @@ subprojects {
 project(':agrona') {
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
-    apply plugin: 'biz.aQute.bnd.builder'
     apply plugin: 'net.bytebuddy.byte-buddy-gradle-plugin'
 
     dependencies {
@@ -310,25 +308,12 @@ project(':agrona') {
     jar {
         from sourceSets.generated.output
 
-        bundle {
-            // workaround for https://github.com/bndtools/bnd/issues/6346
-            properties.put("project.group", provider({project.group}))
-            // workaround
-            bnd """
-                Automatic-Module-Name:  org.agrona
-                Bundle-Name:            org.agrona
-                Bundle-SymbolicName:    org.agrona
-                Implementation-Title:   Agrona
-                Implementation-Vendor:  Adaptive Financial Consulting Limited
-                Implementation-Version: ${agronaVersion}
-    
-                -exportcontents: org.agrona, org.agrona.*
-    
-                # Suppress headers that reduce reproducibility.
-                -reproducible: true
-                -noextraheaders: true
-            """
-        }
+        manifest.attributes(
+            'Automatic-Module-Name': 'org.agrona',
+            'Implementation-Title': 'Agrona',
+            'Implementation-Vendor': 'Adaptive Financial Consulting Limited',
+            'Implementation-Version': agronaVersion
+        )
     }
 
     tasks.register('sourcesJar', Jar) {
@@ -396,14 +381,14 @@ project(':agrona-agent') {
         archiveClassifier.set('')
 
         manifest.attributes(
+            'Automatic-Module-Name': 'org.agrona.agent',
             'Implementation-Title': 'Agrona',
-            'Implementation-Version': agronaVersion,
             'Implementation-Vendor': 'Adaptive Financial Consulting Limited',
-            'Premain-Class': 'org.agrona.agent.BufferAlignmentAgent',
+            'Implementation-Version': agronaVersion,
             'Agent-Class': 'org.agrona.agent.BufferAlignmentAgent',
+            'Premain-Class': 'org.agrona.agent.BufferAlignmentAgent',
             'Can-Redefine-Classes': 'true',
-            'Can-Retransform-Classes': 'true',
-            'Automatic-Module-Name': 'org.agrona.agent'
+            'Can-Retransform-Classes': 'true'
         )
 
         relocate 'net.bytebuddy', 'org.agrona.shadow.net.bytebuddy'
