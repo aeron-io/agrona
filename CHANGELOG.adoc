@@ -9,14 +9,13 @@ Previously `ShutdownSignalBarrier` relied on intercepting `SIGINT` and `SIGTERM`
  preventing shutdown hooks from be executed. This in turn was breaking applications and frameworks that relied on
  shutdown hooks for clean termination.
 +
-New implementation uses shutdown hooks instead and requires `ShutdownSignalBarrier` to be explicitly closed
- (typically last).
+New implementation uses shutdown hooks instead and requires `ShutdownSignalBarrier` to be explicitly closed.
 +
-_**NB:** Failure to close `ShutdownSignalBarrier` might result in JVM not terminating._
+_**NB: Failure to close `ShutdownSignalBarrier` might result in JVM not terminating!**_
 +
 As the result the code using `ShutdownSignalBarrier` needs to be updated:
 +
-- Old (before `2.3.0`):
+- Old:
 +
 [source,java]
 ----
@@ -24,10 +23,9 @@ class UsageSample
 {
     public static void main(final String[] args) 
     {
-        final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
-        try (MyService service = new MyService()) 
+        try (MyService service = new MyService())
         {
-            barrier.await();
+            new ShutdownSignalBarrier().await();
         }
     }
 }
@@ -42,7 +40,7 @@ class UsageSample
     public static void main(final String[] args) 
     {
         try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
-          MyService service = new MyService()) 
+             MyService service = new MyService())
         {
             barrier.await();
         }
@@ -59,7 +57,7 @@ In the above example `ShutdownSignalBarrier` is closed last to ensure that `serv
 _**NB:** `org.agrona.concurrent.SigInt.register(java.lang.Runnable)` is unsafe as it overrides `SIGINT` signal
  handling of the JVM thus preventing shutdown hooks from being executed._
 +
-An example using `ShutdownSignalBarrier` instead of `org.agrona.concurrent.SigInt`:
+An example using `ShutdownSignalBarrier` instead of `SigInt`:
 +
 - Old:
 +
@@ -70,7 +68,7 @@ class FlagSample
     public static void main(final String[] args)
     {
         final AtomicBoolean running = new AtomicBoolean(false);
-        SigInt.register(() -&gt; running.set(false));
+        SigInt.register(() -> running.set(false));
         while(running.get())
         {
             ...
@@ -152,8 +150,6 @@ class FlagSample
 
 == https://github.com/aeron-io/agrona/releases/tag/2.1.0[2.1.0] - 2025-02-26
 
-=== Changed
-
 * Add `compareAndExchange` methods to `AtomicBuffer`. (https://github.com/aeron-io/agrona/pull/334[#334])
 * Add `getAndAddPlain` to `AtomicCounter`. (https://github.com/aeron-io/agrona/pull/328[#328])
 * Add `acquire/release` methods to `AtomicBuffer`. (https://github.com/aeron-io/agrona/pull/314[#314])
@@ -186,16 +182,17 @@ class FlagSample
 == https://github.com/aeron-io/agrona/releases/tag/2.0.0[2.0.0] - 2024-12-17
 
 * Add API to compute `CRC-32C` (`org.agrona.checksum.Crc32c`) and `CRC-32` (`org.agrona.checksum.Crc32`) checksums.
-
-_*Note:* Requires `--add-opens java.base/java.util.zip=ALL-UNNAMED` JVM option at run time in order to use these classes._
++
+_**Note:** Requires `--add-opens java.base/java.util.zip=ALL-UNNAMED` JVM option at run time in order to use these classes._
 
 * Add concurrent tests for `getAndAdd` and `getAndSet` operations.
+
 * *[Breaking]* Remove `org.agrona.UnsafeAccess`. Use `org.agrona.UnsafeApi` instead.
++
+_**Note:** `--add-opens java.base/jdk.internal.misc=ALL-UNNAMED` JVM option must be specified in order to use `org.agrona.UnsafeApi`._
 
-_*Note:* `--add-opens java.base/jdk.internal.misc=ALL-UNNAMED` JVM option must be specified in order to use `org.agrona.UnsafeApi`._
 * *[Breaking]* Remove `org.agrona.concurrent.MemoryAccess` was removed. Use either an equivalent APIs provided by
-* `org.agrona.UnsafeApi` or `java.lang.invoke.VarHandle`.
-
+`org.agrona.UnsafeApi` or `java.lang.invoke.VarHandle`.
 * *[Breaking]* Remove `org.agrona.concurrent.SigIntBarrier`. Use `org.agrona.concurrent.ShutdownSignalBarrier` instead.
 * Fail build on JavaDoc errors.
 * Use JUnit BOM.
