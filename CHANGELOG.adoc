@@ -1,0 +1,214 @@
+= Changelog
+
+== https://github.com/aeron-io/agrona/releases/tag/2.3.0[2.3.0] - 2025-09-29
+
+* *[Breaking]* Changed `org.agrona.concurrent.ShutdownSignalBarrier` to use shutdown hooks instead of signals.
++
+Previously `ShutdownSignalBarrier` relied on intercepting `SIGINT` and `SIGTERM`
+ https://man7.org/linux/man-pages/man7/signal.7.html[OS signals] by overriding JVM's signal handling which was
+ preventing shutdown hooks from be executed. This in turn was breaking applications and frameworks that relied on
+ shutdown hooks for clean termination.
++
+New implementation uses shutdown hooks instead and requires `ShutdownSignalBarrier` to be explicitly closed
+ (typically last).
++
+_**NB:** Failure to close `ShutdownSignalBarrier` might result in JVM not terminating._
++
+As the result the code using `ShutdownSignalBarrier` needs to be updated:
++
+- Old (before `2.3.0`):
++
+[source,java]
+----
+class UsageSample
+{
+    public static void main(final String[] args) 
+    {
+        final ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
+        try (MyService service = new MyService()) 
+        {
+            barrier.await();
+        }
+    }
+}
+----
++
+- New:
++
+[source,java]
+----
+class UsageSample
+{ 
+    public static void main(final String[] args) 
+    {
+        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier();
+          MyService service = new MyService()) 
+        {
+            barrier.await();
+        }
+    }
+}
+----
++
+In the above example `ShutdownSignalBarrier` is closed last to ensure that `service` terminates completely before
+`ShutdownSignalBarrier` closes which in turn allows JVM to exit.
+
+* *[Breaking]* Deprecated `org.agrona.concurrent.SigInt` for removal. Use
+`org.agrona.concurrent.ShutdownSignalBarrier` instead.
++
+_**NB:** `org.agrona.concurrent.SigInt.register(java.lang.Runnable)` is unsafe as it overrides `SIGINT` signal
+ handling of the JVM thus preventing shutdown hooks from being executed._
++
+An example using `ShutdownSignalBarrier` instead of `org.agrona.concurrent.SigInt`:
++
+- Old:
++
+[source,java]
+----
+class FlagSample
+{
+    public static void main(final String[] args)
+    {
+        final AtomicBoolean running = new AtomicBoolean(false);
+        SigInt.register(() -&gt; running.set(false));
+        while(running.get())
+        {
+            ...
+        }
+    }
+}
+----
++
+- New:
++
+[source,java]
+----
+class FlagSample
+{
+    public static void main(final String[] args)
+    {
+        final AtomicBoolean running = new AtomicBoolean(true);
+        try (ShutdownSignalBarrier barrier = new ShutdownSignalBarrier(() -> running.set(false))
+        {
+            while (running.get())
+            {
+                ...
+            }
+        }
+    }
+}
+----
+
+* AtomicCounter minor javadoc improvements. (https://github.com/aeron-io/agrona/pull/338[#338])
+
+* Upgrade to `Gradle` 9.1.0.
+* Upgrade to `ByteBuddy` 1.17.7.
+* Upgrade to `Checkstyle` 11.1.0.
+* Upgrade to `JUnit` 5.13.4.
+* Upgrade to `Mockito` 5.20.0.
+* Upgrade to `Shadow` 9.2.2.
+* Upgrade to `Versions` 0.53.0.
+
+== https://github.com/aeron-io/agrona/releases/tag/2.2.4[2.2.4] - 2025-06-27
+
+* Fix possible IndexOutOfBoundsException in MarkFile constructor which creates the parent directory. (https://github.com/aeron-io/agrona/pull/337[#337])
+* Upgrade to `JUnit` 5.13.2.
+* Upgrade to `Checkstyle` 10.26.0.
+* Upgrade to `Shadow` 8.3.7.
+
+== https://github.com/aeron-io/agrona/releases/tag/2.2.3[2.2.3] - 2025-06-20
+
+* Add `SystemEpochNanoClock#INSTANCE` constant.
+* Remove unused and broken `CompilerUtil#compileOnDisk` and `CompilerUtil#persist` methods.
+* Upgrade to `ByteBuddy` 1.17.6.
+* Upgrade to `JUnit` 5.13.1.
+* Upgrade to `Gradle` 8.14.2.
+
+== https://github.com/aeron-io/agrona/releases/tag/2.2.2[2.2.2] - 2025-06-05
+
+* Publish release artifacts to Central Portal using OSSRH Staging API service.
+* Upgrade to `Checkstyle` 10.25.0.
+
+== https://github.com/aeron-io/agrona/releases/tag/2.2.1[2.2.1] - 2025-06-02
+
+* `IntHashSet#retainAll(Collection)` and `IntHashSet#retainAll(IntHashSet)` no longer change the capacity of the set.
+* Infinite loop in `IntHashSet` when `retainAll` leaves collections with a power of two number of elements.
+* Upgrade to `JUnit` 5.13.0.
+
+== https://github.com/aeron-io/agrona/releases/tag/2.2.0[2.2.0] - 2025-05-26
+
+* Protect against numeric overflow when recording errors at the end of the large buffer.
+* *[CI]* Use `gradle/actions/setup-gradle` action for caching Gradle dependencies.
+* *[CI]* Enable JDK 24 GA build.
+* Add `SystemUtil#isMac` method.
+* Add tests for file mapping.
+* Upgrade to `Gradle` 8.14.1.
+* Upgrade to `Checkstyle` 10.24.0.
+* Upgrade to `ByteBuddy` 1.17.5.
+* Upgrade to `Shadow` 8.3.6.
+* Upgrade to `JUnit` 5.12.2.
+* Upgrade to `Mockito` 5.18.0.
+* Bump `Guava TestLib` to 33.4.8-jre.
+
+== https://github.com/aeron-io/agrona/releases/tag/2.1.0[2.1.0] - 2025-02-26
+
+=== Changed
+
+* Add `compareAndExchange` methods to `AtomicBuffer`. (https://github.com/aeron-io/agrona/pull/334[#334])
+* Add `getAndAddPlain` to `AtomicCounter`. (https://github.com/aeron-io/agrona/pull/328[#328])
+* Add `acquire/release` methods to `AtomicBuffer`. (https://github.com/aeron-io/agrona/pull/314[#314])
+* Add `acquire/release` methods to `AtomicCounter`. (https://github.com/aeron-io/agrona/pull/315[#315])
+* Add `acquire/release` methods to `Position`. (https://github.com/aeron-io/agrona/pull/316[#316])
+* Add `plain` methods to `AtomicCounter`. (https://github.com/aeron-io/agrona/pull/317[#317])
+* Add `opaque` methods to `AtomicCounter`. (https://github.com/aeron-io/agrona/pull/319[#319])
+* Add `opaque` methods to `AtomicBuffer`. (https://github.com/aeron-io/agrona/pull/313[#313])
+* Add `opaque` methods to `Position`. (https://github.com/aeron-io/agrona/pull/324[#324])
+* Add `timestampRelease` method to `MarkFile`. (https://github.com/aeron-io/agrona/pull/318[#318])
+* Add different flavors of concurrent methods to `StatusIndicator`. (https://github.com/aeron-io/agrona/pull/323[#323])
+* Move `get` method declaration to the `ReadablePosition` class.
+* Bump `Gradle` to 8.13.
+* Upgrade to `Checkstyle` 10.21.3.
+* Upgrade to `ByteBuddy` 1.17.1.
+* Upgrade to `Shadow` 8.3.6.
+* Upgrade to `JUnit` 5.12.0.
+* *[CI]* Fix crash logs upload on Windows + compress test data before upload.
+* Make `UnsafeApi#arrayBaseOffset` forwards compatible with JDK 25+ which changed the return type to `long` whereas we keep it as `int`.
+
+== https://github.com/aeron-io/agrona/releases/tag/2.0.1[2.0.1] - 2025-01-14
+
+* Deprecate `ThreadHints`. (https://github.com/aeron-io/agrona/pull/312[#312])
+* Improve ordering/atomic doc in AtomicBuffer. (https://github.com/aeron-io/agrona/pull/309[#309])
+* Add a new convenience constructor to `SleepingIdleStrategy`. (https://github.com/aeron-io/agrona/pull/310[#310])
+* *[CI]* Add JDK 25-ea to the build matrix.
+* Upgrade to `Mockito` 5.15.2.
+* Upgrade to `Checkstyle` 10.21.1.
+
+== https://github.com/aeron-io/agrona/releases/tag/2.0.0[2.0.0] - 2024-12-17
+
+* Add API to compute `CRC-32C` (`org.agrona.checksum.Crc32c`) and `CRC-32` (`org.agrona.checksum.Crc32`) checksums.
+
+_*Note:* Requires `--add-opens java.base/java.util.zip=ALL-UNNAMED` JVM option at run time in order to use these classes._
+
+* Add concurrent tests for `getAndAdd` and `getAndSet` operations.
+* *[Breaking]* Remove `org.agrona.UnsafeAccess`. Use `org.agrona.UnsafeApi` instead.
+
+_*Note:* `--add-opens java.base/jdk.internal.misc=ALL-UNNAMED` JVM option must be specified in order to use `org.agrona.UnsafeApi`._
+* *[Breaking]* Remove `org.agrona.concurrent.MemoryAccess` was removed. Use either an equivalent APIs provided by
+* `org.agrona.UnsafeApi` or `java.lang.invoke.VarHandle`.
+
+* *[Breaking]* Remove `org.agrona.concurrent.SigIntBarrier`. Use `org.agrona.concurrent.ShutdownSignalBarrier` instead.
+* Fail build on JavaDoc errors.
+* Use JUnit BOM.
+* *[CI]* Disable auto-detection of JVMs to force a specific JVM for test execution in CI.
+* Use Gradle's version catalog feature for declaring dependencies.
+* Improve RingBuffer tests by reading one message at a time and minimizing the number of valid states.
+* *[Doc]* Remove reference to Java 8. (https://github.com/aeron-io/agrona/pull/304[#304])
+* Stop allocating on `addAll`/`removeAll` on ObjectHashSet. (https://github.com/aeron-io/agrona/pull/308[#308])
+* Run `Mockito` as Java agent to avoid warning on JDK 21+.
+* Upgrade to `Gradle` 8.11.1.
+* Upgrade to `Checkstyle` 10.21.0.
+* Upgrade to `ByteBuddy` 1.15.11.
+* Upgrade to `bnd` 7.1.0.
+* Upgrade to `Shadow` 8.3.5.
+* Upgrade to `JUnit` 5.11.4.
+* Bump `Guava TestLib` to 33.4.0-jre.
