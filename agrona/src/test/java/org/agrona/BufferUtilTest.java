@@ -17,15 +17,17 @@ package org.agrona;
 
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledForJreRange;
 
 import java.nio.ByteBuffer;
 
-import static org.agrona.BitUtil.*;
+import static org.agrona.BitUtil.CACHE_LINE_LENGTH;
+import static org.agrona.BitUtil.SIZE_OF_LONG;
+import static org.agrona.BitUtil.isAligned;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.condition.JRE.JAVA_9;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -117,7 +119,6 @@ class BufferUtilTest
     }
 
     @Test
-    @EnabledForJreRange(min = JAVA_9)
     void freeThrowsIllegalArgumentExceptionIfByteBufferIsASlice()
     {
         final ByteBuffer buffer = ByteBuffer.allocateDirect(4).slice();
@@ -126,7 +127,6 @@ class BufferUtilTest
     }
 
     @Test
-    @EnabledForJreRange(min = JAVA_9)
     void freeThrowsIllegalArgumentExceptionIfByteBufferIsADuplicate()
     {
         final ByteBuffer buffer = ByteBuffer.allocateDirect(4).duplicate();
