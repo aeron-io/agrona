@@ -1,8 +1,13 @@
 = Changelog
 
+== Unreleased
+
+* **[Breaking]** Removed `org.agrona.concurrent.SigInt`. Use
+`org.agrona.concurrent.ShutdownSignalBarrier` instead.
+
 == https://github.com/aeron-io/agrona/releases/tag/2.3.0[2.3.0] - 2025-09-29
 
-* *[Breaking]* Changed `org.agrona.concurrent.ShutdownSignalBarrier` to use shutdown hooks instead of signals.
+* **[Breaking]** Changed `org.agrona.concurrent.ShutdownSignalBarrier` to use shutdown hooks instead of signals.
 +
 Previously `ShutdownSignalBarrier` relied on intercepting `SIGINT` and `SIGTERM`
  https://man7.org/linux/man-pages/man7/signal.7.html[OS signals] by overriding JVM's signal handling which was
@@ -51,7 +56,7 @@ class UsageSample
 In the above example `ShutdownSignalBarrier` is closed last to ensure that `service` terminates completely before
 `ShutdownSignalBarrier` closes which in turn allows JVM to exit.
 
-* *[Breaking]* Deprecated `org.agrona.concurrent.SigInt` for removal. Use
+* **[Breaking]** Deprecated `org.agrona.concurrent.SigInt` for removal. Use
 `org.agrona.concurrent.ShutdownSignalBarrier` instead.
 +
 _**NB:** `org.agrona.concurrent.SigInt.register(java.lang.Runnable)` is unsafe as it overrides `SIGINT` signal
@@ -191,13 +196,13 @@ _**Note:** Requires `--add-opens java.base/java.util.zip=ALL-UNNAMED` JVM option
 
 * Add concurrent tests for `getAndAdd` and `getAndSet` operations.
 
-* *[Breaking]* Remove `org.agrona.UnsafeAccess`. Use `org.agrona.UnsafeApi` instead.
+* **[Breaking]** Remove `org.agrona.UnsafeAccess`. Use `org.agrona.UnsafeApi` instead.
 +
 _**Note:** `--add-opens java.base/jdk.internal.misc=ALL-UNNAMED` JVM option must be specified in order to use `org.agrona.UnsafeApi`._
 
-* *[Breaking]* Remove `org.agrona.concurrent.MemoryAccess` was removed. Use either an equivalent APIs provided by
+* **[Breaking]** Remove `org.agrona.concurrent.MemoryAccess` was removed. Use either an equivalent APIs provided by
 `org.agrona.UnsafeApi` or `java.lang.invoke.VarHandle`.
-* *[Breaking]* Remove `org.agrona.concurrent.SigIntBarrier`. Use `org.agrona.concurrent.ShutdownSignalBarrier` instead.
+* **[Breaking]** Remove `org.agrona.concurrent.SigIntBarrier`. Use `org.agrona.concurrent.ShutdownSignalBarrier` instead.
 * Fail build on JavaDoc errors.
 * Use JUnit BOM.
 * *[CI]* Disable auto-detection of JVMs to force a specific JVM for test execution in CI.
