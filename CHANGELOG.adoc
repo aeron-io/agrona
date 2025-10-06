@@ -218,3 +218,1094 @@ _**Note:** `--add-opens java.base/jdk.internal.misc=ALL-UNNAMED` JVM option must
 * Upgrade to `Shadow` 8.3.5.
 * Upgrade to `JUnit` 5.11.4.
 * Bump `Guava TestLib` to 33.4.0-jre.
+
+== 1.23.1 (2024-10-01)
+
+* [Java] Fix `Object2IntHashMap#merge` resizing the map while updating an existing key.
+
+== 1.23.0 (2024-08-23)
+
+== Breaking changes
+
+* *JDK 17 is required for compiling and running!*
+* Removed `NioSelectedKeySet` and the corresponding `TransportPoller.selectedKeySet` field.
+* Removed `MappedResizeableBuffer` class to avoid having to open an internal JDK module (i.e. `--add-opens java.base/sun.nio.ch=ALL-UNNAMED`).
+* Removed `RecordBuffer` class.
+
+== Changelog
+
+* [Java] Improved documentation for the BackoffIdleStrategy. #297
+* [Java] Resolve pid using `ProcessHandle.current().pid()`.
+* [Java] Use `Thread.onSpinWait()`.
+* [Java] Use `invokeCleaner` without MethodHandles.
+* [Java] Remove Selector hacks in favor of the new `java.nio.channels.Selector.selectNow(Consumer<SelectionKey>)` API.
+* [Java] Upgrade to Gradle 8.10.
+* [Java] Upgrade to ByteBuddy 1.15.0.
+* [Java] Upgrade to Shadow 8.3.0.
+* [Java] Upgrade to bnd 7.0.0.
+* [Java] Upgrade to Mockito 5.12.0.
+
+== 1.22.0 (2024-08-01)
+
+* [Java] Improve performance of IntHashSet via avoiding the fill operation by using 0 as MISSING_VALUE.
+* [Java] Restore thread safety by overriding missing mutating operations in ConcurrentCountersManager.
+* [Java] Remove volatile read for FREE_FOR_REUSE_DEADLINE_OFFSET in CountersManager.
+* [Java] Upgrade to ByteBuddy 1.14.18.
+* [Java] Upgrade to Guava TestLib 33.2.1-jre.
+* [Java] Upgrade to JUnit 5.10.3.
+
+== 1.21.2 (2024-06-04)
+
+* [Java] Fix {Int,Long}2ObjectCache. (#294)
+* [Java] ErrorLogReader: Do not crash when reading partial or corrupted error messages. Attempt to recover last error message when length is out of bounds.
+* [Java] SnowflakeIdGenerator: Increment sequence if the clock is not advancing or going backwards.
+* [Java] Fix build on JDK 23-ea caused by deprecation in Unsafe, i.e. https://openjdk.org/jeps/471.
+* [CI] Split the build into slow and fast, i.e. run concurrency tests only during slow build.
+* [Java] Upgrade to ByteBuddy 1.14.17.
+* [Java] Upgrade to Guava TestLib 33.2.0-jre.
+
+== 1.21.1 (2024-03-29)
+
+* [Java] Fix Javadoc copyright year range.
+* [Java] Fix JDK 22 javadoc URL.
+* [CI] Enable JDK 23-ea build.
+* [Java] Upgrade to ASM 9.7.
+* [Java] Upgrade to ByteBuddy 1.14.13.
+
+== 1.21.0 (2024-03-14)
+
+* [Java] Use -XX:+EnableDynamicAgentLoading on JDK 21+.
+* [CI] Add Mac M1 to the build matrix.
+* [CI] Build PRs against merge commit.
+* [CI] Action updates.
+* [Java] Upgrade to JUnit 5.10.2.
+* [Java] Upgrade to Versions 0.51.0.
+* [Java] Upgrade to ByteBuddy 1.14.12.
+* [Java] Upgrade to Guava TestLib 33.1.0-jre.
+
+== 1.20.0 (2023-11-02)
+
+* Add Reference ID, a new metadata field, to counters in the value padding.
+* Suppress warnings about Unsafe APIs being deprecated for removal in JDK 22.
+* Enable dynamic agent loading on JDK 22 + run ByteBuddy in zthe experimental mode.
+* CI: Use JDK 21 GA, drop JDK 11, and add JDK 22-ea.
+* Fix JavaDoc link for JDK 21 GA.
+* Move bnd into bundle section to make it forward compatible with the next major version of the plugin.
+* Upgrade to ByteBuddy 1.14.9.
+* Upgrade to Guava TestLib 32.1.3-jre.
+* Upgrade to ASM 9.6.
+* Upgrade to Versions 0.49.0.
+
+== 1.19.2 (2023-09-01)
+
+* Add missing bounds check to `AbstractMutableDirectBuffer#getInt(int, java.nio.ByteOrder)` (#285)
+* Upgrade to ByteBuddy 1.14.7.
+
+== 1.19.1 (2023-08-09)
+
+* Fix NPE in SigInt.java (#283)
+* Upgrade to JMH 1.37.
+* Upgrade to Guava TestLib 32.1.2-jre.
+* Upgrade to JUnit 5.10.0.
+
+== 1.19.0 (2023-07-19)
+
+* Update BiInt2ObjectMap to support null values and add methods to get close to feature parity with Java 8 collections.
+* Restore the original behavior around the signal handling by not delegating to the previously registered handler.
+* Add MarkFile method to handle the creation of link files.
+* Upgrade Versions to 0.47.0
+* Upgrade Guava to 32.1.1-jre
+* Update ByteBuddy to 1.14.5
+
+== 1.18.2 (2023-06-08)
+
+* Fix `IntHashSet#retainAll(IntHashSet)` and `IntHashSet#removeIfInt` which were skipping removal of some elements if the chain compaction moved them to the beginning of the array.
+* JDK 21-ea warning fixes.
+* Upgrade to ByteBuddy 1.14.4.
+* Upgrade to JUnit 5.9.3.
+* Upgrade to ASM 9.5 for JDK 21-ea support.
+* Upgrade to Shadow 8.1.1.
+* Upgrade to Gradle 8.1.1.
+
+== 1.17.2 (2023-06-08)
+
+* Fix `IntHashSet#retainAll(IntHashSet)` and `IntHashSet#removeIfInt` which were skipping removal of some elements if the chain compaction moved them to the beginning of the array.
+
+== 1.18.1 (2023-04-17)
+
+* Fix `AbstractMutableDirectBuffer#putStringAscii*` methods when invoked with the `null` value (i.e. null reference) in which case they were overwriting the first four bytes of the buffer by writing the zero length at the wrong offset.
+* Remove address alignment of the underlying native `ByteBuffer` from the `ExpandableDirectByteBuffer` class as this might break the existing code that does not handle the `wrapAdjustment()` properly.
+* Avoid allocation when returning an empty String from the `AbstractMutableDirectBuffer#getString*` methods.
+
+== 1.18.0 (2023-03-29)
+
+* Add buffer alignment optimisations and checks (`STRICT_ALIGNMENT_CHECKS`). PR #267.
+* Add missing copy constructors on maps. PR #275.
+* Add implementation of `DataInput` interface that reads from DirectBuffer. PR #274.
+* Fix shut down signal barrier jvm signal not called. PR #271.
+* Add CodeQL workflow for GitHub code scanning. PR #268.
+* Allow `ExpandableDirectByteBuffer` to grow up to 2147483584 bytes, i.e. the last aligned value to which Alignment can be added without causing an overflow.
+* Add align methods for longs.
+* Make map/unmap by address work on JDK 20.
+* Rename `SystemUtil.isX86Arch` to `isX64Arch`.
+* Change algorithm for rehash so bounds check is done on loop level to help optimiser.
+* Eliminate int vs long comparison in `IoUtil.mapNewFile`.
+* Declare `NumberFormatException` on `Strings.parseIntOrDefault`.
+* Fix `ExpandableArrayBuffer` and `UnsafeBuffer` toString when using a raw array.
+* Add `CountersManager.toString`.
+* Fix `HighResolutionTimer` race conditions.
+* Exit early if the `DistinctErrorLog` buffer is full.
+* Invoke the `EpochClock.time` outside the synchronized block.
+* Fix `ExpandableArrayBuffer.checkLimit` regression, i.e. grow capacity if the limit exceeds current capacity.
+* Do not use 128 bytes as a minimum length when growing the buffer, i.e. allow smaller buffers to grow slower.
+* Upgrade to ByteBuddy 1.14.3.
+* Upgrade to JUnit 5.9.2
+* Upgrade to Mockito 4.11.0.
+* Upgrade to Gradle 7.6.
+* Upgrade JMH to 1.36.
+* Upgrade to versions plugin 0.46.0.
+* Upgrade to JCStress 0.16
+* Upgrade BND to 6.4.0
+* Add mockito-inline dependency.
+
+== 1.17.1 (14 Sep 2022)
+
+* Correct spelling of `DynamicPackageOutputManager`.
+
+== 1.17.0 (14 Sep 2022)
+
+* Add `DynamicPackageOutputManager` so code generation can target multiple Java packages. PR #266.
+* Eliminate boxing operations on collections by providing non-boxing alternatives. PR #265.
+* Add `getOrDefault` non-boxing implementations to collections. PR #264.
+* Add Javadoc note about freeing of aligned buffers which have been split. Issue #263.
+* Fix for `Int2ObjectCache.get` can return unmatched value when full. Issue #262.
+* Upgrade to ByteBuddy 1.12.16.
+* Upgrade to Mockito 4.8.0.
+* Upgrade to JUnit 5.9.0.
+* Upgrade to Gradle 7.5.1.
+
+== 1.16.0 (27 Jun 2022)
+
+* Add optimised versions of `compute` on maps. PR #259.
+* Add `Object2IntCounterMap`. PR #257.
+* Fix `Int2ObjectCache/Int2ObjectHashMap.containsValue()` to perform equality based on the value stored in the map.
+* Ensure that `Object2*HashMaps` and `ObjectHashSet` always check equality using the value in the map and not vice versa. PR #253.
+* Add primitive unboxed for-each methods to primitive maps. PR #254.
+* Fix race on `MarkFile.close` with unmapping files.
+* Upgrade to BND 6.3.1.
+* Upgrade to ByteBuddy 1.10.12.
+* Upgrade to Mockito 4.6.1.
+
+== 1.15.2 (16 May 2022)
+
+* Improved error messages for Counters.
+* Perform equality checks using the keys/values stored in the map, i.e. add support for the asymmetric keys which can match on multiple types.
+For an example see the `CharSequenceKey` from the test package.
+* Fix `MapEntry.getValue` to return current value after `setValue` was called.
+* Various fixes for `EntrySet/MapEntry` across different map implementations.
+
+== 1.15.1 (14 Apr 2022)
+
+* Check error buffer has sufficient capacity before initial access.
+* Fill memory mapped file with zeros outside try-with-resources block for channel so allocation can be freed sooner.
+* Upgrade to JMH 1.35.
+* Upgrade to ByteBuddy 1.12.9.
+* Upgrade to Gradle 7.4.2.
+
+== 1.15.0 (15 Mar 2022)
+
+* Fix bug with buffer expansion with `putAsciiInt` / `putAsciiLong` methods. PR #252.
+* Add `MemoryAccess` for abstract access to memory fences.
+* Treat warnings as errors during build.
+* Hide JCStress output unless there is an error.
+* Upgrade to guava-testlib 31.1-jre.
+* Upgrade to BND 6.2.0.
+* Upgrade to Versions 0.42.0.
+* Upgrade to Shadow 7.1.2.
+* Upgrade to JMH 1.34.
+* Upgrade to Mockito 4.4.0.
+* Upgrade to ByteBuddy 1.12.7.
+* Upgrade to JCStress 0.15.
+* Upgrade to Checkstyle 9.3.
+* Upgrade to JUnit 5.8.2.
+* Upgrade to Gradle 4.7.1.
+
+== 1.14.0 (23 Nov 2021)
+
+* Check for thread being interrupted after calling `ErrorHandler` in `AgentInvoker` and `AgentRunner` so they can stop running.
+* Remove 'Serializable' from collections. It was never implemented correctly.
+* Upgrade to Mockito 4.1.0.
+* Upgrade to ByteBuddy 1.12.2.
+* Upgrade to BND 6.1.0.
+
+== 1.13.1 (21 Nov 2021)
+
+* Fix a bug in `AsciiEncoding#digitCount(int)` and `AsciiEncoding#digitCount(long)` methods which resulted in wrong value being returned for 0 input, i.e. both methods now return 1 when zero is the input value. PR #251.
+
+== 1.13.0 (17 Nov 2021)
+
+* Check for numeric overflow when parsing numbers in ASCII.
+* Fix bounds checks when writing numbers in ASCII to buffers.
+* Improve performance for the parsing and serialisation of ints and longs in ASCII in buffer implementations.
+* Add methods to SBE message interfaces for tracking buffer position limit.
+* Rethrow subclasses of `Error` from Agents so the JVM can handle them after logging.
+* Avoid static fields on `Unsafe` to better support Android.
+* Remove `final` declaration from `AsciiSequenceView`. https://github.com/aeron-io/agrona/pull/242[PR #242].
+* Upgrade to guava-testlib 31.0.1-jre.
+* Upgrade to Shadow 7.1.
+* Upgrade to BND 6.0.0.
+* Upgrade to Checkstyle 9.1.
+* Upgrade to JUnit 5.8.1.
+* Upgrade to JMH 1.33.
+* Upgrade to Mockito 4.0.0.
+* Upgrade ByteBuddy to 1.12.1.
+* Upgrade to Gradle 7.2.
+
+== 1.12.0 (04 Aug 2021)
+
+* Tidy up of spelling and grammar.
+* Fail the build if Gradle build file has warnings.
+* `MutableDirectBuffer` methods for `putString` accepting `CharSequence`. #240
+* jcstress added. #237
+* RingBuffer capacity validation and fixes. #239
+* Windows added to the build matrix.
+* Upgraded to Gradle 7.1.1.
+* Upgraded to Mockito 3.11.2.
+* Upgraded to ByteBuddy 1.11.9.
+
+== 1.11.0 (11 Jun 2021)
+
+* Allow for `TransportPoller#ITERATION_THRESHOLD` to be set from system property.
+* Relocate shadowed ByteBuddy classes in fat JAR.
+* Improve the performance of writing `int` and `long` values as ASCII in buffers.
+* Add support for `@null` property values when reading system properties.
+* Improve hash function for hash based collection.
+* Reduce callstack when unmapping buffers.
+* Move read of clock to inside lock when creating a new entry in the distinct error log.
+* Verify counter is in allocated state when being freed.
+* Add lock-less implementation for distributed and concurrent unique id generation based on Twitter Snowflake algorithm.
+* Upgrade to Mockito 3.11.1.
+* Upgrade to Versions 0.39.0.
+* Upgrade to JUnit 5.7.2.
+* Upgrade to JMH 1.32.
+* Upgrade to ByteBuddy 1.11.2.
+* Upgrade to Shadow 7.0.0.
+* Upgrade to Gradle 7.0.2.
+
+== 1.10.0 (15 Apr 2021)
+
+* Handle null error handler with `CloseHelper`.
+* Support `NioSelectedKeySet.contains` and `NioSelectedKeySet.remove` to be more efficient on Java 11+.
+* Add Java 17-ea to the build matrix.
+* Improve Javadoc.
+* Detect thread interrupt after an exception in `Agent.doWork`.
+* Fix race condition with `OffsetEpochNanoClock` used across threads. https://github.com/aeron-io/agrona/pull/220[PR #220].
+* Provide the ability to thread dump to a `StringBuilder`.
+* Add ability to query for number of remaining available counters in a `CountersManager`.
+* Upgrade to Guava testlib 30.1.1-jre.
+* Upgrade to Versions 0.38.0.
+* Upgrade to JMH 1.29.
+* Upgrade to BND 5.3.0.
+* Upgrade to JUnit 5.7.1.
+* Upgrade to ByteBuddy 1.10.22.
+* Upgrade to Checkstyle 8.39.
+* Upgrade to Mockito 3.9.0.
+* Upgrade to Gradle 6.8.3.
+
+== 1.9.0 (21 Dec 2020)
+
+* Record errors as distinct in the `DistinctErrorLog` with unique messages.
+* Add controlled read methods to ring buffers. https://github.com/aeron-io/agrona/issues/227[Issue #227].
+* Provide the ability to control the order of precedence when loading system properties. https://github.com/aeron-io/agrona/issues/226[Issue #226].
+* Add Java 16 EA to build matrix.
+* Upgrade to Gauva tests 30.1-jre.
+* Upgrade to JUnit 4.13.1 for vintage engine.
+* Upgrade to Checkstyle 8.38.
+* Upgrade to ByteBuddy 1.10.18.
+* Upgrade to Versions 0.36.0.
+* Upgrade to Mockito 3.6.28.
+* Upgrade to JMH 1.27.
+* Upgrade to Checkstyle 8.36.2.
+* Upgrade to Gradle 6.7.1.
+
+== 1.8.0 (07 Oct 2020)
+
+* Resolved issues with collection classes which implement `Serializable`. https://github.com/aeron-io/agrona/issues/223[Issue #223].
+* Improve javadoc and clean up warnings on Java 15 build.
+* Use `ProcessHandle` to get PID when Java 9+.
+* Add Java 15 to build matrix.
+* Add `MessageDecoderFlyweight.appendTo(StringBuilder)` to interface. https://github.com/aeron-io/agrona/pull/220[PR #220].
+* Upgrade to Shadow 6.1.0.
+* Upgrade to ByteBuddy 1.10.17.
+* Upgrade to Mockito 3.5.13.
+
+== 1.7.2 (18 Sep 2020)
+
+* Fix issue with how direct buffers expand when initial length is set to be 0 or 1.
+* Improve javadoc for `ArrayUtil` and `DeadlineTimerWheel`.
+* Upgrade to JUnit 5.7.0.
+* Upgrade to Version 0.33.0.
+
+== 1.7.1 (06 Sep 2020)
+
+* Fix memory ordering semantics for late joining a broadcast buffer.
+* Catch `Throwable` rather than `RuntimeException` in composite Agents to be consistent with invokers and runners.
+* Upgrade to Versions 0.30.0.
+* Upgrade to Checkstyle 8.36.
+* Upgrade to JMH 1.25.2.
+* Upgrade to Mockito 3.5.10.
+
+== 1.7.0 (28 Aug 2020)
+
+* Improve validation and bounds-checking when using counters.
+* Add registration id and owner id to counters.
+* Add javadoc to explain relaxed memory order semantics on queues. https://github.com/aeron-io/agrona/issues/216[Issue #216].
+* Return `this` for a fluent API with `AtomicCounter.appendToLabel`
+* Fix map capacity calculation. https://github.com/aeron-io/agrona/issues/215[Issue #215].
+* Unmap `MarkFile` in case of an exception.
+* Improving boundary case checking when parsing numbers in direct buffers.
+* Throw exceptions for parsing numbers with `AsciiEncoding` so it behaves like `Integer.parseInt`. https://github.com/aeron-io/agrona/pull/214[PR #214].
+* Change build script to help IDEA get the dependencies for generated code.
+* Upgrade to Gradle 6.6.1.
+* Upgrade to Mockito 3.5.7.
+* Upgrade to JMH 1.25.1.
+* Upgrade to ByteBuddy 1.10.14.
+* Upgrade to Checkstyle 8.35.
+* Upgrade to BND 5.1.2.
+* Upgrade to Versions 0.29.0.
+
+== 1.6.0 (07 Jul 2020)
+
+* Check for integer under and over flow when parsing numbers with `AsciiEncoding`.
+* Allow for wrapping zero length direct buffers at capacity. https://github.com/aeron-io/agrona/issues/211[Issue #211].
+* Upgrade to Shadow 6.0.0.
+* Upgrade to BND 5.1.1.
+* Upgrade to ByteBuddy 1.10.13.
+* Upgrade to Checkstyle 8.34.
+* Upgrade to Gradle 6.5.1.
+
+== 1.5.1 (27 May 2020)
+
+* Fix race conditions with queues for `size`, `isEmpty`, and `peek` methods.
+
+== 1.5.0 (21 May 2020)
+
+* Fix warning message when closing `AgentRunner`.
+* Add ability to update counter metadata key. https://github.com/aeron-io/agrona/pull/209[PR #209].
+* Add `alias` for each `IdleStrategy`.
+* Add `CountersReader.getCounterTypeId(int)`.
+* Change false sharing protection to be forwards compatible with Java 15 class layout.
+* `OffsetEpochNanoClock` as an allocation free alternative `EpochNanoClock`. https://github.com/aeron-io/agrona/pull/206[PR #206].
+* Improve performance of `forEach` and iterators on collections.
+* Have array backed direct buffer not print their content in `toString()` methods.
+* Upgrade to JUnit 5.6.2.
+* Upgrade to javadoc-links 5.1.0.
+* Upgrade to ByteBuddy 10.10.0.
+* Upgrade to Gradle 6.4.1.
+
+== 1.4.1 (28 Mar 2020)
+
+* Supporting building and running on Java 14.
+* Add `decrement()` and `decrementOrdered()` methods to `AtomicCounter`.
+* Add `Thread.onSpinWait()` when retrying in `ManyToManyConcurrentArrayQueue` `offer` and `poll`.
+* Upgrade to Gradle 6.3.
+* Upgrade to BND 5.0.1.
+* Upgrade to JUnit 5.6.1.
+* Upgrade to Mockito 3.3.3.
+
+== 1.4.0 (26 Feb 2020)
+
+* Check for thread interrupt in `AgentRunner` after idling so agent can be closed immediately.
+* Add the ability to close a `CountedErrorHandler`.
+* Add `BufferUtil.free(ByteBuffer)` to free direct `ByteBuffer`s. https://github.com/aeron-io/agrona/pull/205[PR #205].
+* Migrate from Gradle `maven` to `maven-publish`.
+* Allow Maps with a cached iterator to work when calling `toArray` on entries. https://github.com/aeron-io/agrona/pull/202[PR #202].
+* Allow `CloseHelper` to work on expanded type range from `List` to `Collection` of `Closable`.
+* Upgrade to Gradle 6.2.1.
+* Upgrade to Versions 0.28.0.
+* Upgrade to Mockito 3.3.0.
+* Upgrade to BND 5.0.0.
+* Upgrade to JMH 1.23.
+
+== 1.3.0 (21 Jan 2020)
+
+* Add `RingBuffer.tryClaim` implementations for zero copy semantics when encoding into ring buffers. https://github.com/aeron-io/agrona/pull/199[PR #199].
+* Allow for configurable `Charset` when encoding exceptions in `DistinctErrorLog`.
+* Don't read underlying buffer in `AtomicCounter` implementations for `toString()` when closed to help avoid segfaults.
+* Expand the methods in `MutableInteger` and `MutableLong` to be better single-threaded substitutes for `AtomicInteger` and `AtomicLong`. https://github.com/aeron-io/agrona/pull/198[PR #198].
+* Filter dependencies from agent shadow POM.
+* Upgrade to JUnit 5.6.0.
+
+== 1.2.0 (09 Jan 2020)
+
+* Fix concurrency issue with enabling and disabling `HighResolutionTimer`.
+* Add `isLinux` and `isWindows` to `SystemUtil`.
+* Refinements to alignment checking agent.
+* Move CI to GitHub Actions.
+* Upgrade to JUnit 5.6.0-RC1.
+* Update to Guava TestLib 28.2-jre.
+* Upgrade to Checkstyle 8.28.
+* Upgrade to Mockito 3.2.4.
+* Upgrade Gradle 6.0.1.
+* Upgrade to ByteBuddy 1.10.5.
+* Upgrade to javadoc-links 4.1.6.
+
+== 1.1.0 (18 Nov 2019)
+
+* Allow for buffer reference being null in `AsciiSequenceView`. https://github.com/aeron-io/agrona/pull/190[PR #190].
+* Add `DelegatingErrorHandler`.
+* Add method to advance a cached clock.
+* Provide the ability to add a suffix to a counter label after allocation.
+* Provide singleton versions of clocks.
+* Allow for better inlining on direct buffer implementations.
+* Upgrade to javadoc-links 4.1.4.
+* Upgrade to Hamcrest 2.2.
+* Upgrade to Checkstyle 8.26.
+* Upgrade to ByteBuddy 1.10.2.
+* Upgrade to Shadow 5.2.0.
+
+== 1.0.11 (06 Nov 2019)
+
+* Add the ability to update a counter label on the `AtomicCounter` API for the owning user.
+* Provide unboxed implementation of `setValue` on primitive map iterators.
+
+== 1.0.10 (31 Oct 2019)
+
+* Don't expand `ExpandableRingBuffer` when space to the end is insufficient but sufficient space remains after padding and wrapping. https://github.com/aeron-io/agrona/pull/187[PR #187].
+
+== 1.0.9 (25 Oct 2019)
+
+* Improve javadoc for `HighPrecisionClock`.
+* Reduce the amount of false sharing padding on concurrent data structures to save on memory footprint.
+* Implement `AutoClosable` for `LoggingErrorHandler` so it can be closed to help avoid seg faults with unmapped files.
+* Upgrade to javadoc-links 4.1.3.
+* Upgrade to Checkstyle 8.25.
+* Upgrade to Gradle 5.6.3.
+
+== 1.0.8 (04 Oct 2019)
+
+* Provide singleton instances for `NoOpLock` and stateless idle strategies to save on allocation.
+* Open files as read only when mapping as read only. https://github.com/aeron-io/agrona/pull/185[PR #185].
+* Allow partial reset of `NioSelectedKeySet` so that some items may be later retried. https://github.com/aeron-io/agrona/pull/183[PR #183].
+* Allow wrapping of arrays less then minimum default length for primitive array lists. https://github.com/aeron-io/agrona/issues/182[Issue #182].
+* Zero out metadata for counters after use to avoid potential reuse issues.
+* Provide default constructors for idle strategies so they can be dynamically loaded more easily.
+* Upgrade to javadoc-links 4.1.2.
+* Upgrade to Mockito 3.1.0.
+* Upgrade to guava-testlib 28.1.
+* Upgrade to Gradle 5.6.2.
+
+== 1.0.7 (12 Aug 2019)
+
+* Add long variants of `BitUtil.isPowerOfTwo()` and `BitUtil.findNextPositivePowerOfTwo()`.
+* Change tick resolution in `DeadlineTimerWheel` to be a `long` rather than `int` to allow for time unit to be in nanoseconds with tick resolution to be in seconds.
+* Correct implementation of CollectionUtil.validatePositivePowerOfTwo(). https://github.com/aeron-io/agrona/issues/179[Issue #179].
+* Don't update error counters in agent runners and invokers when not running to closed to avoid segfaults.
+* Upgrade to javadoc-links 3.8.2.
+
+== 1.0.6 (31 Jul 2019)
+
+* Improvements to `DeadlineTimerWheel` which include ability to clear, set current tick time, support a greater time range and performance improvements by reducing indirection.
+* Fix `IntArrayQueue` so the tail wraps correctly when poll and offer operations are interleaved.
+* Throw exception when parsing invalid numbers rather than return zero with `AsciiEncoding`. https://github.com/aeron-io/agrona/issues/178[Issue #178].
+
+== 1.0.5 (29 Jul 2019)
+
+* Fix missing public constructors for `ExpandableRingBuffer`.
+
+== 1.0.4 (29 Jul 2019)
+
+* Fix `IntArrayList.hashCode()` method to be compatible with `List.hashCode()`.
+* Add `IntArrayQueue` to store a FIFO list of primitives without boxing.
+* Add `ExpandableRingBuffer` to support the temporary storage of messages in a FIFO manner.
+* Add OSGi manifest headers to JAR. https://github.com/aeron-io/agrona/pull/176[PR #176].
+* Add missing Javadoc.
+* Update licence references to https and an a contributing page.
+* Upgrade to Checkstyle 8.23.
+* Upgrade to javadoc-links 3.8.1.
+* Upgrade to Gradle 5.5.1.
+
+== 1.0.3 (12 Jul 2019)
+
+* Reduce allocation for closeAll operations.
+* Correct generic type check for put on `Object2Object` maps.
+* Use shifts rather than divide operations where appropriate to reduce startup costs.
+* Upgrade to Shadow 5.1.0.
+* Upgrade to Checkstyle 8.22.
+* Upgrade to guava-testlib 28.0-jre.
+* Upgrade to javadoc-links 3.7.5.
+
+== 1.0.2 (12 Jun 2019)
+
+* Improve bounds checks on direct buffers.
+* Add ability to append an ASCII string from direct buffers to an `Appendable` without allocation.
+* Add ability to close a list or var args of Closeables. https://github.com/aeron-io/agrona/pull/174[PR #174].
+* Upgrade to Mockito 2.28.2.
+* Upgrade to Checkstyle 8.21.
+* Upgrade to javadoc-links 3.6.6.
+
+== 1.0.1 (25 May 2019)
+
+* Javadoc improvements.
+* Use a specific exception to indicate number format exceptions in ASCII. https://github.com/aeron-io/agrona/pull/171[PR #171].
+* Fix bug with inverted logic which meant `HighResolutionTimer` did not enable correctly.
+* Upgrade to javadoc-links 3.6.4 to allow for building offline.
+* Upgrade to hamcrest 2.1.
+
+== 1.0.0 (03 May 2019)
+
+* Remove usage of `Unsafe` from cached clocks.
+* Add accessors for `AsciiViewSequence` to make it more useful. https://github.com/aeron-io/agrona/pull/170[PR #170].
+* Add ability to pretty print binary buffers in ASCII. https://github.com/aeron-io/agrona/pull/169[PR #169].
+* Grow backing array for `TransportPoller` by golden ratio to be more GC friendly.
+* Add constructors for initialising `AtomicLongPosition` in tests.
+* Improve Javadoc.
+* Upgrade to io.freefair.javadoc-links 3.2.1.
+* Upgrade to Checkstyle 8.20.
+* Upgrade to Mockito 2.27.0.
+* Upgrade to Gradle 5.4.1.
+
+== 0.9.35 (28 Mar 2019)
+
+* Reduce Java 11 module warnings.
+* Change `HighResolutionTimer` hack to use a more Java 11 friendly approach and allow faster operation on Windows.
+* Add the ability to apply mapping mode when mapping files.
+* Fix Javadoc links so they use HTTPS and work with OpenJDK and Java 11.
+* Upgrade Checkstyle DTD and checkstyle method Javadoc.
+* Upgrade to Mockito 2.25.1.
+* Upgrade to Gradle 5.3.1.
+
+== 0.9.34 (10 Mar 2019)
+
+* Include links in generated Javadoc.
+* Capture scale of unknown reference size when compressed oops are used.
+* Avoid reloading of fields in concurrent data structures when intermixed with volatile loads for improved performance.
+* Provide `SystemUtil.tmpDirName()`.
+* Enable the setting of mapping mode on `MappedResizableBuffer` so mappings can be read-only. https://github.com/aeron-io/agrona/issues/168[Issue #168].
+* Improve `SemanticVerision` class with `toString()` method and allow a 0 patch version.
+* Upgrade to Mockito 2.25.0.
+* Upgrade to Checkstyle 8.18.
+* Upgrade to Gradle 5.2.1 and remove support for OSGI as it is now deprecated.
+* Upgrade to Shadow 5.0.0.
+
+== 0.9.33 (16 Feb 2019)
+
+* Be more specific about synchronizing on latches in `ShutdownSignalBarrier`. https://github.com/aeron-io/agrona/pull/167[PR #167].
+* Add `SemanticVersion` for composing semantic version levels into an `int`.
+* Add ability to disable array printing on direct buffers during debugging via a system property. https://github.com/aeron-io/agrona/pull/166[PR #166].
+
+== 0.9.32 (05 Feb 2019)
+
+* Add `Automatic-Module-Name` to help enable modular programs to use Agrona.
+* Upgrade to Mockito 2.24.0.
+* Upgrade to Byte Buddy 1.9.7.
+
+== 0.9.31 (30 Jan 2019)
+
+* Fix issue with merging properties from files into system properties. https://github.com/aeron-io/agrona/pull/164[Issue #164].
+* Add support for ASCII encoding natural numbers into direct buffers. https://github.com/aeron-io/agrona/pull/163[PR #163].
+* Update Javadoc on use of direct buffers to reflect usage from a state perspective. https://github.com/aeron-io/agrona/issues/161[Issue #161].
+* Add `SystemUtil.threadDump()` to allow for the programmatic triggering of a JVM thread dump.
+* Upgrade to Checkstyle 8.17.
+
+== 0.9.30 (21 Jan 2019)
+
+* Allow multiple `ShutdownSignalBarrier`s to be registered in the same JVM.
+* Add `toString` method to bi int/long maps.
+* Initialise `BroadcastReceiver` to latest position so that catch up is O(1).
+* Upgrade to Shadow 4.0.4.
+
+== 0.9.29 (06 Jan 2019)
+
+* On interrupt call the close failed action handler in 'AgentRunner'.
+* Fix issue with unblocking a full ring buffer. https://github.com/aeron-io/agrona/issues/160[Issue #160].
+* Upgrade to Checkstyle 8.16.
+
+== 0.9.28 (16 Dec 2018)
+
+* Warnings clean up in code base.
+* Upgrade to Checkstyle 8.15.
+* Upgrade to Guava testlib-27.0.1.
+* Upgrade to Gradle 4.10.3.
+
+== 0.9.27 (25 Nov 2018)
+
+* Cache PID so it is only looked up once.
+* Check if wrapping the same buffer in direct buffers to avoid the GC write barrier where possible.
+* Added `AsciiSequenceView` for windowing over a `DirectBuffer` to read it as a sequence of ASCII characters.
+* Upgrade to Shadow 4.0.3.
+* Update to Mockito 2.23.4.
+* Update to Byte Buddy 1.9.3.
+
+== 0.9.26 (29 Oct 2018)
+
+* This release is the first to support building and running on Java 11.
+* Provide access to common SBE methods in flyweight interfaces in a consistent manner.
+* Add a matrix of Java 8 and 11 builds for OpenJDK and Oracle JDK on Travis.
+* Make iterators and collections within maps public so that iteration can occur on the primitive types without down-casting.
+* Upgrade to guava-testlib:27.0 for collection conformance.
+* Upgrade to Checkstyle 8.14.
+* Update to Mockito 2.23.0.
+* Update to Byte Buddy 1.9.0.
+
+== 0.9.25 (05 Oct 2018)
+
+* Simplified `BitUtil.align` which may give a small performance gain.
+* Improve construction and expansion performance of `Object2ObjectHashMap` and `ObjectHashSet`.
+* Add build to Travis.
+* Upgrade to Shadow 4.0.0.
+* Upgrade to Gradle 4.10.1.
+
+== 0.9.24 (12 Sep 2018)
+
+* Avoid starvation of later Agents when `DynamicCompositeAgent` is used and one throws an exception.
+* Fix so the source compiles under Java 11.
+* Upgrade to Byte Buddy 1.8.21.
+* Upgrade to Mockito 2.22.0.
+* Upgrade to Gradle 4.10.
+
+== 0.9.23 (18 Aug 2018)
+
+* Add support for maps with null values. https://github.com/aeron-io/agrona/pull/154[PR #154].
+* Fix memory leak with calling remove on entries iterator on maps keyed by object.
+* Fix issue with RingBuffers so they can work in big endian CPUs.
+* Upgrade to guava-testlib 25.1.
+* Upgrade to Checkstyle 8.12.
+* Upgrade to Byte Buddy 1.8.15.
+* Upgrade to Mockito 2.21.0.
+
+== 0.9.22 (30 Jul 2018)
+
+* Added `ErrorLogReader.hasErrors()`.
+* If no active timers, then advance `currentTick` on poll if necessary. Add `DeadlineTimerWheel.resetStartTime()` method support.
+* Override write and flush methods on `DirectBufferOutputStream` to remove the unneeded `IOException`.
+* Correct resulting offset set in bounds check when writing into a `DirectBufferOutputStream`. https://github.com/aeron-io/agrona/issues/150[Issue #150].
+* Add `References` helper method that can be intrinsified. https://github.com/aeron-io/agrona/pull/149[PR #149].
+* Upgrade to Gradle 4.9.
+* Upgrade to Mockito 2.20.1.
+
+== 0.9.21 (16 Jul 2018)
+
+* Provide a capacity method to all map types.
+* Improve efficiency of rehash as maps grow.
+* Null out keys in maps that have an object reference for key to avoid memory leak on removal.
+* Upgrade to Mockito 2.19.1.
+* Upgrade to Byte Buddy 1.8.13.
+* Upgrade to guava-testlib 23.5.
+
+== 0.9.20 (07 Jul 2018)
+
+* Remove the use of `sun.misc.Unsafe` from tests so that they no longer need to be forked.
+* Perform a single scan over existing errors in the `DistinctErrorLog` to reduce the significant allocation of walking stack traces.
+* Fix issue with putting `Integer.MIN_VALUE` rather than `Long.MIN_VALUE` into a buffer as ASCII for the `Long.MIN_VALUE`. https://github.com/aeron-io/agrona/issues/145[Issue #145].
+* Upgrade to Checkstyle 8.11.
+* Upgrade to Gradle 4.8.1.
+
+== 0.9.19 (03 Jul 2018)
+
+* Add the ability to provide an expandable `MutableDirectBuffer` to `CopyBroadcastReceiver`.
+* Keep reference to underlying `ByteBuffer` in `AtomicCounter`, `UnsafeBufferPosition`, and `UnsafeBufferStatusIndicator`.
+* Fix `putBytes()` methods in `MappedResizeableBuffer`. https://github.com/aeron-io/agrona/pull/144[PR #144].
+* Resent thread interrupt flag in `SleepingMillisIdleStrategy`.
+* Upgrade to Byte Buddy 1.8.10.
+* Upgrade to Mockito 2.19.0.
+* Upgrade to Checkstyle 8.10.1.
+
+== 0.9.18 (04 May 2018)
+
+* Allow caller to control `AgentRunner.close()` timeout behaviour. https://github.com/aeron-io/agrona/pull/141[PR #141].
+* Handle race condition between `File.length()` and `FileChannel.size()` in mark files. https://github.com/aeron-io/agrona/pull/140[PR #140].
+* Upgrade to Shadow 2.0.4.
+* Upgrade to Checkstyle 8.10.
+
+== 0.9.17 (29 Apr 2018)
+
+* Provide HMTL 5 version to javadoc under Java 10 to avoid warning and fix HTML tags.
+* Use `Constructor` for dynamically creating instances to avoid deprecated warning under Java 10.
+* Remove compile time dependency on `sun.nio.ch.FileChannelImpl` to support building under Java 10.
+* Upgrade to Gradle 4.7.
+
+== 0.9.16 (23 Apr 2018)
+
+* Remove dependency on `sun.nio.ch.DirectBuffer` for better Java 10 support.
+* Improve the construction efficiency of `ManyToManyConcurrentArrayQueue`.
+* Add `Object2ObjectHashMap` as an open addressing option for a cache friendly alternative to `HashMap`.
+* Provide option to allocate iterators and entries for maps for conformance.
+* Add Guava conformance test suite for maps/sets and fix compliance issues.
+* Add `AsciiEncoding.parseInt()` and `parseLong()` for parsing integer values from a `CharSequence` without allocation.
+* Include generated classes in the Javadoc.
+* Upgrade to Mockito 2.18.3.
+* Upgrade to ByteBuddy 1.8.5.
+* Upgrade to Checkstyle 8.9.
+* Upgrade to Gradle 4.6.
+* Upgrade to Shadow 2.0.3.
+
+== 0.9.15 (09 Mar 2018)
+
+* Add fast unordered remove methods to primitive arrays lists. PR https://github.com/aeron-io/agrona/pull/135[#135].
+* Make collections non final so they can be sub-classed. Issue https://github.com/aeron-io/agrona/issues/133[#133].
+
+== 0.9.14 (28 Feb 2018)
+
+* Improve error message for unaligned buffer access. PR https://github.com/aeron-io/agrona/pull/130[#130]
+
+== 0.9.13 (23 Feb 2018)
+
+* Add `CountersReader.forEach` method that gives basic label information and the counter value.
+* Improve Agents error handling in aggressive shutdown scenarios.
+* Add `SystemUtil.getPid()`.
+* Add `MarkFile` to indicate the presence of a running service with supporting meta information.
+* Add toString methods to idle strategies for debugging.
+* Fix bug with `IntArrayList.addAt()` method. PR https://github.com/aeron-io/agrona/issues/123[#125].
+* Change `CountersManager` to allow for a cool down period before a counter is reused.
+* Remove unnecessary throws clauses where APIs could do so.
+* Honour List equals and hash code implementations for primitive lists.
+* Improve collections iterators to be more compatible with standard collections and reduce footprint. Some of the changes are breaking as `IntIterator` has been replaced by inner classes.
+* Provide the ability to lookup a deadline for a given timer id on the `DeadlineTimerWheel`. Issue https://github.com/aeron-io/agrona/issues/123[#123].
+* Return a boolean to indicate if `DeadlineTimerWheel.cancelTimer()` was successful.
+* Make hash set equals and hash code methods compatible with HashSet. PR https://github.com/aeron-io/agrona/pull/121[#121]
+* Upgrade to JShadow 2.0.2.
+* Upgrade to Checkstyle 8.8.
+* Upgrade to Gradle 4.5.1.
+
+== 0.9.12 (15 Dec 2017)
+
+* Add methods to put and parse numbers in ASCII format with direct buffers. https://github.com/aeron-io/agrona/pull/118[PR #118].
+* Add methods to put a range of a `String` in ASCII into direct buffers.
+* Only allocate sub collections and iterators if used in hash map implementations.
+* Provide a flag to hash set construction so that they don't cache iterators. https://github.com/aeron-io/agrona/pull/116[PR #116].
+* Rework `DeadlineTimerWheel` API to have consistent naming and don't advance the wheel until a tick is consumed.
+* Remove `IOException` for direct buffer stream wrapper signatures that cannot be thrown. https://github.com/aeron-io/agrona/pull/113[PR #113].
+* Upgrade to Mockito 2.15.0.
+* Upgrade to Checkstyle 8.5
+* Upgrade to JShadow 2.0.1.
+* Upgrade to Gradle 4.4.
+
+== 0.9.11 (15 Nov 2017)
+
+* Rework `DeadlineTimerWheel` to be more usable and efficient. API changes are breaking.
+* Apply cacheline padding to cached clocks to avoid false sharing.
+* Remove clearing of interrupted flag if agent thread is interrupted. PR https://github.com/aeron-io/agrona/pull/112[#112].
+* Raise the interrupted flag if the agent runner thread is interrupted in `AgentRunner.close()`. PR https://github.com/aeron-io/agrona/pull/112[#112].
+* Call `Agent.onClose()` if constructed even if a thread did not start via the `AgentRunner` to allow for cleanup.
+* Add support for querying the state of a counter and lingering counters to `CountersReader` and `CountersManager`.
+* Allow `AtomicCounter` to be publicly constructed and bring method names for increment inline with `AtomicBuffer`.
+* Upgrade to Byte Buddy 1.7.9.
+* Upgrade to Mockito 2.12.0.
+* Upgrade to Checkstyle 8.4.
+
+== 0.9.10 (01 Nov 2017)
+
+* Add new more efficient `DeadlineTimerWheel` implementation and remove old one.
+* Add the ability to parse size and time values with units from system properties.
+* Update to Mockito 2.11.0.
+
+== 0.9.9 (16 Oct 2017)
+
+* Improve the performance of iterator setup in collections.
+* Add Object2IntHashMap.
+* Add `HighResolutionClock` and associated interfaces.
+
+== 0.9.8 (11 Oct 2017)
+
+* Collection types implement `Serializable`.
+* Change `BackoffIdleStrategy` to avoid false sharing on card table and adjacent objects.
+* Added `SystemUtil.loadPropertiesFiles()` to load a list of files, resources, URLs into System Properties.
+* Added `SystemUtil.isDebuggerAttached()` so that code such as timeouts can be adjusted.
+* Add `toString()` methods for direct buffer implementations. See issue https://github.com/aeron-io/agrona/issues/106[#106].
+* Upgrade to Checkstyle 8.3.
+* Upgrade to Byte Buddy 1.7.4.
+* Upgrade to Mockito 2.10.0.
+
+== 0.9.7 (21 Aug 2017)
+
+* Added `ConcurrentCountersManager` for threadsafe counters allocation and reclamation.
+* Restrict hash based collection to have a load factor in the range to 0.1 to 0.9.
+* Restrict the minimum capacity for Maps to be 8.
+* Ensure that get() complies with the `Map` contract of returning null if the element is missing, Issue https://github.com/aeron-io/agrona/issues/98[#98].
+* Make the lifecycle consistent between `AgentRunner` and `AgentInvoker`.
+* `Agent` can now self terminate by throwing an `AgentTerminationException`.
+* Added `MutableInt` and `MutableLong`.
+* Ability to allocate a counter without string or lambda allocation.
+* Added `Agent.onStart()` hook for initialisation.
+* Added `CachedEpochClock` and `CachedNanoClock`.
+* Added `DynamicCompositeAgent` for runtime adding and removing of Agents into a composite.
+* Support other character sets than UTF-8 for the `CountersManager`.
+* Upgrade to ByteBuddy 1.6.14.
+* Upgrade to Mockito 2.8.47.
+* Upgrade to Checkstyle 8.1.
+* Upgrade to sevntu-checks:1.24.1.
+* Upgrade to Gradle 4.1.
+
+== 0.9.6 (14 May 2017)
+
+* Add `ExpandableDirectByteBuffer`.
+* Fix behaviour of `Int2IntHashMap` when being used via `Map<Integer, Integer>` interface.
+* Added `SleepingMillisIdleStrategy`.
+* Added `AgentInvoker`.
+* Provide a `NoOpLock` implementation to allow for the eliding of a `ReentrantLock`.
+* Improve performance when zeroing our a new or mapped file.
+* Reduce use of `String.format()`.
+* Make `AgentRunner.close()` more robust.
+* Use platform specific new lines for error messages.
+* Clear `missingValue` when `IntHashSet.clear()` is called.
+* Upgrade to Checkstyle 7.7.
+
+== 0.9.5 (12 Apr 2017)
+
+* Grow `ExpandableArrayBuffer` by the golden ratio rather than 2.
+* Add the ability to drain queues to a limit rather than completely.
+* Use platform specific new line message output.
+* Make `AgentRunner.close()` a bit more robust to startup race conditions.
+* Ensure the `missingValue` is reset when `IntHashSet.clear()` is called.
+* Upgrade to Mockito 2.7.22.
+* Upgrade to Gradle 3.5.
+
+== 0.9.4 (06 Apr 2017)
+
+* Fixed and improved the efficiency of bulk operations on collections with particular focus on `IntHashSet`.
+* Improve efficiency (x2) of the iterators on hashed collections.
+* Improve efficiency of `toString()` methods on collections.
+* Add an efficient copy constructor to `Int2ObjectHashMap`.
+* Change `Position` and `StatusIndicator` from interfaces to abstract classes to benefit from CHA (Class Hierarchy Analysis).
+* Added `ArrayListUtil`.
+* Reduce default load factor in hash based collections from 0.67 to 0.55 to help avoid clustering resulting from linear probing.
+* Update hash functions to better spread out a monotonic sequence of keys in collections.
+* Increase `AtomicCounter` label length from 124 to 380 bytes to allow for longer more descriptive labels.
+* Add `equals()` and `hashCode()` methods to the collections.
+* Clarify Javadoc for `RingBuffer.read()`. Issue https://github.com/aeron-io/Agrona/issues/95[#95].
+* Fix missing 0xFF mask on `DirectBufferInputStream.read()`. PR https://github.com/aeron-io/Agrona/pull/94[#94].
+* Upgrade to Checkstyle 7.6.1.
+* Upgrade to sevntu-checks 1.23.1.
+* Upgrade to Mockito 2.7.21.
+* Upgrade to Byte Buddy 1.6.12.
+* Upgrade to Gradle 3.4.1.
+
+== 0.9.3 (22 Feb 2017)
+
+* Fixed project code style violations.
+* Reworked primitive hash sets so they don't expose the missing value concept and allow all possible values and fix bug relating to collections containing the missing value. *Note:* This has caused an API change to the `IntHashSet` and `LongHashSet` constructors, ensure you check your arguments here.
+* Java https://github.com/aeron-io/Agrona/wiki/Using-Agrona-agent[Agent] for checking access alignment to direct buffers.
+* Upgrade to Checkstyle 7.5.1.
+* Upgrade to Byte Buddy 1.6.9.
+* Upgrade to Gradle 3.4.
+
+== 0.9.2 (23 Jan 2017)
+
+* Change artifact output from Agrona to agrona because some build systems have issues with case.
+* Improve performance of string methods on direct buffers.
+* Add primitive counter maps.
+* Bug fix primitive to primitive maps when the `missingValue` is used as a key.
+* Add ASCII codec methods to direct buffers.
+* Fix `isEmpty()` on multi-producer queues.
+* Remove explicit dependency of com.sun.media for those who do not use the `HighResolutionTimer`.
+* More efficient implementation of `equals()` and `hashCode()` on primitive array lists.
+* More lenient and correct implementation of `equals()` and `hashCode()` in hash sets.
+* Upgrade to Mockito 2.6.8.
+* Upgrade to Checkstyle 7.4.
+* Upgrade to sevntu-checks 1.23.0.
+* Upgrade to Gradle 3.3.
+
+== 0.9.1 (20 Dec 2016)
+
+* Provide more efficient set based operations on `Set`s when used with the same type.
+* Notify `Agent` role name when timeout on awaiting shutdown to help debugging.
+* Added `ShutdownSignalBarrier` that response to SIGINT and SIGTERM.
+* Allow signal barriers to created on a different thread and be programmaticly signalled.
+* Better handle overflow when lists reach maximum size.
+* Grow primitive array lists based on golden ratio for better storage reclamation.
+* Upgrade to Checkstyle 7.3.
+* Upgrade to sevntu-checks 1.22.0.
+* Upgrade to Mockito 2.2.29.
+* Upgrade to Gradle 3.2.1.
+
+== 0.9.0 (17 Nov 2016)
+
+* Only report errors in `AgentRunner` when it is running.
+* Added Gradle OSGi plugin.
+* Upgrade to sevntu-checks 1.21.1.
+* Upgrade to Mockito 2.2.16.
+* Upgrade to Gradle 3.2.
+
+== 0.5.5 (03 Nov 2016)
+
+* Use primitive typed methods in `CountersManager` to avoid boxing.
+* Add `popX()` and `pushX` methods to `IntArrayList` and `LongArrayList`.
+* Upgrade to Mockito 2.2.9.
+* Upgrade to Checkstyle 7.2.
+
+== 0.5.5 (15 Oct 2016)
+
+* `HighResolutionTimer` for for increasing resolution of sleep periods on Windows.
+* Make closing of `AtomicCounter`s and `Position`s idempotent.
+* Bugfix for reading DistinctErrorLong with incorrect label offset.
+* Significant performance improvements on consume side of OneToOneRingBuffer.
+* ObjectHashSet for open addressing sets of object references.
+* Support `remove()` on hash set iterators.
+* Added `computeIfAbsent()` to primitive maps.
+* Array backed lists of long and int to avoid boxing.
+* Deprecate `TimerWheel` and migrated it to https://github.com/Spikhalskiy/hashed-wheel-timer[here…]
+* Upgrade to Checkstyle 7.1.2.
+* Upgrade to Gradle 3.1.
+
+== 0.5.4 (24 Aug 2016)
+
+* Added controllable idle strategy.
+* Change `UnsafeBuffer.setMemory()` so it is more likely to call `memset()` for greater performance.
+* Expose the address adjustment from wrapping `ByteBuffer`s at offsets.
+* `ThreadFactor` support for starting Agents.
+* Upgrade to Gradle 2.14.1.
+
+== 0.5.3 (22 Jul 2016)
+
+* Support read-only `ByteBuffer`s with `UnsafeBuffer`.
+* Remove a layer of indirection for `Position`s and `AtomicCounter`s to reduce data dependent loads.
+* Perform upfront bounds checking for `Position`s and `AtomicCounter`s for increased performance.
+* Update to Checkstyle 7.0.
+
+== 0.5.2 (29 Jun 2016)
+
+* Add https://github.com/aeron-io/simple-binary-encoding[SBE] interfaces for flyweights.
+* Allow access to underlying `FileChannel` for `MappedResizableBuffer`.
+* Javadoc improvements.
+* Make `isEmpty()` consistent with `poll()` for queue behaviour.
+* Update to Gradle 2.14.
+* Update to Checkstyle 6.19.
+
+== 0.5.1 (23 May 2016)
+
+* Ability to allocate an aligned direct `ByteBuffer`.
+* Change loadFactor on maps from double to float thus saving 4 bytes per map.
+* Update to Gradle 2.13.
+* Update to Checkstyle 6.18.
+
+== 0.5.0 (22 Apr 2016)
+
+* `ExpandableArrayBuffer` and `ExpandableDirectBufferOutputSteam` so https://github.com/aeron-io/simple-binary-encoding[SBE] can write messages when the length is not known upfront.
+* `ThreadHints.onSpinWait()` and apply it to `IdleStrategy`s.
+* Primitive specialised `replace()` methods on primitive keyed maps.
+* Update to Checkstyle 6.17.
+
+== 0.4.13 (24 Mar 2016)
+
+* Improved `ManyToOneConcurrentLinkedQueue` to avoid GC Nepotism and promotion issues.
+* Migrate from `uk.co.real_logic.agrona` to `org.agrona` package structure.
+* Group counters and related classes to the status package.
+* Update to Checkstyle 6.16.1
+* Update to Gradle 1.12
+
+== 0.4.12 (01 Mar 2016)
+
+* Added keys and type metadata to `CountersManager`.
+* Fix for negative values in compound keys on `BiInt2ObjectMap`.
+* Added native byte order string methods to direct buffers.
+* Added `DistinctExceptionLog` and friends.
+* Improve efficiency of bounds checks on direct buffers.
+* Update to Gradle 2.11
+
+== 0.4.11 (06 Feb 2016)
+
+* Improved efficiency of bounds checking on `UnsafeBuffer`.
+* Add `equals()`, `hashCode()`, and `compareTo()` methods to `UnsafeBuffer`.
+* Reduce memory footprint on primitive hash maps.
+* Bugfix for unblocking `ManyToOneRingBuffer` at end of the buffer.
+* Improve `hashCode()` on `Int2IntHashMap` and `Long2LongHashMap`.
+* Fix missing Iterator reset on `Int2IntHashMap` and `Long2LongHashMap`.
+
+== 0.4.10 (18 Jan 2016)
+
+* Update Checkstyle to add indentation checks and fix violations.
+* Fix regression of `UnsafeBuffer` using `int` for the off-heap address to be long again.
+* Remove capacity and mask fields from some maps to allow for better compiler optimisation of bounds checks.
+* Remove mask field from queues and calculate based on capacity to save a field load.
+* Swap equals order on contains(Object) methods of maps to allow for better compiler inlining.
+* Added `toString()` method to primitive2primitive maps.
+
+== 0.4.9 (06 Jan 2016)
+
+* Expose iteration APIs on primitive maps to avoid autoboxing.
+* Include generated classes in the source JAR.
+* Revert `MemoryUsage` wrapper for `Unsafe` to take out layer of indirection.
+* Add some missing Javadoc.
+* Added `OneToOneRingBuffer` implementation.
+* Update to Gradle 2.10.
+* Update to Checkstyle 6.14.1.
+
+== 0.4.8 (26 Nov 2015)
+
+* Generate `Long2ObjectHashMap`
+* Added `[Int|Long]2ObjectCache`
+* Expand primitive map functionality for values and keys.
+* Update to Gradle 2.9
+
+== 0.4.7 (13 Nov 2015)
+
+* Bugfixes for the `RingBuffer` and `LruCache`.
+
+== 0.4.6 (03 Nov 2015)
+
+* `RingBuffe` can be unblocked when the producer dies.
+* Expose positions counters from `RingBuffer` for tracking.
+* Growable primitive Sets.
+* `InputStream` and `OutputStream` wrappers for direct buffers.
+* Free up space in queues as they are drained.
+* Improve`CompositeAgent` error handling and allow arbitrary number of agents.
+* Update to Gradle 2.8 and Checkstyle 6.11.2.
+
+== 0.4.5 (14 Oct 2015)
+
+* Performance improvements to FIFO structures
+* Allow for better inlining of `UnsafeBuffer` bounds check.
+
+== 0.4.4 (25 Sep 2015)
+
+* Performance improvements for iteration of hash maps.
+* Reduced clustering in hash maps.
+* Improved performance of bounds checks on `UnsafeBuffer`.
+* Fix race conditions in rapidly cycling the lifecycle of AgentRunners in tests.
+* Update to Grade 2.7.
+
+== 0.4.3 (26 Aug 2015)
+
+* Added `ManyToManyConcurrentArrayQueue` and `ManyToOneConcurrentLinkedQueue`.
+* Off-heap buffer for storing records.
+* Fix bug with primitive maps size method.
+* Added `NioSelectedKeySet`.
+
+== 0.4.2 (27 Jul 2015)
+
+* Improved Javadoc.
+
+== 0.4.1 (20 Jul 2015)
+
+* Improved Javadoc.
+* Bugfixes to primitive hash maps.
+* Update to Gradle 2.5.
+
+== 0.4.0 (2015-07-09)
+
+* Removed unused classes.
+* Added `EpochClock`.
+* Added `LruCache`.
+* Fixed Counter reset bug on allocation.
+* Update to Gradle 2.4.
+
+== 0.3.1 (2015-04-27)
+
+* Verify alignment on off-heap data structures.
+* Added SIGINT support.
+* Bugfix for Broadcast Buffer.
+
+== 0.3.0 (2015-03-18)
+
+* Idle strategies and `AgentRunner`.
+* Hash Sets.
+* Source expander.
+
+== 0.2.0 (2015-02-10)
+
+* Clean up release after extraction from Aeron.
+
+== 0.1.0 (2015-01-16)
+
+* Initial Release.
