@@ -97,6 +97,10 @@ class FlagSample
 }
 ----
 
+* **[Breaking]** Agrona jars no longer provide OSGI metadata as `bnd` plugin was removed, because it breaks
+compatibility with Gradle 9.1 and causes self-dependency via `baseline` task.
+
+
 * AtomicCounter minor javadoc improvements. (https://github.com/aeron-io/agrona/pull/338[#338])
 
 * Upgrade to `Gradle` 9.1.0.
