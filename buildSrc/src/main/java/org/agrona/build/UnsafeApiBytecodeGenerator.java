@@ -91,8 +91,7 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
             final TypeDescription.ForLoadedType fieldType = new TypeDescription.ForLoadedType(Field.class);
 
             final MethodDescription.InDefinedShape classForName = classType.getDeclaredMethods()
-                .filter(hasSignature(new MethodDescription.SignatureToken(
-                "forName",
+                .filter(hasSignature(new MethodDescription.SignatureToken("forName",
                     new TypeDescription.ForLoadedType(Class.class),
                     new TypeDescription.ForLoadedType(String.class))))
                 .getOnly();
@@ -170,8 +169,7 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
                     new TypeDescription.ForLoadedType(Class.class)),
                 JavaConstant.MethodHandle.of(new MethodDescription.Latent(
                 implementationContext.getInstrumentedType(),
-                    new MethodDescription.Token(
-                "bootstrapArrayBaseOffset",
+                    new MethodDescription.Token("bootstrapArrayBaseOffset",
                 Modifier.PRIVATE | Modifier.STATIC,
                         new TypeDescription.Generic.OfNonGenericType.ForLoadedType(CallSite.class),
                 List.of(
