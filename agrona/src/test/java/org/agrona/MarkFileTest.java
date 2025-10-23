@@ -22,9 +22,11 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -35,9 +37,11 @@ import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MarkFileTest
@@ -125,7 +129,7 @@ class MarkFileTest
         final int totalFileLength = 256 * 1024;
         final MappedByteBuffer mappedByteBuffer = MarkFile.mapNewOrExistingMarkFile(
             file,
-            false,
+            true,
             0,
             8,
             totalFileLength,
@@ -138,6 +142,31 @@ class MarkFileTest
         assertTrue(file.exists());
         assertEquals(totalFileLength, file.length());
         BufferUtil.free(mappedByteBuffer);
+    }
+
+    @Test
+    @SuppressWarnings("indentation")
+    void shouldFailWithExceptionIfFileAlreadyExistsAndCreationFails() throws IOException
+    {
+        final File file = new File(tempDir, "existing.file");
+        Files.createFile(file.toPath());
+        assertTrue(file.exists());
+        assertEquals(0, file.length());
+
+        final UncheckedIOException exception = assertThrowsExactly(
+            UncheckedIOException.class,
+            () -> MarkFile.mapNewOrExistingMarkFile(
+            file,
+            false,
+            0,
+            8,
+            1024,
+            1000,
+            SystemEpochClock.INSTANCE,
+            (version) -> {},
+            (msg) -> {}));
+        final IOException cause = exception.getCause();
+        assertInstanceOf(FileAlreadyExistsException.class, cause);
     }
 
     @Test
@@ -166,7 +195,7 @@ class MarkFileTest
         assertNull(versions.poll());
 
         final IllegalStateException ise = assertThrows(IllegalStateException.class, supplier::get);
-        assertEquals("active Mark file detected", ise.getMessage());
+        assertEquals("active mark file detected: " + markFile1.markFile(), ise.getMessage());
         assertEquals(123, versions.poll());
 
         markFile1.timestampOrdered(-1);

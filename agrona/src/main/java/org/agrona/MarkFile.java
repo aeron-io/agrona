@@ -20,18 +20,20 @@ import org.agrona.concurrent.UnsafeBuffer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.SPARSE;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -57,21 +59,21 @@ public class MarkFile implements AutoCloseable
     private final AtomicBoolean isClosed = new AtomicBoolean();
 
     /**
-     * Create a directory and mark file if none present. Checking if an active Mark file exists and is active.
-     * Old Mark file is deleted and recreated if not active.
+     * Create a directory and mark file if none present. Checking if an active mark file exists and is active.
+     * Old mark file is deleted and recreated if not active.
      * <p>
-     * Total length of Mark file will be mapped until {@link #close()} is called.
+     * Total length of mark file will be mapped until {@link #close()} is called.
      *
-     * @param directory             for the Mark file.
-     * @param filename              of the Mark file.
+     * @param directory             for the mark file.
+     * @param filename              of the mark file.
      * @param warnIfDirectoryExists for logging purposes.
      * @param dirDeleteOnStart      if desired.
      * @param versionFieldOffset    to use for version field access.
      * @param timestampFieldOffset  to use for timestamp field access.
-     * @param totalFileLength       to allocate when creating new Mark file.
+     * @param totalFileLength       to allocate when creating new mark file.
      * @param timeoutMs             for the activity check (in milliseconds).
      * @param epochClock            to use for time checks.
-     * @param versionCheck          to use for existing Mark file and version field.
+     * @param versionCheck          to use for existing mark file and version field.
      * @param logger                to use to signal progress or null.
      */
     public MarkFile(
@@ -113,7 +115,7 @@ public class MarkFile implements AutoCloseable
      * Create a {@link MarkFile} if none present. Checking if an active {@link MarkFile} exists and is active.
      * Existing {@link MarkFile} is used if not active.
      * <p>
-     * Total length of Mark file will be mapped until {@link #close()} is called.
+     * Total length of mark file will be mapped until {@link #close()} is called.
      *
      * @param markFile             to use.
      * @param shouldPreExist       or not.
@@ -430,7 +432,7 @@ public class MarkFile implements AutoCloseable
                         versionCheck,
                         logger))
                     {
-                        throw new IllegalStateException("active Mark file detected");
+                        throw new IllegalStateException("active mark file detected: " + markFile);
                     }
                 }
                 finally
@@ -454,6 +456,7 @@ public class MarkFile implements AutoCloseable
      * @param epochClock epoch clock.
      * @return {@link MappedByteBuffer} for the {@link MarkFile}.
      * @throws IllegalStateException if deadline timeout is reached.
+     * @throws UncheckedIOException  in case of I/O errors.
      */
     @SuppressWarnings("try")
     public static MappedByteBuffer waitForFileMapping(
@@ -468,7 +471,7 @@ public class MarkFile implements AutoCloseable
                 {
                     if (epochClock.time() > deadlineMs)
                     {
-                        throw new IllegalStateException("Mark file is created but not populated");
+                        throw new IllegalStateException("mark file is created but not populated: " + markFile);
                     }
 
                     fileChannel.close();
@@ -478,14 +481,14 @@ public class MarkFile implements AutoCloseable
 
                 if (null != logger)
                 {
-                    logger.accept("INFO: Mark file exists: " + markFile);
+                    logger.accept("INFO: mark file exists: " + markFile);
                 }
 
                 return fileChannel.map(READ_WRITE, 0, size);
             }
             catch (final IOException ex)
             {
-                throw new IllegalStateException("cannot open mark file", ex);
+                throw new UncheckedIOException("cannot open mark file", ex);
             }
         }
     }
@@ -503,6 +506,7 @@ public class MarkFile implements AutoCloseable
      * @return {@link MappedByteBuffer} for the {@link MarkFile}.
      * @throws IllegalStateException if timeout is reached.
      * @throws IllegalStateException if {@link MarkFile} has wrong size.
+     * @throws UncheckedIOException  in case of I/O errors.
      */
     public static MappedByteBuffer mapExistingMarkFile(
         final File markFile,
@@ -519,27 +523,28 @@ public class MarkFile implements AutoCloseable
         {
             if (epochClock.time() > deadlineMs)
             {
-                throw new IllegalStateException("Mark file not created: " + markFile.getName());
+                throw new IllegalStateException("mark file not created: " + markFile);
             }
 
             sleep(16);
         }
 
         final MappedByteBuffer byteBuffer = waitForFileMapping(logger, markFile, deadlineMs, epochClock);
-        if (byteBuffer.capacity() < (timestampFieldOffset + SIZE_OF_LONG))
-        {
-            throw new IllegalStateException("Mark file mapping is to small: capacity=" + byteBuffer.capacity());
-        }
-
         try
         {
+            if (byteBuffer.capacity() < (timestampFieldOffset + SIZE_OF_LONG))
+            {
+                throw new IllegalStateException("mark file mapping is to small: capacity=" + byteBuffer.capacity() +
+                    ", file=" + markFile);
+            }
+
             final UnsafeBuffer buffer = new UnsafeBuffer(byteBuffer);
             int version;
             while (0 == (version = buffer.getIntVolatile(versionFieldOffset)))
             {
                 if (epochClock.time() > deadlineMs)
                 {
-                    throw new IllegalStateException("Mark file is created but not initialised");
+                    throw new IllegalStateException("mark file is created but not initialised: " + markFile);
                 }
 
                 sleep(1);
@@ -551,26 +556,26 @@ public class MarkFile implements AutoCloseable
             {
                 if (epochClock.time() > deadlineMs)
                 {
-                    throw new IllegalStateException("no non-zero timestamp detected");
+                    throw new IllegalStateException("no non-zero timestamp detected: " + markFile);
                 }
 
                 sleep(1);
             }
         }
-        catch (final Exception ex)
+        catch (final RuntimeException ex)
         {
             BufferUtil.free(byteBuffer);
-            LangUtil.rethrowUnchecked(ex);
+            throw ex;
         }
 
         return byteBuffer;
     }
 
     /**
-     * Map new of existing {@link MarkFile}.
+     * Map new or existing {@link MarkFile}.
      *
      * @param markFile             the {@link MarkFile}.
-     * @param shouldPreExist       should {@link MarkFile} already exist.
+     * @param shouldPreExist       should {@link MarkFile} already exist. If {@code false} is specified it will attempt to atomically create a new file.
      * @param versionFieldOffset   offset of the version field.
      * @param timestampFieldOffset offset of the timestamp field.
      * @param totalFileLength      total file length to be mapped.
@@ -580,6 +585,7 @@ public class MarkFile implements AutoCloseable
      * @param logger               for the warnings.
      * @return {@link MappedByteBuffer} for the {@link MarkFile}.
      * @throws IllegalStateException if timeout is reached.
+     * @throws UncheckedIOException  in case of I/O errors.
      */
     public static MappedByteBuffer mapNewOrExistingMarkFile(
         final File markFile,
@@ -594,7 +600,10 @@ public class MarkFile implements AutoCloseable
     {
         MappedByteBuffer byteBuffer = null;
 
-        try (FileChannel channel = FileChannel.open(markFile.toPath(), CREATE, READ, WRITE, SPARSE))
+        final EnumSet<StandardOpenOption> openOptions = shouldPreExist ?
+            EnumSet.of(READ, WRITE) : EnumSet.of(CREATE_NEW, SPARSE, READ, WRITE);
+
+        try (FileChannel channel = FileChannel.open(markFile.toPath(), openOptions))
         {
             byteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, totalFileLength);
             final UnsafeBuffer buffer = new UnsafeBuffer(byteBuffer);
@@ -603,15 +612,15 @@ public class MarkFile implements AutoCloseable
             {
                 if (buffer.capacity() < (timestampFieldOffset + SIZE_OF_LONG))
                 {
-                    throw new IllegalStateException("active MarkFile too short capacity=" + buffer.capacity() +
-                        " < " + (timestampFieldOffset + SIZE_OF_LONG));
+                    throw new IllegalStateException("active mark file too short: capacity=" + buffer.capacity() +
+                        " < " + (timestampFieldOffset + SIZE_OF_LONG) + ", file=" + markFile);
                 }
 
                 final int version = buffer.getIntVolatile(versionFieldOffset);
 
                 if (null != logger)
                 {
-                    logger.accept("INFO: Mark file exists: " + markFile);
+                    logger.accept("INFO: mark file exists: " + markFile);
                 }
 
                 versionCheck.accept(version);
@@ -626,18 +635,28 @@ public class MarkFile implements AutoCloseable
 
                 if (timestampAgeMs < timeoutMs)
                 {
-                    throw new IllegalStateException("active Mark file detected");
+                    throw new IllegalStateException("active mark file detected: " + markFile);
                 }
             }
         }
-        catch (final Exception ex)
+        catch (final IOException ex)
         {
             if (null != byteBuffer)
             {
                 BufferUtil.free(byteBuffer);
             }
-
-            throw new RuntimeException(ex);
+            throw new UncheckedIOException(
+                shouldPreExist ? "failed to open existing mark file: " + markFile :
+                    "failed to create new mark file: " + markFile,
+                ex);
+        }
+        catch (final RuntimeException ex)
+        {
+            if (null != byteBuffer)
+            {
+                BufferUtil.free(byteBuffer);
+            }
+            throw ex;
         }
 
         return byteBuffer;
@@ -659,7 +678,7 @@ public class MarkFile implements AutoCloseable
         {
             if (null != logger)
             {
-                logger.accept("INFO: Mark file exists: " + markFile);
+                logger.accept("INFO: mark file exists: " + markFile);
             }
 
             return IoUtil.mapExistingFile(markFile, markFile.toString(), offset, length);
@@ -702,7 +721,7 @@ public class MarkFile implements AutoCloseable
         {
             if (epochClock.time() > deadlineMs)
             {
-                throw new IllegalStateException("Mark file is created but not initialised");
+                throw new IllegalStateException("mark file is created but not initialised");
             }
 
             sleep(1);
@@ -730,9 +749,9 @@ public class MarkFile implements AutoCloseable
      * {@code linkFilename} will be deleted from the {@code serviceDir} (so that links won't be present if not
      * required).
      *
-     * @param serviceDir    directory where the mark file would normally be stored (e.g. archiveDir, clusterDir).
-     * @param actualFile    location of actual mark file, e.g. /dev/shm/service/node0/archive-mark.dat
-     * @param linkFilename  short name that should be used for the link file, e.g. archive-mark.lnk
+     * @param serviceDir   directory where the mark file would normally be stored (e.g. archiveDir, clusterDir).
+     * @param actualFile   location of actual mark file, e.g. /dev/shm/service/node0/archive-mark.dat
+     * @param linkFilename short name that should be used for the link file, e.g. archive-mark.lnk
      */
     public static void ensureMarkFileLink(final File serviceDir, final File actualFile, final String linkFilename)
     {

@@ -4,6 +4,7 @@
 
 * *[Breaking]* Removed `org.agrona.concurrent.SigInt`. Use
 `org.agrona.concurrent.ShutdownSignalBarrier` instead.
+* Fixed racy file creation in `org.agrona.MarkFile.mapNewOrExistingMarkFile`. (https://github.com/aeron-io/agrona/issues/340[#340])
 
 == 2.3.0 (2025-09-29)
 
