@@ -17,6 +17,7 @@ package org.agrona;
 
 import org.agrona.concurrent.EpochClock;
 import org.agrona.concurrent.SystemEpochClock;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -33,16 +34,30 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class MarkFileTest
 {
@@ -50,6 +65,54 @@ class MarkFileTest
     File tempDir;
     @TempDir
     File otherTempDir;
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void throwsNullPointerExceptionIfFileIsNull()
+    {
+        assertThrowsExactly(NullPointerException.class, () -> new MarkFile(
+            null,
+            true,
+            0,
+            8,
+            16,
+            100,
+            SystemEpochClock.INSTANCE,
+            mock(IntConsumer.class),
+            mock(Consumer.class)));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void throwsNullPointerExceptionIfClockIsNull(@TempDir final File tempDir)
+    {
+        assertThrowsExactly(NullPointerException.class, () -> new MarkFile(
+            new File(tempDir, "test.txt"),
+            false,
+            0,
+            8,
+            16,
+            100,
+            null,
+            mock(IntConsumer.class),
+            mock(Consumer.class)));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void throwsNullPointerExceptionIfVersionCheckIsNull(@TempDir final File tempDir)
+    {
+        assertThrowsExactly(NullPointerException.class, () -> new MarkFile(
+            new File(tempDir, "test.txt"),
+            false,
+            0,
+            8,
+            16,
+            100,
+            SystemEpochClock.INSTANCE,
+            null,
+            mock(Consumer.class)));
+    }
 
     @Test
     void shouldWaitForMarkFileToContainEnoughDataForVersionCheck() throws IOException
@@ -156,15 +219,15 @@ class MarkFileTest
         final UncheckedIOException exception = assertThrowsExactly(
             UncheckedIOException.class,
             () -> MarkFile.mapNewOrExistingMarkFile(
-            file,
-            false,
-            0,
-            8,
-            1024,
-            1000,
-            SystemEpochClock.INSTANCE,
-            (version) -> {},
-            (msg) -> {}));
+                file,
+                false,
+                0,
+                8,
+                1024,
+                1000,
+                SystemEpochClock.INSTANCE,
+                (version) -> {},
+                (msg) -> {}));
         final IOException cause = exception.getCause();
         assertInstanceOf(FileAlreadyExistsException.class, cause);
     }
@@ -207,6 +270,120 @@ class MarkFileTest
 
             markFile2.timestampOrdered(clock.time());
             markFile2.signalReady(123);
+        }
+    }
+
+    @Test
+    void shouldPreventConcurrentActivationFromMultipleThreads() throws Exception
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            testConcurrentActivation();
+        }
+    }
+
+    @SuppressWarnings("MethodLength")
+    private void testConcurrentActivation() throws Exception
+    {
+        final Path path = tempDir.toPath().resolve("existing.file");
+        Files.deleteIfExists(path);
+        final int fileLength = 64;
+        Files.write(path, new byte[fileLength], StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+
+        final File file = path.toFile();
+
+        final int versionFieldOffset = 0;
+        final int timestampFieldOffset = 8;
+        final int numThreads = Math.min(Runtime.getRuntime().availableProcessors(), 4);
+        final CountDownLatch startLatch = new CountDownLatch(numThreads + 1);
+        final CountDownLatch endLatch = new CountDownLatch(numThreads);
+        final Thread[] threads = new Thread[numThreads];
+        final Throwable[] exceptions = new Throwable[numThreads];
+        final long[] times = new long[numThreads];
+        final AtomicInteger ok = new AtomicInteger();
+        final AtomicInteger error = new AtomicInteger();
+        final long baseTimeMs = SystemEpochClock.INSTANCE.time();
+        for (int i = 0; i < numThreads; i++)
+        {
+            final int index = i;
+            threads[i] = new Thread(() ->
+            {
+                startLatch.countDown();
+
+                try
+                {
+                    startLatch.await();
+
+                    try (MarkFile markFile = new MarkFile(
+                        file,
+                        true,
+                        versionFieldOffset,
+                        timestampFieldOffset,
+                        fileLength,
+                        TimeUnit.SECONDS.toMillis(15),
+                        SystemEpochClock.INSTANCE,
+                        (v) -> assertThat(v, allOf(lessThan(numThreads), greaterThanOrEqualTo(0))),
+                        null))
+                    {
+                        times[index] = ThreadLocalRandom.current().nextLong(baseTimeMs + 1 + index, Long.MAX_VALUE);
+                        markFile.timestampRelease(times[index]);
+                        markFile.signalReady(index);
+                        ok.incrementAndGet();
+                    }
+                }
+                catch (final Exception ex)
+                {
+                    exceptions[index] = ex;
+                    error.incrementAndGet();
+                }
+                finally
+                {
+                    endLatch.countDown();
+                }
+            });
+        }
+
+        for (final Thread thread : threads)
+        {
+            thread.start();
+        }
+
+        startLatch.countDown();
+        endLatch.await();
+
+        for (final Thread thread : threads)
+        {
+            thread.join();
+        }
+
+        assertEquals(1, ok.get(), "multiple threads succeeded");
+        assertEquals(numThreads - 1, error.get(), "multiple threads succeeded");
+        for (int i = 0; i < numThreads; i++)
+        {
+            final Throwable exception = exceptions[i];
+            if (null != exception)
+            {
+                assertInstanceOf(IllegalStateException.class, exception);
+                assertThat(exception.getMessage(), anyOf(
+                    containsString("active mark file detected: "),
+                    containsString("concurrent mark file activation: ")));
+            }
+            else
+            {
+                final MappedByteBuffer byteBuffer = IoUtil.mapExistingFile(file, file.toString(), 0, fileLength);
+                try
+                {
+                    final UnsafeBuffer buffer = new UnsafeBuffer(byteBuffer);
+                    assertEquals(i, buffer.getIntVolatile(versionFieldOffset));
+                    final long timestampMs = buffer.getLongVolatile(timestampFieldOffset);
+                    assertNotEquals(MarkFile.ACTIVATION_IN_PROGRESS_TIMESTAMP, timestampMs);
+                    assertEquals(times[i], timestampMs);
+                }
+                finally
+                {
+                    IoUtil.unmap(byteBuffer);
+                }
+            }
         }
     }
 }

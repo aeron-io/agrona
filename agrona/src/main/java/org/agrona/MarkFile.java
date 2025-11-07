@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
@@ -48,6 +49,11 @@ import static org.agrona.BitUtil.SIZE_OF_LONG;
  */
 public class MarkFile implements AutoCloseable
 {
+    /**
+     * Special sentinel value used to indicate that mark file activation is in progress.
+     */
+    public static final long ACTIVATION_IN_PROGRESS_TIMESTAMP = Long.MAX_VALUE;
+
     private final int versionFieldOffset;
     private final int timestampFieldOffset;
 
@@ -112,7 +118,7 @@ public class MarkFile implements AutoCloseable
     }
 
     /**
-     * Create a {@link MarkFile} if none present. Checking if an active {@link MarkFile} exists and is active.
+     * Create a new {@link MarkFile} if none present. Checking if an active {@link MarkFile} exists and is active.
      * Existing {@link MarkFile} is used if not active.
      * <p>
      * Total length of mark file will be mapped until {@link #close()} is called.
@@ -126,6 +132,7 @@ public class MarkFile implements AutoCloseable
      * @param epochClock           to use for time checks.
      * @param versionCheck         to use for existing {@link MarkFile} and version field.
      * @param logger               to use to signal progress or null.
+     * @see #mapNewOrExistingMarkFile(File, boolean, int, int, long, long, EpochClock, IntConsumer, Consumer)
      */
     public MarkFile(
         final File markFile,
@@ -572,10 +579,23 @@ public class MarkFile implements AutoCloseable
     }
 
     /**
-     * Map new or existing {@link MarkFile}.
+     * Map new or existing {@link MarkFile} atomically, i.e. allowing only a single process to succeed.
+     * <ul>
+     *     <li>{@code shouldPreExist == false} then an attempt to atomically
+     *     create a new mark file is made. If creation fails then operation is aborted.</li>
+     *     <li>{@code shouldPreExist == true} then open it for read and write access and if
+     *     that fails abort. Once file is opened perform version validation using provided
+     *     {@code versionCheck} function. Additionally, use the activity timestamp (i.e. value at
+     *     {@code timestampFieldOffset}) to verify that the mark file is not currently in use. Finally, before returning
+     *     from this method a special sentinel value {@link #ACTIVATION_IN_PROGRESS_TIMESTAMP} is atomically set into
+     *     the {@code timestampFieldOffset} field to prevent concurrent activation.</li>
+     * </ul>
+     *
+     * <p>If file already exists an atomic update is performed to
      *
      * @param markFile             the {@link MarkFile}.
-     * @param shouldPreExist       should {@link MarkFile} already exist. If {@code false} is specified it will attempt to atomically create a new file.
+     * @param shouldPreExist       should {@link MarkFile} already exist. If {@code false} is specified it will attempt
+     *                             to atomically create a new file.
      * @param versionFieldOffset   offset of the version field.
      * @param timestampFieldOffset offset of the timestamp field.
      * @param totalFileLength      total file length to be mapped.
@@ -584,8 +604,14 @@ public class MarkFile implements AutoCloseable
      * @param versionCheck         version check function.
      * @param logger               for the warnings.
      * @return {@link MappedByteBuffer} for the {@link MarkFile}.
+     * @throws IllegalStateException if {@code shouldPreExist == false} and the file was not created.
+     * @throws IllegalStateException if {@code shouldPreExist == true} and the version validation fails.
+     * @throws IllegalStateException if {@code shouldPreExist == true} and an active process using the mark file is
+     *                               detected.
      * @throws IllegalStateException if timeout is reached.
      * @throws UncheckedIOException  in case of I/O errors.
+     * @throws NullPointerException if {@code null == markFile || null == versionCheck} .
+     * @see #ACTIVATION_IN_PROGRESS_TIMESTAMP
      */
     public static MappedByteBuffer mapNewOrExistingMarkFile(
         final File markFile,
@@ -598,6 +624,8 @@ public class MarkFile implements AutoCloseable
         final IntConsumer versionCheck,
         final Consumer<String> logger)
     {
+        Objects.requireNonNull(epochClock, "epochClock must not be null");
+        Objects.requireNonNull(versionCheck, "versionCheck must not be null");
         MappedByteBuffer byteBuffer = null;
 
         final EnumSet<StandardOpenOption> openOptions = shouldPreExist ?
@@ -636,6 +664,13 @@ public class MarkFile implements AutoCloseable
                 if (timestampAgeMs < timeoutMs)
                 {
                     throw new IllegalStateException("active mark file detected: " + markFile);
+                }
+
+                // prevent concurrent activations from multiple processes and ensure that further attempts are rejected
+                // while the current activation is still in progress
+                if (!buffer.compareAndSetLong(timestampFieldOffset, timestampMs, ACTIVATION_IN_PROGRESS_TIMESTAMP))
+                {
+                    throw new IllegalStateException("concurrent mark file activation: " + markFile);
                 }
             }
         }
