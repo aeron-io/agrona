@@ -5,6 +5,17 @@
 * *[Breaking]* Removed `org.agrona.concurrent.SigInt`. Use
 `org.agrona.concurrent.ShutdownSignalBarrier` instead.
 
+== 2.3.2 (2025-11-08)
+
+* Prevent concurrent `MarkFile` activation when `org.agrona.MarkFile.mapNewOrExistingMarkFile` is used.
++
+If the mark file already exists and is not active, then the activity timestamp (`timestampFieldOffset`) is atomically
+set to a special sentinel value (`org.agrona.MarkFile.ACTIVATION_IN_PROGRESS_TIMESTAMP`) to prevent other processes from
+concurrent activation.
++
+*NB:* If the current activation fails it will leave the activity timestamp at a sentinel value which will prevent a
+restart of the process. Therefore, it is recommended to reset the activity timestamp upon failure.
+
 == 2.3.1 (2025-11-03)
 
 * Fixed racy file creation in `org.agrona.MarkFile.mapNewOrExistingMarkFile`. (https://github.com/aeron-io/agrona/issues/340[#340])
