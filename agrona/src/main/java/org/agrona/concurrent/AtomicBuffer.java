@@ -44,6 +44,19 @@ import static org.agrona.BitUtil.SIZE_OF_LONG;
  * For a read or write to be atomic, the fields needs to be naturally aligned. E.g. an int should be 4 bytes aligned
  * and a long should be 8 bytes aligned. Some ISA's are more lenient like the X86, although there can be severe
  * performance penalties. But other ISA's are less forgiving.
+ * Example usage of AtomicBuffer:
+ * <pre>
+ * // Allocate a direct buffer of 1024 bytes
+ * ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+ * AtomicBuffer buffer = new UnsafeBuffer(byteBuffer);
+ *
+ * // Write an int at offset 0
+ * buffer.putInt(0, 42);
+ *
+ * // Read the int back
+ * int value = buffer.getInt(0);
+ * System.out.println("Value: " + value); // prints 42
+ * </pre>
  */
 public interface AtomicBuffer extends MutableDirectBuffer
 {

@@ -30,6 +30,26 @@ import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.*;
 
 /**
  * A ring-buffer that supports the exchange of messages from many producers to a single consumer.
+ * <p>
+ * Example usage of {@code ManyToOneRingBuffer}:
+ * <pre>
+ * int bufferSize = 1024;
+ * ByteBuffer byteBuffer = ByteBuffer.allocateDirect(bufferSize);
+ * ManyToOneRingBuffer ringBuffer = new ManyToOneRingBuffer(new UnsafeBuffer(byteBuffer));
+ *
+ * // Writing a message
+ * int msgTypeId = 1;
+ * int value = 123;
+ * UnsafeBuffer srcBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(4));
+ * srcBuffer.putInt(0, value);
+ * ringBuffer.write(msgTypeId, srcBuffer, 0, 4);
+ *
+ * // Reading a message
+ * ringBuffer.read((msgTypeId, buffer, offset, length) -> {
+ *     int readValue = buffer.getInt(offset);
+ *     System.out.println("Read: " + readValue);
+ * });
+ * </pre>
  */
 public final class ManyToOneRingBuffer implements RingBuffer
 {
