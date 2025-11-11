@@ -21,6 +21,53 @@ import org.agrona.concurrent.*;
 /**
  * Ring-buffer for the concurrent exchanging of binary encoded messages from producer(s) to consumer(s)
  * in a FIFO manner.
+ * <p>
+ * Example usage with write method:
+ * <pre>
+ * // Create a ring buffer with a direct buffer of 1024 bytes
+ * ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+ * RingBuffer ringBuffer = new OneToOneRingBuffer(new UnsafeBuffer(byteBuffer));
+ *
+ * // Pre-allocate a reusable buffer (cached for the lifetime of the writer)
+ * MutableDirectBuffer srcBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(Long.BYTES));
+ *
+ * // Write a message using the cached buffer
+ * srcBuffer.putLong(0, 12345L);
+ * if (!ringBuffer.write(1, srcBuffer, 0, Long.BYTES))
+ * {
+ *     // Handle insufficient capacity (e.g., retry, log, or drop message)
+ *     System.err.println("Failed to write message: insufficient capacity");
+ * }
+ * </pre>
+ * <p>
+ * Example usage with tryClaim for zero-copy writes:
+ * <pre>
+ * // Create a ring buffer
+ * ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+ * RingBuffer ringBuffer = new OneToOneRingBuffer(new UnsafeBuffer(byteBuffer));
+ *
+ * // Claim space and write directly to the ring buffer (zero-copy)
+ * final int index = ringBuffer.tryClaim(1, Long.BYTES);
+ * if (index > 0)
+ * {
+ *     try
+ *     {
+ *         final AtomicBuffer buffer = ringBuffer.buffer();
+ *         buffer.putLong(index, 12345L);
+ *         ringBuffer.commit(index);
+ *     }
+ *     catch (final Exception ex)
+ *     {
+ *         ringBuffer.abort(index);
+ *         throw ex;
+ *     }
+ * }
+ * else
+ * {
+ *     // Handle insufficient capacity
+ *     System.err.println("Failed to claim space: insufficient capacity");
+ * }
+ * </pre>
  */
 public interface RingBuffer
 {
