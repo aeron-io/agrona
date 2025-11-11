@@ -21,6 +21,25 @@ import org.agrona.concurrent.*;
 /**
  * Ring-buffer for the concurrent exchanging of binary encoded messages from producer(s) to consumer(s)
  * in a FIFO manner.
+ * Example usage:
+ * <pre>
+ * // Create a ring buffer with a direct buffer of 1024 bytes
+ * ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+ * RingBuffer ringBuffer = new OneToOneRingBuffer(new UnsafeBuffer(byteBuffer));
+ *
+ * // Write a simple message
+ * int length = 8;
+ * MutableDirectBuffer srcBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(length));
+ * srcBuffer.putLong(0, 12345L);
+ * ringBuffer.write(1, srcBuffer, 0, length);
+ *
+ * // Read the message
+ * ringBuffer.read((msgTypeId, buffer, index, msgLength) -> {
+ *     long value = buffer.getLong(index);
+ *     System.out.println("Received: " + value);
+ *     return true;
+ * });
+ * </pre>
  */
 public interface RingBuffer
 {
