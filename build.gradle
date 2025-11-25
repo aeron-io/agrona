@@ -15,7 +15,6 @@
  */
 plugins {
     id 'java-library'
-    alias(libs.plugins.bnd).apply(false)
     alias(libs.plugins.shadow).apply(false)
     alias(libs.plugins.versions)
 }

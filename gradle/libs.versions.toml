@@ -1,5 +1,4 @@
 [versions]
-bnd = "7.1.0"
 byteBuddy = "1.18.1"
 checkstyle = "12.1.2"
 commons-codec = "1.15"
@@ -38,6 +37,5 @@ mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito
 plexus-utils = { group = "org.codehaus.plexus", name = "plexus-utils", version.ref = "plexus" }
 
 [plugins]
-bnd = { id = "biz.aQute.bnd.builder", version.ref = "bnd" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }
