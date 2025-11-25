@@ -118,8 +118,10 @@ public class MarkFile implements AutoCloseable
     }
 
     /**
-     * Create a new {@link MarkFile} if none present. Checking if an active {@link MarkFile} exists and is active.
-     * Existing {@link MarkFile} is used if not active.
+     * Atomically create a new {@link MarkFile} if not present. Checking if an existing {@link MarkFile} is active.
+     * Existing {@link MarkFile} is used exclusively if not active. See
+     * {@link #mapNewOrExistingMarkFile(File, boolean, int, int, long, long, EpochClock, IntConsumer, Consumer)}
+     * documentation about atomicity guarantees and implementation details.
      * <p>
      * Total length of mark file will be mapped until {@link #close()} is called.
      *
@@ -590,8 +592,6 @@ public class MarkFile implements AutoCloseable
      *     from this method a special sentinel value {@link #ACTIVATION_IN_PROGRESS_TIMESTAMP} is atomically set into
      *     the {@code timestampFieldOffset} field to prevent concurrent activation.</li>
      * </ul>
-     *
-     * <p>If file already exists an atomic update is performed to
      *
      * @param markFile             the {@link MarkFile}.
      * @param shouldPreExist       should {@link MarkFile} already exist. If {@code false} is specified it will attempt
