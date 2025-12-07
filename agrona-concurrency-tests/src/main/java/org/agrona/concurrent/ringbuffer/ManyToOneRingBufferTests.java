@@ -66,7 +66,8 @@ public class ManyToOneRingBufferTests
     public static class Write
     {
         private static final int MSG_TYPE_ID = 7;
-        private final ManyToOneRingBuffer ringBuffer = new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(1024)));
+        private final ManyToOneRingBuffer ringBuffer =
+            new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 16)));
         private final ExpandableArrayBuffer srcBuffer = new ExpandableArrayBuffer();
 
         /**
@@ -128,7 +129,8 @@ public class ManyToOneRingBufferTests
     public static class TryClaimCommit
     {
         private static final int MSG_TYPE_ID = 11;
-        private final ManyToOneRingBuffer ringBuffer = new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(1024)));
+        private final ManyToOneRingBuffer ringBuffer =
+            new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 16)));
 
         TryClaimCommit()
         {
@@ -188,7 +190,8 @@ public class ManyToOneRingBufferTests
     public static class TryClaimAbort
     {
         private static final int MSG_TYPE_ID = 19;
-        private final ManyToOneRingBuffer ringBuffer = new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(1024)));
+        private final ManyToOneRingBuffer ringBuffer =
+            new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 16)));
 
         TryClaimAbort()
         {

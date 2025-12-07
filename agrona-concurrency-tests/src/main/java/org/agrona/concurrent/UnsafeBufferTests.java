@@ -15,7 +15,6 @@
  */
 package org.agrona.concurrent;
 
-import org.agrona.BufferUtil;
 import org.openjdk.jcstress.annotations.Actor;
 import org.openjdk.jcstress.annotations.Arbiter;
 import org.openjdk.jcstress.annotations.Expect;
@@ -53,7 +52,7 @@ public class UnsafeBufferTests
     {
         private static final int A = 0;
         private static final int B = 8;
-        private final UnsafeBuffer buffer = new UnsafeBuffer(BufferUtil.allocateDirectAligned(16, 8));
+        private final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(16));
 
         /**
          * Release thread.
@@ -93,7 +92,7 @@ public class UnsafeBufferTests
     {
         private static final int A = 0;
         private static final int B = 4;
-        private final UnsafeBuffer buffer = new UnsafeBuffer(BufferUtil.allocateDirectAligned(8, 4));
+        private final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(8));
 
         /**
          * Writer thread.
@@ -130,7 +129,7 @@ public class UnsafeBufferTests
     public static class DirectBufferLong
     {
         private static final int WRITE_INDEX = 0;
-        private final UnsafeBuffer buffer = new UnsafeBuffer(BufferUtil.allocateDirectAligned(8, 8));
+        private final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(8));
 
         DirectBufferLong()
         {
@@ -178,7 +177,7 @@ public class UnsafeBufferTests
     public static class DirectBufferInt
     {
         private static final int WRITE_INDEX = 4;
-        private final UnsafeBuffer buffer = new UnsafeBuffer(BufferUtil.allocateDirectAligned(8, 8));
+        private final UnsafeBuffer buffer = new UnsafeBuffer(allocateDirect(8));
 
         DirectBufferInt()
         {
