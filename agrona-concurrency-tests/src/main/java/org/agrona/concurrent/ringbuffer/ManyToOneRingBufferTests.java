@@ -67,7 +67,7 @@ public class ManyToOneRingBufferTests
     {
         private static final int MSG_TYPE_ID = 7;
         private final ManyToOneRingBuffer ringBuffer =
-            new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 16)));
+            new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 64)));
         private final ExpandableArrayBuffer srcBuffer = new ExpandableArrayBuffer();
 
         /**
@@ -130,7 +130,7 @@ public class ManyToOneRingBufferTests
     {
         private static final int MSG_TYPE_ID = 11;
         private final ManyToOneRingBuffer ringBuffer =
-            new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 16)));
+            new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 64)));
 
         TryClaimCommit()
         {
@@ -191,7 +191,7 @@ public class ManyToOneRingBufferTests
     {
         private static final int MSG_TYPE_ID = 19;
         private final ManyToOneRingBuffer ringBuffer =
-            new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 16)));
+            new ManyToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 128)));
 
         TryClaimAbort()
         {
@@ -218,7 +218,7 @@ public class ManyToOneRingBufferTests
         @Actor
         public void writer2()
         {
-            int index = ringBuffer.tryClaim(MSG_TYPE_ID, 32);
+            int index = ringBuffer.tryClaim(MSG_TYPE_ID, 16);
             ringBuffer.buffer().putLong(index, Long.MAX_VALUE);
             ringBuffer.abort(index);
 

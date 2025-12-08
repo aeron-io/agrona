@@ -55,7 +55,7 @@ public class OneToOneRingBufferTests
     {
         private static final int MSG_TYPE = 888;
         private final OneToOneRingBuffer ringBuffer =
-            new OneToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 16)));
+            new OneToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 128)));
 
         private final ExpandableArrayBuffer srcBuffer = new ExpandableArrayBuffer();
 
@@ -166,7 +166,7 @@ public class OneToOneRingBufferTests
         private static final int MSG_TYPE = 42;
 
         private final OneToOneRingBuffer ringBuffer =
-            new OneToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 16)));
+            new OneToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 64)));
 
         TryClaimCommit()
         {
@@ -178,7 +178,7 @@ public class OneToOneRingBufferTests
         @Actor
         public void producer()
         {
-            final int index = ringBuffer.tryClaim(MSG_TYPE, 32);
+            final int index = ringBuffer.tryClaim(MSG_TYPE, 8);
             ringBuffer.buffer().putInt(index + 28, 19);
             ringBuffer.commit(index);
         }
@@ -209,7 +209,7 @@ public class OneToOneRingBufferTests
         private static final int MSG_TYPE = 19;
 
         private final OneToOneRingBuffer ringBuffer =
-            new OneToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 16)));
+            new OneToOneRingBuffer(new UnsafeBuffer(allocateDirect(TRAILER_LENGTH + 64)));
         private final ExpandableArrayBuffer srcBuffer = new ExpandableArrayBuffer();
 
         TryClaimAbort()
