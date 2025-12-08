@@ -488,16 +488,6 @@ project(':agrona-concurrency-tests') {
         standardOutput = new NullOutputStream()
         errorOutput = new NullOutputStream()
     }
-
-    def jcstressResults = project.hasProperty('jcstress-results') ? project.getProperty('jcstress-results') : ''
-
-    tasks.register('parseResultsFile', JavaExec) {
-        dependsOn shadowJar
-        group = 'verification'
-        classpath = files(tasks.shadowJar)
-        workingDir = layout.buildDirectory.get()
-        args = ['-p', jcstressResults, '-r', 'reports/jcstress']
-    }
 }
 
 tasks.register('testReport', TestReport) {
@@ -523,9 +513,8 @@ tasks.register('copyTestLogs', Copy) {
     from '.'
     include '**/*.hprof'
     include '**/*.log'
-    include '**/build/reports/tests/**'
+    include '**/build/reports/**'
     include '**/build/test-results/**/*'
-    include '**/jcstress-results-*.gz'
     include 'LICENSE'
     exclude 'build'
     into 'build/test_logs'
