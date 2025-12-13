@@ -341,7 +341,7 @@ public class DeadlineTimerWheel
                 final int wheelIndex = (spokeIndex << allocationBitsToShift) + pollIndex;
                 final long deadline = wheel[wheelIndex];
 
-                if (now >= deadline)
+                if (now > deadline)
                 {
                     wheel[wheelIndex] = NULL_DEADLINE;
                     timerCount--;
