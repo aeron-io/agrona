@@ -117,6 +117,23 @@ class DeadlineTimerWheelTest
     }
 
     @Test
+    void shouldHandleTimerAtStartTime()
+    {
+        long controlTimestamp = 0;
+        final DeadlineTimerWheel wheel = new DeadlineTimerWheel(TIME_UNIT, controlTimestamp, RESOLUTION, 1024);
+
+        wheel.scheduleTimer(controlTimestamp);
+
+        final int numExpiredAtDeadline = wheel.poll(controlTimestamp, (timeUnit, now, timerId) -> fail(), 1);
+        assertEquals(0, numExpiredAtDeadline);
+
+        controlTimestamp += wheel.tickResolution();
+
+        final int numExpiredAfterDeadline = wheel.poll(controlTimestamp, (timeUnit, now, timerId) -> true, 1);
+        assertEquals(1, numExpiredAfterDeadline);
+    }
+
+    @Test
     void shouldHandleNanoTimeUnitTimers()
     {
         long controlTimestamp = 0;
