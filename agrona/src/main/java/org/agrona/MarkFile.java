@@ -285,10 +285,23 @@ public class MarkFile implements AutoCloseable
 
     /**
      * Perform weak/plain read of the version field.
+     * <p>
+     * This method is identical to {@link #versionPlain()} and that method should be used instead.
      *
      * @return value of the version field.
      */
     public int versionWeak()
+    {
+        return versionPlain();
+    }
+
+    /**
+     * Perform plain read of the version field.
+     *
+     * @return value of the version field.
+     * @since 2.4.0
+     */
+    public int versionPlain()
     {
         return buffer.getInt(versionFieldOffset);
     }
@@ -327,10 +340,23 @@ public class MarkFile implements AutoCloseable
 
     /**
      * Perform weak/plain read of the timestamp field.
+     * <p>
+     * This method is identical to {@link #timestampPlain()} and that method is preferred.
      *
      * @return value of the timestamp field.
      */
     public long timestampWeak()
+    {
+        return timestampPlain();
+    }
+
+    /**
+     * Perform plain read of the timestamp field.
+     *
+     * @return value of the timestamp field.
+     * @since 2.4.0
+     */
+    public long timestampPlain()
     {
         return buffer.getLong(timestampFieldOffset);
     }
