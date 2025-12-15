@@ -1,6 +1,6 @@
 [versions]
 byteBuddy = "1.18.2"
-checkstyle = "12.2.0"
+checkstyle = "12.3.0"
 commons-codec = "1.15"
 commons-lang3 = "3.8.1"
 findbugs = "3.0.1"
