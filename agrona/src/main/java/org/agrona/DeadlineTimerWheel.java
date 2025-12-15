@@ -393,7 +393,23 @@ public class DeadlineTimerWheel
 
             if (NULL_DEADLINE != deadline)
             {
-                consumer.accept(deadline, timerIdForSlot(i >> allocationBitsToShift, i & tickMask));
+                // the start of the bucket on the wheel.
+                final int tickOnWheel = i >> allocationBitsToShift;
+
+                // The calculation of the tickArrayIndex — the index of the timer within the bucket.
+                //
+                // tickAllocation is the number of slots per bucket.
+                //
+                // To calculate tickArrayIndex:
+                //
+                //     tickArrayIndex = i % tickAllocation
+                //
+                // But because tickAllocation is a power of 2, we can replace the modulo with a faster bitmask:
+                //
+                //     tickArrayIndex = i & (tickAllocation - 1);
+
+                final int tickArrayIndex = i & (tickAllocation - 1);
+                consumer.accept(deadline, timerIdForSlot(tickOnWheel, tickArrayIndex));
 
                 if (--timersRemaining <= 0)
                 {

@@ -20,6 +20,7 @@ import org.agrona.collections.MutableLong;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -643,5 +644,36 @@ class DeadlineTimerWheelTest
 
         assertEquals(timerCount, expiredCount);
         assertEquals(timerCount, deadlineByTimerId.size());
+    }
+
+    @Test
+    void forEachShouldReturnUsableTimerId()
+    {
+        final int ticksPerWheel = 64;
+        final int tickAllocation = 16;
+
+        final DeadlineTimerWheel wheel = new DeadlineTimerWheel(
+            TimeUnit.NANOSECONDS,
+            0L,
+            1L,
+            ticksPerWheel,
+            tickAllocation
+        );
+
+        final long scheduledId = wheel.scheduleTimer(1L);
+
+        final AtomicLong scheduledIdFromForEach = new AtomicLong(DeadlineTimerWheel.NULL_DEADLINE);
+
+        wheel.forEach((deadline, timerId) ->
+            scheduledIdFromForEach.set(timerId));
+
+        final long fromForEach = scheduledIdFromForEach.get();
+        assertNotEquals(DeadlineTimerWheel.NULL_DEADLINE, fromForEach, "forEach must see the timer");
+
+        assertEquals(scheduledId, fromForEach,
+            "timerId returned by forEach should match the timerId returned by scheduleTimer");
+
+        assertTrue(wheel.cancelTimer(fromForEach), "cancelTimer should succeed for id returned by forEach");
+        assertEquals(0L, wheel.timerCount(), "Timer should have been cancelled");
     }
 }
