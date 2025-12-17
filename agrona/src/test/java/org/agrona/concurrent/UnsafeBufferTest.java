@@ -15,6 +15,7 @@
  */
 package org.agrona.concurrent;
 
+import org.agrona.BufferUtil;
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.ExpandableDirectByteBuffer;
@@ -325,4 +326,22 @@ class UnsafeBufferTest extends MutableDirectBufferTests
             new UnsafeBuffer(ByteBuffer.allocate(64)),
             mockBuffer);
     }
+
+    @Test
+    public void wrapForRawMemoryAddressShouldResetWrapAdjustment()
+    {
+        final UnsafeBuffer buffer = new UnsafeBuffer();
+
+        // first we set a non zero wrap adjustment
+        final byte[] array = new byte[100];
+        buffer.wrap(array, 25, 50);
+
+        // now a wrap is done with a raw memory address which should reset the wrap adjustment.
+        final ByteBuffer directBuffer = ByteBuffer.allocateDirect(64);
+        final long address = BufferUtil.address(directBuffer);
+        buffer.wrap(address, 64);
+
+        assertEquals(0, buffer.wrapAdjustment());
+    }
+
 }

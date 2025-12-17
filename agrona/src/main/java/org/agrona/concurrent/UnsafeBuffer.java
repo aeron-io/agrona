@@ -321,6 +321,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
         addressOffset = address;
         byteArray = null;
         byteBuffer = null;
+        wrapAdjustment = 0;
     }
 
     /**
