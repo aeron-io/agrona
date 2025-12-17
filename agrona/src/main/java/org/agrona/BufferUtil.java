@@ -83,14 +83,13 @@ public final class BufferUtil
      * Bounds check the access range and throw a {@link IndexOutOfBoundsException} if exceeded.
      *
      * @param buffer to be checked.
-     * @param index  at which the access will begin.
-     * @param length of the range accessed.
+     * @param index  at which the access will begin. The value should not be negative.
+     * @param length of the range accessed. The value should not be negative.
      */
     public static void boundsCheck(final byte[] buffer, final long index, final int length)
     {
         final int capacity = buffer.length;
-        final long resultingPosition = index + (long)length;
-        if (index < 0 || resultingPosition > capacity)
+        if (index < 0 || length < 0 || index > capacity - length)
         {
             throw new IndexOutOfBoundsException("index=" + index + " length=" + length + " capacity=" + capacity);
         }
@@ -100,14 +99,13 @@ public final class BufferUtil
      * Bounds check the access range and throw a {@link IndexOutOfBoundsException} if exceeded.
      *
      * @param buffer to be checked.
-     * @param index  at which the access will begin.
-     * @param length of the range accessed.
+     * @param index  at which the access will begin. The value should not be negative.
+     * @param length of the range accessed. The value should not be negative.
      */
     public static void boundsCheck(final ByteBuffer buffer, final long index, final int length)
     {
         final int capacity = buffer.capacity();
-        final long resultingPosition = index + (long)length;
-        if (index < 0 || resultingPosition > capacity)
+        if (index < 0 || length < 0 || index > capacity - length)
         {
             throw new IndexOutOfBoundsException("index=" + index + " length=" + length + " capacity=" + capacity);
         }
