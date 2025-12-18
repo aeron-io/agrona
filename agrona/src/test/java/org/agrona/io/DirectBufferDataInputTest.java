@@ -21,6 +21,7 @@ import org.junit.jupiter.api.function.ThrowingConsumer;
 
 import java.io.DataOutput;
 import java.io.EOFException;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ThreadLocalRandom;
@@ -591,5 +592,24 @@ abstract class DirectBufferDataInputTest
         dataInput.byteOrder(byteOrder());
 
         assertThrows(EOFException.class, dataInput::readUTF);
+    }
+
+    @Test
+    void readStringUtf8AdvancesPositionIncorrectly() throws EOFException
+    {
+        final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(64));
+
+        int offset = 0;
+        offset += buffer.putStringUtf8(offset, "€");
+
+        buffer.putInt(offset, 42, ByteOrder.BIG_ENDIAN);
+
+        final DirectBufferDataInput in = new DirectBufferDataInput(buffer);
+
+        final String s = in.readStringUTF8();
+        assertEquals("€", s);
+
+        final int value = in.readInt();
+        assertEquals(42, value);
     }
 }

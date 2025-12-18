@@ -384,9 +384,13 @@ public class DirectBufferDataInput implements DataInput
      */
     public String readStringUTF8()
     {
-        final String stringUtf8 = buffer.getStringUtf8(position, byteOrder);
+        // We can't rely on the length of the string to determine the position
+        // increment. So first load the length of the utf string, and use this value
+        // to safely increment the position.
 
-        position += stringUtf8.length();
+        final int length = buffer.getInt(position);
+        final String stringUtf8 = buffer.getStringWithoutLengthUtf8(position + BitUtil.SIZE_OF_INT, length);
+        position += length + BitUtil.SIZE_OF_INT;
         return stringUtf8;
     }
 
