@@ -517,7 +517,7 @@ public class CountersReader
     }
 
     /**
-     * Get the owner id for a given counter id as a normal read. The owner identity may be assigned when the
+     * Get the owner id for a given counter id as an opaque. The owner identity may be assigned when the
      * counter is allocated to help associate it with the abstract concept of an owner for lifecycle management.
      *
      * @param counterId to be read.
@@ -527,7 +527,7 @@ public class CountersReader
     public long getCounterOwnerId(final int counterId)
     {
         validateCounterId(counterId);
-        return valuesBuffer.getLong(counterOffset(counterId) + OWNER_ID_OFFSET);
+        return valuesBuffer.getLongOpaque(counterOffset(counterId) + OWNER_ID_OFFSET);
     }
 
     /**
