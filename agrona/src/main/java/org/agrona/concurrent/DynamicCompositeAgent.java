@@ -296,7 +296,7 @@ public class DynamicCompositeAgent implements Agent
 
     private void add(final Agent agent)
     {
-        addAgent.lazySet(null);
+        addAgent.setRelease(null);
 
         try
         {
@@ -321,7 +321,7 @@ public class DynamicCompositeAgent implements Agent
 
     private void remove(final Agent agent)
     {
-        removeAgent.lazySet(null);
+        removeAgent.setRelease(null);
         final Agent[] newAgents = ArrayUtil.remove(agents, agent);
 
         try
