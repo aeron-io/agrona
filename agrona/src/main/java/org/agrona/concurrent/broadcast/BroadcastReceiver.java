@@ -46,6 +46,10 @@ public class BroadcastReceiver
 
     private final int latestCounterIndex;
     private final AtomicBuffer buffer;
+
+    // The lapped counter is accessed using 'opaque' access which is a great for performance
+    // monitoring. It will not provide any ordering guarantees with respect to loads/stores
+    // to other addresses, at will provide atomicity and coherence.
     private final AtomicLong lappedCount = new AtomicLong();
 
     /**
@@ -87,13 +91,14 @@ public class BroadcastReceiver
      * Get the number of times the transmitter has lapped this receiver around the buffer. On each lap
      * as least a buffer's worth of loss will be experienced.
      * <p>
-     * <b>Note:</b> This method is threadsafe for calling from an external monitoring thread.
+     * <b>Note:</b> This method is threadsafe for calling from an external monitoring thread. It will not
+     * provide any ordering guarantees with respect to loads/stores to other addresses.
      *
      * @return the capacity of the underlying broadcast buffer.
      */
     public long lappedCount()
     {
-        return lappedCount.get();
+        return lappedCount.getOpaque();
     }
 
     /**
@@ -158,7 +163,7 @@ public class BroadcastReceiver
 
             if (!validate(cursor, buffer, capacity))
             {
-                lappedCount.lazySet(lappedCount.get() + 1);
+                lappedCount.setOpaque(lappedCount.getPlain() + 1);
 
                 cursor = buffer.getLongVolatile(latestCounterIndex);
                 recordOffset = (int)cursor & (capacity - 1);
