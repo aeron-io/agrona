@@ -1303,6 +1303,28 @@ class Int2IntHashMapTest
         assertEquals(value, map.get(key));
     }
 
+    @Test
+    void removingAnUnknownKeyShouldReturnMissingValue()
+    {
+        map.put(0, 1000);
+        map.put(7, 7000);
+
+        assertEquals(MISSING_VALUE, map.remove(4));
+        assertEquals(2, map.size());
+
+        for (int i = 0; i < 16; i++)
+        {
+            if (!map.containsKey(i))
+            {
+                assertEquals(MISSING_VALUE, map.remove(i));
+                assertEquals(2, map.size());
+            }
+        }
+
+        assertEquals(1000, map.get(0));
+        assertEquals(7000, map.get(7));
+    }
+
     private void assertEntryIs(final Entry<Integer, Integer> entry, final int expectedKey, final int expectedValue)
     {
         assertEquals(expectedKey, entry.getKey().intValue());
