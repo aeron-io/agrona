@@ -630,10 +630,10 @@ public class Int2ObjectCache<V> implements Map<Integer, V>
 
         final int[] keys = this.keys;
         final Object[] values = this.values;
-        Object value = null;
+        Object result = null;
         for (@DoNotSub int i = setBeginIndex, nextSetIndex = setBeginIndex + setSize; i < nextSetIndex; i++)
         {
-            value = values[i];
+            final Object value = values[i];
             if (null == value)
             {
                 break;
@@ -641,6 +641,7 @@ public class Int2ObjectCache<V> implements Map<Integer, V>
 
             if (key == keys[i])
             {
+                result = value;
                 shuffleUp(i, nextSetIndex - 1);
                 --size;
 
@@ -649,7 +650,7 @@ public class Int2ObjectCache<V> implements Map<Integer, V>
             }
         }
 
-        return (V)value;
+        return (V)result;
     }
 
     /**

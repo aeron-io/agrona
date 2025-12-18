@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -777,5 +778,22 @@ class Int2ObjectCacheTest
     static IntStream setIndexes()
     {
         return IntStream.range(0, SET_SIZE);
+    }
+
+    @Test
+    void removeShouldReturnNullWhenKeyNotPresentEvenIfSetIsFull()
+    {
+        final AtomicInteger evicted = new AtomicInteger();
+
+        final Int2ObjectCache<String> cache = new Int2ObjectCache<>(1, 2, v -> evicted.incrementAndGet());
+
+        cache.put(1, "one");
+        cache.put(2, "two");
+
+        final String removed = cache.remove(999);
+
+        assertNull(removed);
+        assertEquals(2, cache.size());
+        assertEquals(0, evicted.get());
     }
 }
