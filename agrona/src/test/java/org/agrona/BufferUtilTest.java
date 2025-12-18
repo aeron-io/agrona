@@ -133,4 +133,28 @@ class BufferUtilTest
 
         assertThrows(IllegalArgumentException.class, () -> BufferUtil.free(buffer));
     }
+
+    @Test
+    void shouldBoundsCheckByteArrayIndexWithoutLongOverflow()
+    {
+        final byte[] buffer = new byte[8];
+        final long index = Long.MAX_VALUE - 3;
+        final int length = 10;
+
+        assertThrows(IndexOutOfBoundsException.class, () ->
+            BufferUtil.boundsCheck(buffer, index, length)
+        );
+    }
+
+    @Test
+    void shouldBoundsCheckByteBufferIndexWithoutLongOverflow()
+    {
+        final ByteBuffer buffer = ByteBuffer.allocateDirect(8);
+        final long index = Long.MAX_VALUE - 3;
+        final int length = 10;
+
+        assertThrows(IndexOutOfBoundsException.class, () ->
+            BufferUtil.boundsCheck(buffer, index, length)
+        );
+    }
 }
