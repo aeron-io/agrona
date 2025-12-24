@@ -483,45 +483,57 @@ public final class SystemUtil
      */
     public static long parseDuration(final String propertyName, final String propertyValue)
     {
-        final char lastCharacter = propertyValue.charAt(propertyValue.length() - 1);
-        if (Character.isDigit(lastCharacter))
-        {
-            return Long.parseLong(propertyValue);
-        }
-
-        if (lastCharacter != 's' && lastCharacter != 'S')
+        final int length = propertyValue.length();
+        if (0 == length || '-' == propertyValue.charAt(0))
         {
             throw new NumberFormatException(
-                propertyName + ": " + propertyValue + " should end with: s, ms, us, or ns.");
+                propertyName + ": " + propertyValue + " must be non-empty and non-negative.");
         }
 
-        final char secondLastCharacter = propertyValue.charAt(propertyValue.length() - 2);
-        if (Character.isDigit(secondLastCharacter))
+        char c = propertyValue.charAt(length - 1);
+        if (Character.isDigit(c))
         {
-            final long value = AsciiEncoding.parseLongAscii(propertyValue, 0, propertyValue.length() - 1);
-            return TimeUnit.SECONDS.toNanos(value);
+            return AsciiEncoding.parseLongAscii(propertyValue, 0, length);
         }
 
-        final long value = AsciiEncoding.parseLongAscii(propertyValue, 0, propertyValue.length() - 2);
-
-        switch (secondLastCharacter)
+        int suffixIndex = length - 1;
+        char suffixStartChar = c;
+        if ((c == 's' || c == 'S') && length > 1)
         {
-            case 'n':
-            case 'N':
-                return value;
-
-            case 'u':
-            case 'U':
-                return TimeUnit.MICROSECONDS.toNanos(value);
-
-            case 'm':
-            case 'M':
-                return TimeUnit.MILLISECONDS.toNanos(value);
-
-            default:
-                throw new NumberFormatException(
-                    propertyName + ": " + propertyValue + " should end with: s, ms, us, or ns.");
+            c = propertyValue.charAt(length - 2);
+            if (!Character.isDigit(c))
+            {
+                if (--suffixIndex <= 0)
+                {
+                    throwInvalidDurationFormat(propertyName, propertyValue);
+                }
+                suffixStartChar = c;
+            }
         }
+        else
+        {
+            throwInvalidDurationFormat(propertyName, propertyValue);
+        }
+
+        final long value = AsciiEncoding.parseLongAscii(propertyValue, 0, suffixIndex);
+
+        return switch (suffixStartChar)
+        {
+            case 'n', 'N' -> value;
+            case 'u', 'U' -> TimeUnit.MICROSECONDS.toNanos(value);
+            case 'm', 'M' -> TimeUnit.MILLISECONDS.toNanos(value);
+            case 's', 'S' -> TimeUnit.SECONDS.toNanos(value);
+            default ->
+            {
+                throwInvalidDurationFormat(propertyName, propertyValue);
+                yield -1;
+            }
+        };
+    }
+
+    private static void throwInvalidDurationFormat(final String propertyName, final String propertyValue)
+    {
+        throw new NumberFormatException(propertyName + ": " + propertyValue + " should end with: s, ms, us, or ns.");
     }
 
     static boolean isX64Arch(final String arch)

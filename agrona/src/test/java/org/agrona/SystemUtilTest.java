@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.agrona.SystemUtil.*;
@@ -42,24 +43,72 @@ class SystemUtilTest
     }
 
     @Test
-    void shouldParseTimesWithSuffix()
-    {
-        assertEquals(1L, parseDuration("", "1"));
-        assertEquals(1L, parseDuration("", "1ns"));
-        assertEquals(1L, parseDuration("", "1NS"));
-        assertEquals(1000L, parseDuration("", "1us"));
-        assertEquals(1000L, parseDuration("", "1US"));
-        assertEquals(1000L * 1000, parseDuration("", "1ms"));
-        assertEquals(1000L * 1000, parseDuration("", "1MS"));
-        assertEquals(1000L * 1000 * 1000, parseDuration("", "1s"));
-        assertEquals(1000L * 1000 * 1000, parseDuration("", "1S"));
-        assertEquals(12L * 1000 * 1000 * 1000, parseDuration("", "12S"));
-    }
-
-    @Test
     void shouldThrowWhenParseTimeHasBadSuffix()
     {
         assertThrows(NumberFormatException.class, () -> parseDuration("", "1g"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "1, 1",
+        "1ns, 1",
+        "4NS, 4",
+        "44444nS, 44444",
+        "1024, 1024",
+        "1us, 1000",
+        "5us, 5000",
+        "7US, 7000",
+        "9uS, 9000",
+        "12Us, 12000",
+        "1ms, 1000000",
+        "123ms, 123000000",
+        "456MS, 456000000",
+        "789mS, 789000000",
+        "2Ms, 2000000",
+        "1s, 1000000000",
+        "1S, 1000000000",
+        "42s, 42000000000",
+        "9223372036854775807, 9223372036854775807",
+        "2147483647, 2147483647",
+        "9223372036854775807ns, 9223372036854775807",
+        "9223372036854775us, 9223372036854775000",
+        "9223372036854ms, 9223372036854000000",
+        "9223372036s, 9223372036000000000" })
+    void shouldParseTimesWithSuffix(final String value, final long expected)
+    {
+        assertEquals(expected, parseDuration("", value));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "9223372036854775807ns",
+        "9223372036854775807us",
+        "9223372036854775807ms",
+        "9223372036854775807s",
+        "9223372036854776us",
+        "9223372036855ms",
+        "9223372037s" })
+    void shouldReturnLongMaxValueIfExceedsForSuffix(final String value)
+    {
+        assertEquals(Long.MAX_VALUE, parseDuration("", value));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "-4", "-1s", "-5S", "-2us", "-9ms", "-11MS", "-1US", "-8NS" })
+    void shouldRejectNegativeDurations(final String value)
+    {
+        final NumberFormatException exception =
+            assertThrowsExactly(NumberFormatException.class, () -> parseDuration("x", value));
+        assertEquals("x: " + value + " must be non-empty and non-negative.", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "123x", "1p", "0xs", "42xxl", "s", "S", "2ps", "5px", "4u", "5n", "3m", "us", "ms", "ns" })
+    void shouldRejectInvalidSuffix(final String value)
+    {
+        final NumberFormatException exception =
+            assertThrows(NumberFormatException.class, () -> parseDuration("x", value));
+        assertEquals("x: " + value + " should end with: s, ms, us, or ns.", exception.getMessage());
     }
 
     @Test
