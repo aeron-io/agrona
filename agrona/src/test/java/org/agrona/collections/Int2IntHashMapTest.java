@@ -21,22 +21,34 @@ import org.mockito.InOrder;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
+import static org.agrona.collections.Hashing.DEFAULT_LOAD_FACTOR;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class Int2IntHashMapTest
 {
@@ -1323,6 +1335,47 @@ class Int2IntHashMapTest
 
         assertEquals(1000, map.get(0));
         assertEquals(7000, map.get(7));
+    }
+
+    @Test
+    void shouldSupportParallelStreamProcessingWhenAllocationsAreEnabled()
+    {
+        final List<Integer> data = ThreadLocalRandom.current()
+            .ints(10000, 0, Integer.MAX_VALUE)
+            .boxed()
+            .toList();
+        final Int2IntHashMap map = new Int2IntHashMap(data.size(), DEFAULT_LOAD_FACTOR, MISSING_VALUE, false);
+        for (final Integer v : data)
+        {
+            map.put(v.intValue(), v * 2);
+        }
+
+        final Set<Integer> actual = Collections.synchronizedSet(new HashSet<>());
+        map.entrySet().parallelStream().forEach((e) -> actual.add(e.getKey()));
+
+        assertEquals(data.size(), actual.size());
+        for (final Integer v : data)
+        {
+            assertTrue(actual.contains(v));
+        }
+
+        actual.clear();
+        map.keySet().stream().parallel().forEach(actual::add);
+
+        assertEquals(data.size(), actual.size());
+        for (final Integer v : data)
+        {
+            assertTrue(actual.contains(v));
+        }
+
+        actual.clear();
+        map.values().stream().parallel().forEach(actual::add);
+
+        assertEquals(data.size(), actual.size());
+        for (final Integer v : data)
+        {
+            assertTrue(actual.contains(v * 2));
+        }
     }
 
     private void assertEntryIs(final Entry<Integer, Integer> entry, final int expectedKey, final int expectedValue)
