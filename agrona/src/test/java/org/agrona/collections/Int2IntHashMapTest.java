@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
@@ -1340,10 +1339,7 @@ class Int2IntHashMapTest
     @Test
     void shouldSupportParallelStreamProcessingWhenAllocationsAreEnabled()
     {
-        final List<Integer> data = ThreadLocalRandom.current()
-            .ints(10000, 0, Integer.MAX_VALUE)
-            .boxed()
-            .toList();
+        final List<Integer> data = IntStream.range(0, 10_000).boxed().toList();
         final Int2IntHashMap map = new Int2IntHashMap(data.size(), DEFAULT_LOAD_FACTOR, MISSING_VALUE, false);
         for (final Integer v : data)
         {
