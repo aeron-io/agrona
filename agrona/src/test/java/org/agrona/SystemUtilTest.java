@@ -20,6 +20,7 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.agrona.SystemUtil.*;
@@ -30,22 +31,49 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SystemUtilTest
 {
-    @Test
-    void shouldParseSizesWithSuffix()
+    @ParameterizedTest
+    @CsvSource({
+        "42, 42",
+        "5k, 5120",
+        "2K, 2048",
+        "1m, 1048576",
+        "10M, 10485760",
+        "4g, 4294967296",
+        "10G, 10737418240",
+        "8589934591g, 9223372035781033984",
+        "8796093022207m, 9223372036853727232",
+        "9007199254740991k, 9223372036854774784",
+    })
+    void shouldParseSizesWithSuffix(final String value, final long expected)
     {
-        assertEquals(1L, parseSize("", "1"));
-        assertEquals(1024L, parseSize("", "1k"));
-        assertEquals(1024L, parseSize("", "1K"));
-        assertEquals(1024L * 1024L, parseSize("", "1m"));
-        assertEquals(1024L * 1024L, parseSize("", "1M"));
-        assertEquals(1024L * 1024L * 1024L, parseSize("", "1g"));
-        assertEquals(1024L * 1024L * 1024L, parseSize("", "1G"));
+        assertEquals(expected, parseSize("", value));
     }
 
-    @Test
-    void shouldThrowWhenParseTimeHasBadSuffix()
+    @ParameterizedTest
+    @NullAndEmptySource
+    void shouldRejectEmptySizeValue(final String value)
     {
-        assertThrows(NumberFormatException.class, () -> parseDuration("", "1g"));
+        final NumberFormatException exception =
+            assertThrowsExactly(NumberFormatException.class, () -> parseSize("abc", value));
+        assertEquals("abc must be non-empty: " + value, exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"-1024", "-5g", "-3K", "-0K", "-2m", "-1M", "-5G"})
+    void shouldRejectEmptyNegativeSizeValue(final String value)
+    {
+        final NumberFormatException exception =
+            assertThrowsExactly(NumberFormatException.class, () -> parseSize("abc", value));
+        assertEquals("abc must be positive: " + value, exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "9007199254740992k", "8796093022208m", "8589934592g" })
+    void shouldThrowWhenParseSizeOverflows(final String value)
+    {
+        final NumberFormatException exception =
+            assertThrows(NumberFormatException.class, () -> parseSize("test", value));
+        assertEquals("test would overflow a long: " + value, exception.getMessage());
     }
 
     @ParameterizedTest
@@ -94,12 +122,21 @@ class SystemUtilTest
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "-4", "-1s", "-5S", "-2us", "-9ms", "-11MS", "-1US", "-8NS" })
+    @NullAndEmptySource
+    void shouldRejectEmptyDurationValue(final String value)
+    {
+        final NumberFormatException exception =
+            assertThrowsExactly(NumberFormatException.class, () -> parseDuration("x", value));
+        assertEquals("x must be non-empty: " + value, exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "-4", "-1s", "-5S", "-2us", "-9ms", "-11MS", "-1US", "-8NS", "-4444444ns" })
     void shouldRejectNegativeDurations(final String value)
     {
         final NumberFormatException exception =
             assertThrowsExactly(NumberFormatException.class, () -> parseDuration("x", value));
-        assertEquals("x: " + value + " must be non-empty and non-negative.", exception.getMessage());
+        assertEquals("x must be positive: " + value, exception.getMessage());
     }
 
     @ParameterizedTest
@@ -109,18 +146,6 @@ class SystemUtilTest
         final NumberFormatException exception =
             assertThrows(NumberFormatException.class, () -> parseDuration("x", value));
         assertEquals("x: " + value + " should end with: s, ms, us, or ns.", exception.getMessage());
-    }
-
-    @Test
-    void shouldThrowWhenParseTimeHasBadTwoLetterSuffix()
-    {
-        assertThrows(NumberFormatException.class, () -> parseDuration("", "1zs"));
-    }
-
-    @Test
-    void shouldThrowWhenParseSizeOverflows()
-    {
-        assertThrows(NumberFormatException.class, () -> parseSize("", 8589934592L + "g"));
     }
 
     @Test

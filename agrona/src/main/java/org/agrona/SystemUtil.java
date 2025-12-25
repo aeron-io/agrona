@@ -47,10 +47,12 @@ public final class SystemUtil
      */
     public static final String NULL_PROPERTY_VALUE = "@null";
 
-    private static final String SUN_PID_PROP_NAME = "sun.java.launcher.pid";
-    private static final long MAX_G_VALUE = 8589934591L;
-    private static final long MAX_M_VALUE = 8796093022207L;
-    private static final long MAX_K_VALUE = 9007199254739968L;
+    private static final long ONE_GIGABYTE = 1024 * 1024 * 1024;
+    private static final long ONE_MEGABYTE = 1024 * 1024;
+    private static final long ONE_KILOBYTE = 1024;
+    private static final long MAX_G_VALUE = Long.MAX_VALUE / ONE_GIGABYTE;
+    private static final long MAX_M_VALUE = Long.MAX_VALUE / ONE_MEGABYTE;
+    private static final long MAX_K_VALUE = Long.MAX_VALUE / ONE_KILOBYTE;
 
     private static final String OS_NAME;
     private static final String OS_ARCH;
@@ -378,13 +380,7 @@ public final class SystemUtil
         final String propertyValue = System.getProperty(propertyName);
         if (propertyValue != null)
         {
-            final long value = parseSize(propertyName, propertyValue);
-            if (value < 0)
-            {
-                throw new NumberFormatException(propertyName + " must be positive: " + value);
-            }
-
-            return value;
+            return parseSize(propertyName, propertyValue);
         }
 
         return defaultValue;
@@ -401,45 +397,46 @@ public final class SystemUtil
      */
     public static long parseSize(final String propertyName, final String propertyValue)
     {
-        final int lengthMinusSuffix = propertyValue.length() - 1;
-        final char lastCharacter = propertyValue.charAt(lengthMinusSuffix);
+        validateNonNegative(propertyName, propertyValue);
+
+        final int suffixIndex = propertyValue.length() - 1;
+        final char lastCharacter = propertyValue.charAt(suffixIndex);
         if (Character.isDigit(lastCharacter))
         {
-            return Long.parseLong(propertyValue);
+            return AsciiEncoding.parseLongAscii(propertyValue, 0, propertyValue.length());
         }
 
-        final long value = AsciiEncoding.parseLongAscii(propertyValue, 0, lengthMinusSuffix);
+        final long value = AsciiEncoding.parseLongAscii(propertyValue, 0, suffixIndex);
 
-        switch (lastCharacter)
+        return switch (lastCharacter)
         {
-            case 'k':
-            case 'K':
+            case 'k', 'K' ->
+            {
                 if (value > MAX_K_VALUE)
                 {
                     throw new NumberFormatException(propertyName + " would overflow a long: " + propertyValue);
                 }
-                return value * 1024;
-
-            case 'm':
-            case 'M':
+                yield value * ONE_KILOBYTE;
+            }
+            case 'm', 'M' ->
+            {
                 if (value > MAX_M_VALUE)
                 {
                     throw new NumberFormatException(propertyName + " would overflow a long: " + propertyValue);
                 }
-                return value * 1024 * 1024;
-
-            case 'g':
-            case 'G':
+                yield value * ONE_MEGABYTE;
+            }
+            case 'g', 'G' ->
+            {
                 if (value > MAX_G_VALUE)
                 {
                     throw new NumberFormatException(propertyName + " would overflow a long: " + propertyValue);
                 }
-                return value * 1024 * 1024 * 1024;
-
-            default:
-                throw new NumberFormatException(
-                    propertyName + ": " + propertyValue + " should end with: k, m, or g.");
-        }
+                yield value * ONE_GIGABYTE;
+            }
+            default -> throw new NumberFormatException(
+                propertyName + ": " + propertyValue + " should end with: k, m, or g.");
+        };
     }
 
     /**
@@ -458,13 +455,7 @@ public final class SystemUtil
         final String propertyValue = System.getProperty(propertyName);
         if (propertyValue != null)
         {
-            final long value = parseDuration(propertyName, propertyValue);
-            if (value < 0)
-            {
-                throw new NumberFormatException(propertyName + " must be positive: " + value);
-            }
-
-            return value;
+            return parseDuration(propertyName, propertyValue);
         }
 
         return defaultValue;
@@ -483,13 +474,9 @@ public final class SystemUtil
      */
     public static long parseDuration(final String propertyName, final String propertyValue)
     {
-        final int length = propertyValue.length();
-        if (0 == length || '-' == propertyValue.charAt(0))
-        {
-            throw new NumberFormatException(
-                propertyName + ": " + propertyValue + " must be non-empty and non-negative.");
-        }
+        validateNonNegative(propertyName, propertyValue);
 
+        final int length = propertyValue.length();
         char c = propertyValue.charAt(length - 1);
         if (Character.isDigit(c))
         {
@@ -529,6 +516,19 @@ public final class SystemUtil
                 yield -1;
             }
         };
+    }
+
+    private static void validateNonNegative(final String propertyName, final String propertyValue)
+    {
+        if (Strings.isEmpty(propertyValue))
+        {
+            throw new NumberFormatException(propertyName + " must be non-empty: " + propertyValue);
+        }
+
+        if ('-' == propertyValue.charAt(0))
+        {
+            throw new NumberFormatException(propertyName + " must be positive: " + propertyValue);
+        }
     }
 
     private static void throwInvalidDurationFormat(final String propertyName, final String propertyValue)
