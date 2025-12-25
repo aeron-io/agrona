@@ -47,7 +47,7 @@ If the mark file already exists and is not active, then the activity timestamp (
 set to a special sentinel value (`org.agrona.MarkFile.ACTIVATION_IN_PROGRESS_TIMESTAMP`) to prevent other processes from
 concurrent activation.
 +
-*NB:* If the current activation fails it will leave the activity timestamp at a sentinel value which will prevent a
+NOTE: If the current activation fails it will leave the activity timestamp at a sentinel value which will prevent a
 restart of the process. Therefore, it is recommended to reset the activity timestamp upon failure.
 
 == 2.3.1 (2025-11-03)
@@ -68,7 +68,7 @@ Previously `ShutdownSignalBarrier` relied on intercepting `SIGINT` and `SIGTERM`
 +
 New implementation uses shutdown hooks instead and requires `ShutdownSignalBarrier` to be explicitly closed.
 +
-_**NB: Failure to close `ShutdownSignalBarrier` might result in JVM not terminating!**_
+WARNING: Failure to close `ShutdownSignalBarrier` might result in JVM not terminating!**
 +
 As the result the code using `ShutdownSignalBarrier` needs to be updated:
 +
@@ -111,8 +111,8 @@ In the above example `ShutdownSignalBarrier` is closed last to ensure that `serv
 * *[Breaking]* Deprecated `org.agrona.concurrent.SigInt` for removal. Use
 `org.agrona.concurrent.ShutdownSignalBarrier` instead.
 +
-_**NB:** `org.agrona.concurrent.SigInt.register(java.lang.Runnable)` is unsafe as it overrides `SIGINT` signal
- handling of the JVM thus preventing shutdown hooks from being executed._
+NOTE: `org.agrona.concurrent.SigInt.register(java.lang.Runnable)` is unsafe as it overrides `SIGINT` signal
+ handling of the JVM thus preventing shutdown hooks from being executed.
 +
 An example using `ShutdownSignalBarrier` instead of `SigInt`:
 +
@@ -243,14 +243,14 @@ compatibility with Gradle 9.1 and causes self-dependency via `baseline` task.
 
 * *[Breaking]* Remove `org.agrona.UnsafeAccess`. Use `org.agrona.UnsafeApi` instead.
 +
-_**Note:** `--add-opens java.base/jdk.internal.misc=ALL-UNNAMED` JVM option must be specified in order to use `org.agrona.UnsafeApi`._
+NOTE: `--add-opens java.base/jdk.internal.misc=ALL-UNNAMED` JVM option must be specified in order to use `org.agrona.UnsafeApi`.
 
 * *[Breaking]* Remove `org.agrona.concurrent.MemoryAccess` was removed. Use either an equivalent APIs provided by
 `org.agrona.UnsafeApi` or `java.lang.invoke.VarHandle`.
 * *[Breaking]* Remove `org.agrona.concurrent.SigIntBarrier`. Use `org.agrona.concurrent.ShutdownSignalBarrier` instead.
 * Add API to compute `CRC-32C` (`org.agrona.checksum.Crc32c`) and `CRC-32` (`org.agrona.checksum.Crc32`) checksums.
 +
-_**Note:** Requires `--add-opens java.base/java.util.zip=ALL-UNNAMED` JVM option at run time in order to use these classes._
+NOTE: Requires `--add-opens java.base/java.util.zip=ALL-UNNAMED` JVM option at run time in order to use these classes.
 
 * Add concurrent tests for `getAndAdd` and `getAndSet` operations.
 
