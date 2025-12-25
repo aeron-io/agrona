@@ -445,7 +445,7 @@ public final class SystemUtil
 
     /**
      * Format size value as shortest possible String with an optional suffix. For example, {@code 123} will be
-     * formatted as {@code 123}, {@code 2048} will be formatted as {@code 2k} etc.
+     * formatted as {@code 123}, {@code 2048} will be formatted as {@code 2k}.
      *
      * @param size to format.
      * @return formatted value.
@@ -570,7 +570,7 @@ public final class SystemUtil
 
     /**
      * Format duration value as shortest possible String with a suffix. For example, {@code 123} will be
-     * formatted as {@code 123ns} whereas {@code 10'000'000'000} will be formatted as {@code 10s}.
+     * formatted as {@code 123ns}, {@code 60'000'000'000} will be formatted as {@code 60s}.
      *
      * @param durationNs value to format.
      * @return formatted value.
@@ -611,7 +611,7 @@ public final class SystemUtil
             }
         }
 
-        return Long.toString(durationNs);
+        return durationNs + "ns";
     }
 
     private static void validateNonNegative(final String propertyName, final String propertyValue)
