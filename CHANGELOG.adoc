@@ -1,9 +1,43 @@
 = Changelog
 
-== Unreleased
+== 2.4.0 (2025-12-25)
 
-* *[Breaking]* Removed `org.agrona.concurrent.SigInt`. Use
-`org.agrona.concurrent.ShutdownSignalBarrier` instead.
+* *[Breaking]* Remove `org.agrona.concurrent.SigInt`. Use `org.agrona.concurrent.ShutdownSignalBarrier` instead.
+
+* *[Breaking]* Change `SystemUtil#parseDuration` to reject negative values.
+
+* *[Breaking]* Change `SystemUtil#parseSize` to reject negative values.
+
+* Fix `DeadlineTimerWhee#forEach` which could cause wrong `timerId` to be returned.
+(https://github.com/aeron-io/agrona/pull/346[#346])
+
+* `DeadlineTimerWheel` clarify timer expires at or after deadline. (https://github.com/aeron-io/agrona/pull/345[#345])
+
+* Add `plain` methods to `MarkFile` every `weak` method. (https://github.com/aeron-io/agrona/pull/344[#344])
+
+* Fix `UnsafeBuffer#wrap` with raw memory address where `wrapAdjustment` was not reset.
+(https://github.com/aeron-io/agrona/pull/348[#348])
+
+* Fix `Int2ObjectCache#remove` which was returning last checked value when nothing was actually removed.
+(https://github.com/aeron-io/agrona/pull/351[#351])
+
+* Fix `DirectBufferDataInput#readStringUTF8`. (https://github.com/aeron-io/agrona/pull/353[#353])
+
+* Change `BroadcastReceiver#lapCount` operations to use opaque access. (https://github.com/aeron-io/agrona/pull/349[#349])
+
+* Use `Objects#checkFromIndexSize` for out of bounds checks in `DirectBuffer`.
+
+* Use `AtomicLong#setRelease` in `DynamicCompositeAgent`. (https://github.com/aeron-io/agrona/pull/352[#352])
+
+* Add `SystemUtil#formatDuration`.
+
+* Add `SystemUtil#formatSize`.
+
+* Upgrade to `ByteBuddy` 1.18.3.
+* Upgrade to `Checkstyle` 12.3.0.
+* Upgrade to `Mockito` 5.21.0.
+* Upgrade to `Shadow`  9.3.0.
+* Remove `bnd`  plugin.
 
 == 2.3.2 (2025-11-08)
 
@@ -122,7 +156,6 @@ class FlagSample
 
 * *[Breaking]* Agrona jars no longer provide OSGI metadata as `bnd` plugin was removed, because it breaks
 compatibility with Gradle 9.1 and causes self-dependency via `baseline` task.
-
 
 * AtomicCounter minor javadoc improvements. (https://github.com/aeron-io/agrona/pull/338[#338])
 
