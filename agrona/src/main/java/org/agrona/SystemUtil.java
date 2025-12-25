@@ -54,6 +54,10 @@ public final class SystemUtil
     private static final long MAX_M_VALUE = Long.MAX_VALUE / ONE_MEGABYTE;
     private static final long MAX_K_VALUE = Long.MAX_VALUE / ONE_KILOBYTE;
 
+    private static final long ONE_MICROSECOND_NS = 1_000L;
+    private static final long ONE_MILLISECOND_NS = ONE_MICROSECOND_NS * 1000;
+    private static final long ONE_SECOND_NS = ONE_MILLISECOND_NS * 1000;
+
     private static final String OS_NAME;
     private static final String OS_ARCH;
     private static final long PID;
@@ -516,6 +520,52 @@ public final class SystemUtil
                 yield -1;
             }
         };
+    }
+
+    /**
+     * Format duration value as shortest possible String with a suffix. For example, {@code 123} will be
+     * formatted as {@code 123ns} whereas {@code 10'000'000'000} will be formatted as {@code 10s}.
+     *
+     * @param durationNs value to format.
+     * @return formatted value.
+     * @throws IllegalArgumentException if {@code duration < 0}.
+     * @see #parseDuration(String, String)
+     */
+    public static String formatDuration(final long durationNs)
+    {
+        if (durationNs < 0)
+        {
+            throw new IllegalArgumentException("duration must be positive: " + durationNs);
+        }
+
+        if (durationNs >= ONE_SECOND_NS)
+        {
+            final long value = durationNs / ONE_SECOND_NS;
+            if (durationNs == value * ONE_SECOND_NS)
+            {
+                return value + "s";
+            }
+        }
+
+        if (durationNs >= ONE_MILLISECOND_NS)
+        {
+            final long value = durationNs / ONE_MILLISECOND_NS;
+            if (durationNs == value * ONE_MILLISECOND_NS)
+            {
+                return value + "ms";
+            }
+        }
+
+        if (durationNs >= ONE_MICROSECOND_NS)
+        {
+            final long value = durationNs / ONE_MICROSECOND_NS;
+            if (durationNs == value * ONE_MICROSECOND_NS)
+            {
+                return value + "us";
+            }
+        }
+
+        return Long.toString(durationNs);
     }
 
     private static void validateNonNegative(final String propertyName, final String propertyValue)

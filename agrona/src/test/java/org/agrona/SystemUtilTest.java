@@ -33,6 +33,7 @@ class SystemUtilTest
 {
     @ParameterizedTest
     @CsvSource({
+        "0, 0",
         "42, 42",
         "5k, 5120",
         "2K, 2048",
@@ -78,6 +79,11 @@ class SystemUtilTest
 
     @ParameterizedTest
     @CsvSource({
+        "0, 0",
+        "0ns, 0",
+        "0us, 0",
+        "0ms, 0",
+        "0s, 0",
         "1, 1",
         "1ns, 1",
         "4NS, 4",
@@ -141,11 +147,39 @@ class SystemUtilTest
 
     @ParameterizedTest
     @ValueSource(strings = { "123x", "1p", "0xs", "42xxl", "s", "S", "2ps", "5px", "4u", "5n", "3m", "us", "ms", "ns" })
-    void shouldRejectInvalidSuffix(final String value)
+    void shouldRejectInvalidDurationSuffix(final String value)
     {
         final NumberFormatException exception =
             assertThrows(NumberFormatException.class, () -> parseDuration("x", value));
         assertEquals("x: " + value + " should end with: s, ms, us, or ns.", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = { Long.MIN_VALUE, -100 })
+    void formatDurationShouldRejectNegativeValues(final long value)
+    {
+        final IllegalArgumentException exception =
+            assertThrowsExactly(IllegalArgumentException.class, () -> formatDuration(value));
+        assertEquals("duration must be positive: " + value, exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "0, 0",
+        "999, 999",
+        "1000, 1us",
+        "5429, 5429",
+        "999999, 999999",
+        "1000000, 1ms",
+        "560000000, 560ms",
+        "560000001, 560000001",
+        "1000000000, 1s",
+        "120000000000, 120s",
+        "9223372035781033984, 9223372035781033984"
+    })
+    void shouldFormatDuration(final long value, final String expected)
+    {
+        assertEquals(expected, SystemUtil.formatDuration(value));
     }
 
     @Test
