@@ -19,6 +19,7 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import static org.agrona.BitUtil.isPowerOfTwo;
 
@@ -88,11 +89,7 @@ public final class BufferUtil
      */
     public static void boundsCheck(final byte[] buffer, final long index, final int length)
     {
-        final int capacity = buffer.length;
-        if (index < 0 || length < 0 || index > capacity - length)
-        {
-            throw new IndexOutOfBoundsException("index=" + index + " length=" + length + " capacity=" + capacity);
-        }
+        Objects.checkFromIndexSize(index, length, buffer.length);
     }
 
     /**
@@ -104,11 +101,7 @@ public final class BufferUtil
      */
     public static void boundsCheck(final ByteBuffer buffer, final long index, final int length)
     {
-        final int capacity = buffer.capacity();
-        if (index < 0 || length < 0 || index > capacity - length)
-        {
-            throw new IndexOutOfBoundsException("index=" + index + " length=" + length + " capacity=" + capacity);
-        }
+        Objects.checkFromIndexSize(index, length, buffer.capacity());
     }
 
     /**

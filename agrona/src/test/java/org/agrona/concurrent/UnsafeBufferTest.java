@@ -181,10 +181,10 @@ class UnsafeBufferTest extends MutableDirectBufferTests
         final UnsafeBuffer buffer = new UnsafeBuffer(new byte[8]);
         final UnsafeBuffer slice = new UnsafeBuffer();
 
-        assertThrows(IllegalArgumentException.class, () -> slice.wrap(buffer, -1, 0));
-        assertThrows(IllegalArgumentException.class, () -> slice.wrap(buffer, 0, -1));
-        assertThrows(IllegalArgumentException.class, () -> slice.wrap(buffer, 8, 1));
-        assertThrows(IllegalArgumentException.class, () -> slice.wrap(buffer, 7, 3));
+        assertThrows(IndexOutOfBoundsException.class, () -> slice.wrap(buffer, -1, 0));
+        assertThrows(IndexOutOfBoundsException.class, () -> slice.wrap(buffer, 0, -1));
+        assertThrows(IndexOutOfBoundsException.class, () -> slice.wrap(buffer, 8, 1));
+        assertThrows(IndexOutOfBoundsException.class, () -> slice.wrap(buffer, 7, 3));
     }
 
     @ParameterizedTest
@@ -199,7 +199,7 @@ class UnsafeBufferTest extends MutableDirectBufferTests
 
         final IndexOutOfBoundsException exception =
             assertThrowsExactly(IndexOutOfBoundsException.class, () -> buffer.putIntAscii(index, value));
-        assertEquals("index=6 length=3 capacity=8", exception.getMessage());
+        assertEquals("Range [6, 6 + 3) out of bounds for length 8", exception.getMessage());
 
         assertEquals(0, buffer.getByte(index));
     }
@@ -216,7 +216,7 @@ class UnsafeBufferTest extends MutableDirectBufferTests
 
         final IndexOutOfBoundsException exception =
             assertThrowsExactly(IndexOutOfBoundsException.class, () -> buffer.putLongAscii(index, value));
-        assertEquals("index=1 length=10 capacity=10", exception.getMessage());
+        assertEquals("Range [1, 1 + 10) out of bounds for length 10", exception.getMessage());
 
         assertEquals(0, buffer.getByte(index));
     }

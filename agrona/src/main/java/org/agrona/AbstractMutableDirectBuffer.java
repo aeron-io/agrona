@@ -18,6 +18,7 @@ package org.agrona;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Objects;
 
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -454,7 +455,6 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
         if (SHOULD_BOUNDS_CHECK)
         {
             boundsCheck0(index, dst.length);
-            BufferUtil.boundsCheck(dst, 0, dst.length);
         }
 
         UnsafeApi.copyMemory(byteArray, addressOffset + index, dst, ARRAY_BASE_OFFSET, dst.length);
@@ -468,7 +468,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
         if (SHOULD_BOUNDS_CHECK)
         {
             boundsCheck0(index, length);
-            BufferUtil.boundsCheck(dst, offset, length);
+            Objects.checkFromIndexSize(offset, length, dst.length);
         }
 
         UnsafeApi.copyMemory(byteArray, addressOffset + index, dst, ARRAY_BASE_OFFSET + offset, length);
@@ -500,7 +500,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
         if (SHOULD_BOUNDS_CHECK)
         {
             boundsCheck0(index, length);
-            BufferUtil.boundsCheck(dstBuffer, dstOffset, length);
+            Objects.checkFromIndexSize(dstOffset, length, dstBuffer.capacity());
         }
 
         final byte[] dstByteArray;
@@ -537,7 +537,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
         ensureCapacity(index, length);
         if (SHOULD_BOUNDS_CHECK)
         {
-            BufferUtil.boundsCheck(src, offset, length);
+            Objects.checkFromIndexSize(offset, length, src.length);
         }
 
         UnsafeApi.copyMemory(src, ARRAY_BASE_OFFSET + offset, byteArray, addressOffset + index, length);
@@ -561,7 +561,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
         ensureCapacity(index, length);
         if (SHOULD_BOUNDS_CHECK)
         {
-            BufferUtil.boundsCheck(srcBuffer, srcIndex, length);
+            Objects.checkFromIndexSize(srcIndex, length, srcBuffer.capacity());
         }
 
         final byte[] srcByteArray;
@@ -1726,11 +1726,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
      */
     protected final void boundsCheck0(final int index, final int length)
     {
-        final long resultingPosition = index + (long)length;
-        if (index < 0 || length < 0 || resultingPosition > capacity)
-        {
-            throw new IndexOutOfBoundsException("index=" + index + " length=" + length + " capacity=" + capacity);
-        }
+        Objects.checkFromIndexSize(index, length, capacity);
     }
 
     /**

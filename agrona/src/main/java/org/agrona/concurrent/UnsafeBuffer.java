@@ -22,6 +22,7 @@ import org.agrona.UnsafeApi;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Objects;
 
 import static org.agrona.BitUtil.*;
 import static org.agrona.BufferUtil.*;
@@ -190,7 +191,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     {
         if (SHOULD_BOUNDS_CHECK)
         {
-            boundsCheckWrap(offset, length, buffer.length);
+            Objects.checkFromIndexSize(offset, length, buffer.length);
         }
 
         capacity = length;
@@ -238,7 +239,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     {
         if (SHOULD_BOUNDS_CHECK)
         {
-            boundsCheckWrap(offset, length, buffer.capacity());
+            Objects.checkFromIndexSize(offset, length, buffer.capacity());
         }
 
         capacity = length;
@@ -292,7 +293,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     {
         if (SHOULD_BOUNDS_CHECK)
         {
-            boundsCheckWrap(offset, length, buffer.capacity());
+            Objects.checkFromIndexSize(offset, length, buffer.capacity());
         }
 
         capacity = length;
@@ -822,25 +823,6 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
         if (SHOULD_BOUNDS_CHECK)
         {
             boundsCheck0(index, length);
-        }
-    }
-
-    private static void boundsCheckWrap(final int offset, final int length, final int capacity)
-    {
-        if (offset < 0)
-        {
-            throw new IllegalArgumentException("invalid offset: " + offset);
-        }
-
-        if (length < 0)
-        {
-            throw new IllegalArgumentException("invalid length: " + length);
-        }
-
-        if ((offset > capacity - length) || (length > capacity - offset))
-        {
-            throw new IllegalArgumentException(
-                "offset=" + offset + " length=" + length + " not valid for capacity=" + capacity);
         }
     }
 }
