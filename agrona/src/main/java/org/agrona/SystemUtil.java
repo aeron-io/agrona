@@ -444,6 +444,52 @@ public final class SystemUtil
     }
 
     /**
+     * Format size value as shortest possible String with an optional suffix. For example, {@code 123} will be
+     * formatted as {@code 123}, {@code 2048} will be formatted as {@code 2k} etc.
+     *
+     * @param size to format.
+     * @return formatted value.
+     * @throws IllegalArgumentException if {@code duration < 0}.
+     * @see #parseDuration(String, String)
+     */
+    public static String formatSize(final long size)
+    {
+        if (size < 0)
+        {
+            throw new IllegalArgumentException("size must be positive: " + size);
+        }
+
+        if (size >= ONE_GIGABYTE)
+        {
+            final long value = size / ONE_GIGABYTE;
+            if (size == value * ONE_GIGABYTE)
+            {
+                return value + "g";
+            }
+        }
+
+        if (size >= ONE_MEGABYTE)
+        {
+            final long value = size / ONE_MEGABYTE;
+            if (size == value * ONE_MEGABYTE)
+            {
+                return value + "m";
+            }
+        }
+
+        if (size >= ONE_KILOBYTE)
+        {
+            final long value = size / ONE_KILOBYTE;
+            if (size == value * ONE_KILOBYTE)
+            {
+                return value + "k";
+            }
+        }
+
+        return Long.toString(size);
+    }
+
+    /**
      * Get a string representation of a time duration with an optional suffix of 's', 'ms', 'us', or 'ns' suffix to
      * indicate seconds, milliseconds, microseconds, or nanoseconds respectively.
      * <p>

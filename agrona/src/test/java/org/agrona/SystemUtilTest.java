@@ -23,7 +23,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.agrona.SystemUtil.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.core.Is.is;
@@ -47,7 +46,7 @@ class SystemUtilTest
     })
     void shouldParseSizesWithSuffix(final String value, final long expected)
     {
-        assertEquals(expected, parseSize("", value));
+        assertEquals(expected, SystemUtil.parseSize("", value));
     }
 
     @ParameterizedTest
@@ -55,7 +54,7 @@ class SystemUtilTest
     void shouldRejectEmptySizeValue(final String value)
     {
         final NumberFormatException exception =
-            assertThrowsExactly(NumberFormatException.class, () -> parseSize("abc", value));
+            assertThrowsExactly(NumberFormatException.class, () -> SystemUtil.parseSize("abc", value));
         assertEquals("abc must be non-empty: " + value, exception.getMessage());
     }
 
@@ -64,7 +63,7 @@ class SystemUtilTest
     void shouldRejectEmptyNegativeSizeValue(final String value)
     {
         final NumberFormatException exception =
-            assertThrowsExactly(NumberFormatException.class, () -> parseSize("abc", value));
+            assertThrowsExactly(NumberFormatException.class, () -> SystemUtil.parseSize("abc", value));
         assertEquals("abc must be positive: " + value, exception.getMessage());
     }
 
@@ -73,7 +72,7 @@ class SystemUtilTest
     void shouldThrowWhenParseSizeOverflows(final String value)
     {
         final NumberFormatException exception =
-            assertThrows(NumberFormatException.class, () -> parseSize("test", value));
+            assertThrows(NumberFormatException.class, () -> SystemUtil.parseSize("test", value));
         assertEquals("test would overflow a long: " + value, exception.getMessage());
     }
 
@@ -107,10 +106,11 @@ class SystemUtilTest
         "9223372036854775807ns, 9223372036854775807",
         "9223372036854775us, 9223372036854775000",
         "9223372036854ms, 9223372036854000000",
-        "9223372036s, 9223372036000000000" })
+        "9223372036s, 9223372036000000000",
+    })
     void shouldParseTimesWithSuffix(final String value, final long expected)
     {
-        assertEquals(expected, parseDuration("", value));
+        assertEquals(expected, SystemUtil.parseDuration("", value));
     }
 
     @ParameterizedTest
@@ -121,10 +121,11 @@ class SystemUtilTest
         "9223372036854775807s",
         "9223372036854776us",
         "9223372036855ms",
-        "9223372037s" })
+        "9223372037s",
+    })
     void shouldReturnLongMaxValueIfExceedsForSuffix(final String value)
     {
-        assertEquals(Long.MAX_VALUE, parseDuration("", value));
+        assertEquals(Long.MAX_VALUE, SystemUtil.parseDuration("", value));
     }
 
     @ParameterizedTest
@@ -132,7 +133,7 @@ class SystemUtilTest
     void shouldRejectEmptyDurationValue(final String value)
     {
         final NumberFormatException exception =
-            assertThrowsExactly(NumberFormatException.class, () -> parseDuration("x", value));
+            assertThrowsExactly(NumberFormatException.class, () -> SystemUtil.parseDuration("x", value));
         assertEquals("x must be non-empty: " + value, exception.getMessage());
     }
 
@@ -141,7 +142,7 @@ class SystemUtilTest
     void shouldRejectNegativeDurations(final String value)
     {
         final NumberFormatException exception =
-            assertThrowsExactly(NumberFormatException.class, () -> parseDuration("x", value));
+            assertThrowsExactly(NumberFormatException.class, () -> SystemUtil.parseDuration("x", value));
         assertEquals("x must be positive: " + value, exception.getMessage());
     }
 
@@ -150,7 +151,7 @@ class SystemUtilTest
     void shouldRejectInvalidDurationSuffix(final String value)
     {
         final NumberFormatException exception =
-            assertThrows(NumberFormatException.class, () -> parseDuration("x", value));
+            assertThrows(NumberFormatException.class, () -> SystemUtil.parseDuration("x", value));
         assertEquals("x: " + value + " should end with: s, ms, us, or ns.", exception.getMessage());
     }
 
@@ -159,7 +160,7 @@ class SystemUtilTest
     void formatDurationShouldRejectNegativeValues(final long value)
     {
         final IllegalArgumentException exception =
-            assertThrowsExactly(IllegalArgumentException.class, () -> formatDuration(value));
+            assertThrowsExactly(IllegalArgumentException.class, () -> SystemUtil.formatDuration(value));
         assertEquals("duration must be positive: " + value, exception.getMessage());
     }
 
@@ -171,15 +172,51 @@ class SystemUtilTest
         "5429, 5429",
         "999999, 999999",
         "1000000, 1ms",
+        "1234000, 1234us",
         "560000000, 560ms",
+        "1560000000, 1560ms",
         "560000001, 560000001",
         "1000000000, 1s",
         "120000000000, 120s",
-        "9223372035781033984, 9223372035781033984"
+        "9223372036854775807, 9223372036854775807",
     })
     void shouldFormatDuration(final long value, final String expected)
     {
         assertEquals(expected, SystemUtil.formatDuration(value));
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = { Long.MIN_VALUE, -3 })
+    void formatSizeShouldRejectNegativeValues(final long value)
+    {
+        final IllegalArgumentException exception =
+            assertThrowsExactly(IllegalArgumentException.class, () -> SystemUtil.formatSize(value));
+        assertEquals("size must be positive: " + value, exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "0, 0",
+        "100, 100",
+        "1024, 1k",
+        "4096, 4k",
+        "1000000, 1000000",
+        "5144576, 5024k",
+        "1048576, 1m",
+        "10485760, 10m",
+        "1000000000, 1000000000",
+        "327155712, 312m",
+        "1073741824, 1g",
+        "13958643712, 13g",
+        "104722333696, 99871m",
+        "9223372035781033984, 8589934591g",
+        "9223372036854775807, 9223372036854775807",
+        "9223372036853727232, 8796093022207m",
+        "9223372036854774784, 9007199254740991k",
+    })
+    void shouldFormatSize(final long value, final String expected)
+    {
+        assertEquals(expected, SystemUtil.formatSize(value));
     }
 
     @Test
@@ -187,7 +224,7 @@ class SystemUtilTest
     {
         final int originalSystemPropSize = System.getProperties().size();
 
-        loadPropertiesFile("$unknown-file$");
+        SystemUtil.loadPropertiesFile("$unknown-file$");
         assertEquals(originalSystemPropSize, System.getProperties().size());
     }
 
@@ -199,7 +236,7 @@ class SystemUtilTest
 
         try
         {
-            loadPropertiesFiles("TestFileA.properties", "TestFileB.properties");
+            SystemUtil.loadPropertiesFiles("TestFileA.properties", "TestFileB.properties");
             assertEquals("AAA", System.getProperty("TestFileA.foo"));
             assertEquals("BBB", System.getProperty("TestFileB.foo"));
         }
@@ -218,7 +255,7 @@ class SystemUtilTest
 
         try
         {
-            loadPropertiesFiles("TestFileA.properties");
+            SystemUtil.loadPropertiesFiles("TestFileA.properties");
             assertEquals("AAA", System.getProperty("TestFileA.foo"));
         }
         finally
@@ -235,7 +272,7 @@ class SystemUtilTest
 
         try
         {
-            loadPropertiesFile(PropertyAction.PRESERVE, "TestFileA.properties");
+            SystemUtil.loadPropertiesFile(PropertyAction.PRESERVE, "TestFileA.properties");
             assertEquals("ToBeNotOverridden", System.getProperty("TestFileA.foo"));
         }
         finally
@@ -247,7 +284,7 @@ class SystemUtilTest
     @Test
     void shouldReturnPid()
     {
-        assertNotEquals(PID_NOT_FOUND, getPid());
+        assertNotEquals(SystemUtil.PID_NOT_FOUND, SystemUtil.getPid());
     }
 
     @Test
