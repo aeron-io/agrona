@@ -209,6 +209,19 @@ subprojects {
             jvmArgs('-XX:+EnableDynamicAgentLoading')
         }
 
+        def baseLogFileName = "${layout.buildDirectory.get()}/${layout.projectDirectory.asFile.getName()}-${test.name}-%p"
+        jvmArgs("-XX:MaxDirectMemorySize=2g",
+                "-Xms2048m",
+                "-Xmx2048m",
+                "-Xmn1536m",
+                "-XX:+CreateCoredumpOnCrash",
+                "-XX:+HeapDumpOnOutOfMemoryError",
+                "-XX:+CrashOnOutOfMemoryError",
+                "-XX:HeapDumpPath=${baseLogFileName}-heap.hprof",
+                "-XX:+UseParallelGC",
+                "-Xlog:gc*,safepoint=info,arguments=info:file=${baseLogFileName}-gc.log:time",
+                "-XX:ErrorFile=${baseLogFileName}-crash.log")
+
         useJUnitPlatform()
 
         testLogging {
@@ -512,9 +525,11 @@ tasks.named("dependencyUpdates").configure {
 tasks.register('copyTestLogs', Copy) {
     from '.'
     include '**/*.hprof'
+    include '**/*.mdmp'
+    include '/var/coredump/core*'
     include '**/*.log'
     include '**/build/reports/**'
-    include '**/build/test-results/**/*'
+    include '**/build/test-results/**'
     include 'LICENSE'
     exclude 'build'
     into 'build/test_logs'
