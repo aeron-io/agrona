@@ -449,8 +449,9 @@ public final class SystemUtil
      *
      * @param size to format.
      * @return formatted value.
-     * @throws IllegalArgumentException if {@code duration < 0}.
+     * @throws IllegalArgumentException if {@code size < 0}.
      * @see #parseDuration(String, String)
+     * @since 2.4.0
      */
     public static String formatSize(final long size)
     {
@@ -576,6 +577,7 @@ public final class SystemUtil
      * @return formatted value.
      * @throws IllegalArgumentException if {@code duration < 0}.
      * @see #parseDuration(String, String)
+     * @since 2.4.0
      */
     public static String formatDuration(final long durationNs)
     {
