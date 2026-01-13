@@ -1,5 +1,10 @@
 = Changelog
 
+== 2.5.0 (xxxx-xx-xx)
+
+* Upgrade to `JUnit` 6.0.2.
+* Upgrade to `Shadow`  9.3.1.
+
 == 2.4.0 (2025-12-25)
 
 * *[Breaking]* Remove `org.agrona.concurrent.SigInt`. Use `org.agrona.concurrent.ShutdownSignalBarrier` instead.
