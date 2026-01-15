@@ -428,7 +428,7 @@ public class CountersManager extends CountersReader
     public void setCounterOwnerId(final int counterId, final long ownerId)
     {
         validateCounterId(counterId);
-        valuesBuffer.putLong(counterOffset(counterId) + OWNER_ID_OFFSET, ownerId);
+        valuesBuffer.putLongOpaque(counterOffset(counterId) + OWNER_ID_OFFSET, ownerId);
     }
 
     /**
