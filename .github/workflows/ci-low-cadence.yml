@@ -94,7 +94,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '26-ea' ]
+        java: [ '26-ea', '27-ea' ]
         os: ['ubuntu-24.04', 'windows-latest']
     steps:
       - name: Use faster temporary storage (Windows)
