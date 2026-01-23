@@ -109,7 +109,7 @@ jobs:
       - name: Setup java
         uses: actions/setup-java@v5
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: ${{ matrix.java }}
       - name: Setup BUILD_JAVA_HOME & BUILD_JAVA_VERSION (Linux/macOS)
         if: runner.os == 'Linux' || runner.os == 'macOS'
