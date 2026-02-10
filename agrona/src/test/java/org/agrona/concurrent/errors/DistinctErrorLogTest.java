@@ -360,6 +360,10 @@ class DistinctErrorLogTest
     {
         final Exception exception = new IllegalStateException("my exception");
         final byte[] encodedError = log.encodedError(exception);
+
+        exception.printStackTrace();
+        System.out.println("Encoded error length: " + encodedError.length);
+
         final int length = encodedError.length + ENCODED_ERROR_OFFSET;
         final int endOffset = Integer.MAX_VALUE - 1 - length;
         final int offset = 1 + (BitUtil.isAligned(endOffset, RECORD_ALIGNMENT) ? endOffset :
