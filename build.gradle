@@ -312,6 +312,7 @@ project(':agrona') {
     javadoc.dependsOn('generatePrimitiveSpecialisations')
 
     byteBuddy {
+        adjustment = net.bytebuddy.build.gradle.Adjustment.SELF
         transformation {
             plugin = org.agrona.build.UnsafeApiBytecodeGenerator.class
         }
@@ -377,6 +378,8 @@ project(':agrona-agent') {
     apply plugin: 'signing'
     apply plugin: 'com.gradleup.shadow'
 
+    compileJava.dependsOn(':agrona:byteBuddy')
+
     dependencies {
         implementation project(':agrona')
         implementation libs.byteBuddy
@@ -410,6 +413,7 @@ project(':agrona-agent') {
 
     tasks.register('sourcesJar', Jar) {
         dependsOn ':agrona:generatePrimitiveSpecialisations'
+        dependsOn ':agrona:byteBuddy'
         archiveClassifier.set('sources')
         from sourceSets.main.allSource
         from project(':agrona').sourceSets.main.allSource
@@ -417,6 +421,7 @@ project(':agrona-agent') {
     }
 
     javadoc {
+        dependsOn ':agrona:byteBuddy'
         source += sourceSets.main.allJava
         source += project(':agrona').sourceSets.main.allJava
         source += project(':agrona').sourceSets.generated.allJava
@@ -461,6 +466,8 @@ project(':agrona-agent') {
 project(':agrona-benchmarks') {
     apply plugin: 'com.gradleup.shadow'
 
+    compileJava.dependsOn(':agrona:byteBuddy')
+
     dependencies {
         implementation libs.jmh.core
         annotationProcessor libs.jmh.generator.annprocess
@@ -478,6 +485,8 @@ project(':agrona-benchmarks') {
 
 project(':agrona-concurrency-tests') {
     apply plugin: 'com.gradleup.shadow'
+
+    compileJava.dependsOn(':agrona:byteBuddy')
 
     dependencies {
         annotationProcessor libs.jcstress.core
