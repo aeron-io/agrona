@@ -312,7 +312,6 @@ project(':agrona') {
     javadoc.dependsOn('generatePrimitiveSpecialisations')
 
     byteBuddy {
-        adjustmentErrorHandler = net.bytebuddy.build.gradle.Adjustment.ErrorHandler.IGNORE
         transformation {
             plugin = org.agrona.build.UnsafeApiBytecodeGenerator.class
         }
@@ -411,7 +410,6 @@ project(':agrona-agent') {
 
     tasks.register('sourcesJar', Jar) {
         dependsOn ':agrona:generatePrimitiveSpecialisations'
-        dependsOn ':agrona:byteBuddy'
         archiveClassifier.set('sources')
         from sourceSets.main.allSource
         from project(':agrona').sourceSets.main.allSource
@@ -419,7 +417,6 @@ project(':agrona-agent') {
     }
 
     javadoc {
-        dependsOn ':agrona:byteBuddy'
         source += sourceSets.main.allJava
         source += project(':agrona').sourceSets.main.allJava
         source += project(':agrona').sourceSets.generated.allJava
