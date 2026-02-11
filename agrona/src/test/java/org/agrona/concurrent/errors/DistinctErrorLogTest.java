@@ -355,10 +355,11 @@ class DistinctErrorLogTest
         inOrder.verify(buffer).putIntRelease(offset + LENGTH_OFFSET, length);
     }
 
-    @Test
-    void shouldWriteErrorAtEndOfTheBufferWithNextOffsetOverflow()
+    @ParameterizedTest
+    @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6, 7, RECORD_ALIGNMENT })
+    void shouldWriteErrorAtEndOfTheBufferWithNextOffsetOverflow(final int suffixLength)
     {
-        final Exception exception = new IllegalStateException("my exception!");
+        final Exception exception = new IllegalStateException("my exception" + "!".repeat(suffixLength));
         final byte[] encodedError = log.encodedError(exception);
         final int length = encodedError.length + ENCODED_ERROR_OFFSET;
         final int offset = Integer.MAX_VALUE - length;
