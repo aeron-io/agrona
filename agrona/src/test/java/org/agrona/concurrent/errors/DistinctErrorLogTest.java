@@ -361,7 +361,7 @@ class DistinctErrorLogTest
         final Exception exception = new IllegalStateException("my exception!");
         final byte[] encodedError = log.encodedError(exception);
         final int length = encodedError.length + ENCODED_ERROR_OFFSET;
-        final int offset = Integer.MAX_VALUE - BitUtil.align(length, RECORD_ALIGNMENT) + 1;
+        final int offset = Integer.MAX_VALUE - length;
         assertThat(offset + length, Matchers.greaterThan(0));
         assertThat(
             BitUtil.align(offset + length, RECORD_ALIGNMENT),
