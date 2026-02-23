@@ -1,5 +1,5 @@
 [versions]
-byteBuddy = "1.18.4"
+byteBuddy = "1.18.5"
 checkstyle = "12.3.1"
 commons-codec = "1.15"
 commons-lang3 = "3.8.1"
