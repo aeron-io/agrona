@@ -21,6 +21,11 @@ import org.agrona.concurrent.*;
 /**
  * Ring-buffer for the concurrent exchanging of binary encoded messages from producer(s) to consumer(s)
  * in a FIFO manner.
+ * <p>
+ * Provides two non-blocking write methods: {@link #write(int, DirectBuffer, int, int)} for copying a message
+ * to the ring-buffer, and {@link #tryClaim(int, int)} for zero-copy writes where the caller writes directly
+ * to the ring-buffer memory. Messages are read by consumers using one of the {@code read} or
+ * {@code controlledRead} methods.
  */
 public interface RingBuffer
 {
@@ -43,6 +48,25 @@ public interface RingBuffer
 
     /**
      * Non-blocking write of a message to an underlying ring-buffer.
+     *
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * // Create a ring buffer with a direct buffer of 1024 bytes
+     * ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+     * RingBuffer ringBuffer = new OneToOneRingBuffer(new UnsafeBuffer(byteBuffer));
+     *
+     * // Pre-allocate a reusable buffer (cached for the lifetime of the writer)
+     * MutableDirectBuffer srcBuffer =
+     *     new UnsafeBuffer(ByteBuffer.allocateDirect(Long.BYTES));
+     *
+     * // Write a message using the cached buffer
+     * srcBuffer.putLong(0, 12345L);
+     * if (!ringBuffer.write(1, srcBuffer, 0, Long.BYTES))
+     * {
+     *     // Handle insufficient capacity (e.g., retry, log, or drop message)
+     * }
+     * }</pre>
      *
      * @param msgTypeId type of the message encoding.
      * @param srcBuffer containing the encoded binary message.
@@ -156,6 +180,19 @@ public interface RingBuffer
 
     /**
      * Read as many messages as are available to end of the ring buffer to up a supplied maximum.
+     *
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * ringBuffer.read(
+     *     (msgTypeId, buffer, index, length) ->
+     *     {
+     *         final long value = buffer.getLong(index);
+     *         // Process value
+     *     }
+     * );
+     * }</pre>
+     *
      * <p>
      * If the ring buffer wraps or encounters a type of record, such a padding record, then an implementation
      * may choose to return and expect the caller to try again. The {@link #size()} method may be called to
