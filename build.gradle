@@ -236,7 +236,8 @@ subprojects {
         systemProperties(
             'agrona.disable.bounds.checks': 'false',
             'agrona.strict.alignment.checks': 'true',
-            'net.bytebuddy.experimental': 'true')
+            'net.bytebuddy.experimental': 'true',
+            'net.bytebuddy.safe': 'true')
 
         javaLauncher.set(toolchainLauncher)
     }
