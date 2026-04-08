@@ -228,8 +228,15 @@ public final class SystemUtil
      * <p>
      * File is first searched for in resources using the system {@link ClassLoader},
      * then file system, then URL. All are loaded if multiples found.
+     * <p>
+     * Property values may contain environment variable references in the form {@code ${VAR_NAME}}.
+     * Each reference is replaced with the value of the named environment variable at load time.
+     * An {@link IllegalArgumentException} is thrown if a referenced variable is not set or a reference
+     * is malformed (missing closing {@code }}).
      *
      * @param filenameOrUrl that holds properties.
+     * @throws IllegalArgumentException if a property value references an environment variable that is not set,
+     *                                  or contains a malformed reference.
      */
     public static void loadPropertiesFile(final String filenameOrUrl)
     {
@@ -241,9 +248,16 @@ public final class SystemUtil
      * <p>
      * File is first searched for in resources using the system {@link ClassLoader},
      * then file system, then URL. All are loaded if multiples found.
+     * <p>
+     * Property values may contain environment variable references in the form {@code ${VAR_NAME}}.
+     * Each reference is replaced with the value of the named environment variable at load time.
+     * An {@link IllegalArgumentException} is thrown if a referenced variable is not set or a reference
+     * is malformed (missing closing {@code }}).
      *
      * @param propertyAction to take with each loaded property.
      * @param filenameOrUrl  that holds properties.
+     * @throws IllegalArgumentException if a property value references an environment variable that is not set,
+     *                                  or contains a malformed reference.
      */
     public static void loadPropertiesFile(final PropertyAction propertyAction, final String filenameOrUrl)
     {
@@ -639,6 +653,49 @@ public final class SystemUtil
         return arch.equals("amd64") || arch.equals("x86_64") || arch.equals("x64");
     }
 
+    static String expandEnvVars(final String value)
+    {
+        final int firstBegin = value.indexOf("${");
+        if (firstBegin < 0)
+        {
+            return value;
+        }
+
+        final StringBuilder sb = new StringBuilder(value.length());
+        int pos = 0;
+
+        while (pos < value.length())
+        {
+            final int begin = value.indexOf("${", pos);
+            if (begin < 0)
+            {
+                sb.append(value, pos, value.length());
+                break;
+            }
+
+            final int end = value.indexOf('}', begin + 2);
+            if (end < 0)
+            {
+                throw new IllegalArgumentException(
+                    "malformed environment variable reference, missing '}': " + value.substring(begin));
+            }
+
+            sb.append(value, pos, begin);
+
+            final String envName = value.substring(begin + 2, end);
+            final String envValue = System.getenv(envName);
+            if (envValue == null)
+            {
+                throw new IllegalArgumentException("environment variable not set: " + envName);
+            }
+
+            sb.append(envValue);
+            pos = end + 1;
+        }
+
+        return sb.toString();
+    }
+
     private static void loadProperties(final PropertyAction propertyAction, final InputStream in) throws IOException
     {
         final Properties systemProperties = System.getProperties();
@@ -648,18 +705,19 @@ public final class SystemUtil
         properties.forEach(
             (k, v) ->
             {
+                final String expandedValue = expandEnvVars((String)v);
                 switch (propertyAction)
                 {
                     case PRESERVE:
                         if (!systemProperties.containsKey(k))
                         {
-                            systemProperties.setProperty((String)k, (String)v);
+                            systemProperties.setProperty((String)k, expandedValue);
                         }
                         break;
 
                     case REPLACE:
                     default:
-                        systemProperties.setProperty((String)k, (String)v);
+                        systemProperties.setProperty((String)k, expandedValue);
                         break;
                 }
             });

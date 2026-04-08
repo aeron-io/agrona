@@ -2,6 +2,10 @@
 
 == 2.5.0 (xxxx-xx-xx)
 
+* Support environment variable interpolation in properties files loaded by `SystemUtil`. Values containing
+`${VAR_NAME}` are expanded using the process environment at load time. An `IllegalArgumentException` is thrown
+if a referenced variable is not set or the reference is malformed (missing closing `}`).
+
 * Upgrade to `JUnit` 6.0.2.
 * Upgrade to `Shadow`  9.3.1.
 

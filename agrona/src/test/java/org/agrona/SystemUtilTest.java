@@ -397,4 +397,72 @@ class SystemUtilTest
         assertFalse(SystemUtil.isLinux());
         assertFalse(SystemUtil.isWindows());
     }
+
+    @Test
+    void expandEnvVarsShouldReturnSameInstanceWhenNoSyntaxPresent()
+    {
+        final String value = "plainvalue";
+        assertSame(value, SystemUtil.expandEnvVars(value));
+    }
+
+    @Test
+    void expandEnvVarsShouldThrowWhenEnvVarIsUndefined()
+    {
+        final IllegalArgumentException exception = assertThrowsExactly(
+            IllegalArgumentException.class,
+            () -> SystemUtil.expandEnvVars("${AGRONA_ENV_VAR_NOT_SET}"));
+        assertEquals("environment variable not set: AGRONA_ENV_VAR_NOT_SET", exception.getMessage());
+    }
+
+    @Test
+    void expandEnvVarsShouldThrowWhenClosingBraceIsMissing()
+    {
+        final IllegalArgumentException exception = assertThrowsExactly(
+            IllegalArgumentException.class,
+            () -> SystemUtil.expandEnvVars("${UNCLOSED"));
+        assertEquals("malformed environment variable reference, missing '}': ${UNCLOSED", exception.getMessage());
+    }
+
+    @Test
+    void expandEnvVarsShouldThrowForUndefinedVarInCompoundValue()
+    {
+        final IllegalArgumentException exception = assertThrowsExactly(
+            IllegalArgumentException.class,
+            () -> SystemUtil.expandEnvVars("prefix_${AGRONA_ENV_VAR_NOT_SET}_suffix"));
+        assertEquals("environment variable not set: AGRONA_ENV_VAR_NOT_SET", exception.getMessage());
+    }
+
+    @Test
+    void expandEnvVarsShouldExpandKnownEnvVar()
+    {
+        final String path = System.getenv("PATH");
+        assertNotNull(path);
+        assertEquals(path, SystemUtil.expandEnvVars("${PATH}"));
+    }
+
+    @Test
+    void expandEnvVarsShouldExpandEnvVarInCompoundValue()
+    {
+        final String path = System.getenv("PATH");
+        assertNotNull(path);
+        assertEquals("begin_" + path + "_end", SystemUtil.expandEnvVars("begin_${PATH}_end"));
+    }
+
+    @Test
+    void shouldExpandEnvVarsWhenLoadingPropertiesFile()
+    {
+        try
+        {
+            SystemUtil.loadPropertiesFile("TestFileEnvVar.properties");
+            assertEquals("noEnvVar", System.getProperty("var.plain"));
+            assertEquals(System.getenv("PATH"), System.getProperty("var.path"));
+            assertEquals("begin_" + System.getenv("PATH") + "_end", System.getProperty("var.multiple"));
+        }
+        finally
+        {
+            System.clearProperty("var.plain");
+            System.clearProperty("var.path");
+            System.clearProperty("var.multiple");
+        }
+    }
 }
