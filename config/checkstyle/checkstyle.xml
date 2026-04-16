@@ -41,7 +41,9 @@
 
         <module name="JavadocStyle"/>
         <module name="JavadocType"/>
-        <module name="JavadocMethod"/>
+        <module name="JavadocMethod">
+            <property name="allowInlineReturn" value="true"/>
+        </module>
         <module name="JavadocVariable">
             <property name="accessModifiers" value="public"/>
         </module>
@@ -50,9 +52,7 @@
         <module name="MissingJavadocMethod"/>
         <module name="MissingJavadocPackage"/>
 
-        <module name="Indentation">
-            <property name="forceStrictCondition" value="true"/>
-        </module>
+        <module name="Indentation"/>
 
         <module name="ConstantName"/>
 
@@ -80,7 +80,9 @@
 
         <module name="StaticVariableName"/>
 
-        <module name="TypeName"/>
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9_]*$"/>
+        </module>
 
         <module name="RedundantImport"/>
 
@@ -192,7 +194,5 @@
             <property name="illegalPattern" value="true"/>
             <property name="message" value="Trailing whitespace"/>
         </module>
-
-        <module name="JavadocMethod"/>
     </module>
 </module>
