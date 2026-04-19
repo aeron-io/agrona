@@ -36,6 +36,7 @@ class QueuedPipeTest
     {
         return Stream.of(
             new OneToOneConcurrentArrayQueue<>(QUEUE_CAPACITY),
+            new FasterOneToOneConcurrentArrayQueue<>(QUEUE_CAPACITY),
             new ManyToOneConcurrentArrayQueue<>(QUEUE_CAPACITY),
             new ManyToManyConcurrentArrayQueue<>(QUEUE_CAPACITY));
     }
