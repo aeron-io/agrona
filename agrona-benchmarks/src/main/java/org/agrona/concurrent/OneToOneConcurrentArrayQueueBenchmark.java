@@ -19,53 +19,47 @@ import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.infra.Control;
 
-import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Benchmark for the OneToOneConcurrentArrayQueue.
+ */
 @Fork(value = 3, jvmArgsPrepend = {
     "-Dagrona.disable.bounds.checks=true",
     "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED",
-//    "-XX:+UnlockDiagnosticVMOptions",
-//    "-XX:+PreserveFramePointer"
-//    "-XX:+DebugNonSafepoints"
 })
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 5, time = 1)
-//@Measurement(iterations = 10, time = 1)
-@Measurement(iterations = 1, time = 600)
+@Measurement(iterations = 10, time = 1)
 @State(Scope.Group)
 public class OneToOneConcurrentArrayQueueBenchmark
 {
     private static final int CAPACITY = 64 * 1024;
     private static final Integer ELEMENT = 42;
 
-    @Param({ "new"})
-    private String impl;
+    private OneToOneConcurrentArrayQueue<Integer> queue;
 
-    private Queue<Integer> queue;
-
+    /**
+     * Default constructor.
+     */
     public OneToOneConcurrentArrayQueueBenchmark()
     {
     }
 
+    /**
+     * Setup.
+     */
     @Setup(Level.Iteration)
     public void setup()
     {
-        switch (impl)
-        {
-            case "old":
-                queue = new OneToOneConcurrentArrayQueue<>(CAPACITY);
-                break;
-            case "new":
-                queue = new FasterOneToOneConcurrentArrayQueue<>(CAPACITY);
-                break;
-            default:
-                throw new IllegalArgumentException("unknown impl: " + impl);
-        }
+        queue = new OneToOneConcurrentArrayQueue<>(CAPACITY);
     }
 
+    /**
+     * Teardown.
+     */
     @TearDown(Level.Iteration)
     public void drain()
     {
@@ -74,6 +68,11 @@ public class OneToOneConcurrentArrayQueueBenchmark
         }
     }
 
+    /**
+     * Benchmarks the offer.
+     *
+     * @param ctl the Control
+     */
     @Benchmark
     @Group("spsc")
     @GroupThreads(1)
@@ -85,6 +84,12 @@ public class OneToOneConcurrentArrayQueueBenchmark
         }
     }
 
+    /**
+     * Benchmarks the poll.
+     *
+     * @param ctl the Control
+     * @param bh the Blackhole
+     */
     @Benchmark
     @Group("spsc")
     @GroupThreads(1)
@@ -97,13 +102,4 @@ public class OneToOneConcurrentArrayQueueBenchmark
         }
         bh.consume(e);
     }
-//
-//    public static void main(String[] args) throws Exception
-//    {
-//        System.out.println("foobar");
-//        org.openjdk.jmh.Main.main(new String[] {
-//            OneToOneConcurrentArrayQueueBenchmark.class.getName(),
-//            "-prof", "perfasm:intelSyntax=true;hotThreshold=0.05"
-//        });
-//    }
 }

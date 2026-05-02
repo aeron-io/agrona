@@ -25,13 +25,16 @@ import org.openjdk.jcstress.infra.results.IIII_Result;
 
 import java.util.function.Consumer;
 
-public class FasterOneToOneConcurrentArrayQueueTests
+/**
+ * JCStressTest for the {@link OneToOneConcurrentArrayQueue}.
+ */
+public final class OneToOneConcurrentArrayQueueTests
 {
-    private FasterOneToOneConcurrentArrayQueueTests()
+    private OneToOneConcurrentArrayQueueTests()
     {
     }
 
-    private static <E> void offerSpin(final FasterOneToOneConcurrentArrayQueue<E> queue, final E value)
+    private static <E> void offerSpin(final OneToOneConcurrentArrayQueue<E> queue, final E value)
     {
         while (!queue.offer(value))
         {
@@ -39,7 +42,7 @@ public class FasterOneToOneConcurrentArrayQueueTests
         }
     }
 
-    private static <E> E pollSpin(final FasterOneToOneConcurrentArrayQueue<E> queue)
+    private static <E> E pollSpin(final OneToOneConcurrentArrayQueue<E> queue)
     {
         E value;
         while ((value = queue.poll()) == null)
@@ -60,13 +63,16 @@ public class FasterOneToOneConcurrentArrayQueueTests
     @State
     public static class FifoWithWraparound
     {
-        private final FasterOneToOneConcurrentArrayQueue<MutableInteger> queue =
-            new FasterOneToOneConcurrentArrayQueue<>(2);
+        private final OneToOneConcurrentArrayQueue<MutableInteger> queue =
+            new OneToOneConcurrentArrayQueue<>(2);
         private final MutableInteger p1 = new MutableInteger();
         private final MutableInteger p2 = new MutableInteger();
         private final MutableInteger p3 = new MutableInteger();
         private final MutableInteger p4 = new MutableInteger();
 
+        /**
+         * Producer.
+         */
         @Actor
         public void producer()
         {
@@ -80,6 +86,11 @@ public class FasterOneToOneConcurrentArrayQueueTests
             offerSpin(queue, p4);
         }
 
+        /**
+         * Consumer.
+         *
+         * @param r the result
+         */
         @Actor
         public void consumer(final IIII_Result r)
         {
@@ -101,8 +112,8 @@ public class FasterOneToOneConcurrentArrayQueueTests
     @State
     public static class FifoWithWraparoundDrain implements Consumer<MutableInteger>
     {
-        private final FasterOneToOneConcurrentArrayQueue<MutableInteger> queue =
-            new FasterOneToOneConcurrentArrayQueue<>(2);
+        private final OneToOneConcurrentArrayQueue<MutableInteger> queue =
+            new OneToOneConcurrentArrayQueue<>(2);
         private final MutableInteger p1 = new MutableInteger();
         private final MutableInteger p2 = new MutableInteger();
         private final MutableInteger p3 = new MutableInteger();
@@ -110,11 +121,19 @@ public class FasterOneToOneConcurrentArrayQueueTests
         private final int[] received = new int[4];
         private int receivedCount;
 
+        /**
+         * Consumes an item and stores it in the received array.
+         *
+         * @param value the input argument the item to consume.
+         */
         public void accept(final MutableInteger value)
         {
             received[receivedCount++] = value.value;
         }
 
+        /**
+         * Producer of items.
+         */
         @Actor
         public void producer()
         {
@@ -128,6 +147,11 @@ public class FasterOneToOneConcurrentArrayQueueTests
             offerSpin(queue, p4);
         }
 
+        /**
+         * Consumer of items.
+         *
+         * @param r the result.
+         */
         @Actor
         public void consumer(final IIII_Result r)
         {
