@@ -77,7 +77,7 @@ class BufferAlignmentAgentTest
     @Test
     void testUnsafeBufferFromSlicedHeapByteBuffer()
     {
-        final ByteBuffer nioBuffer = ByteBuffer.allocateDirect(256);
+        final ByteBuffer nioBuffer = ByteBuffer.allocate(256);
         nioBuffer.position(1);
         final UnsafeBuffer buffer = new UnsafeBuffer(nioBuffer.slice());
         assertTrue(buffer.addressOffset() % 4 != 0);
