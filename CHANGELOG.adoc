@@ -5,7 +5,8 @@
 * Upgrade to `JUnit` 6.1.0.
 * Upgrade to `Versions` 0.54.0.
 * Upgrade to `Guava TestLib` 33.6.0-jre.
-* Upgrade to `ByteBuddy` 1.18.8.
+* Upgrade to `ByteBuddy` 1.18.9.
+* Upgrade to `Shadow` 9.4.2.
 
 == 2.4.1 (2025-04-22)
 
