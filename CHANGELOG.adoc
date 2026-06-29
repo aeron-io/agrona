@@ -1,7 +1,7 @@
 = Changelog
 
 == 2.5.0 (unreleased)
-* Upgrade to `Gradle` 9.6.0.
+* Upgrade to `Gradle` 9.6.1.
 * Upgrade to `JUnit` 6.1.0.
 * Upgrade to `Versions` 0.54.0.
 * Upgrade to `Guava TestLib` 33.6.0-jre.
