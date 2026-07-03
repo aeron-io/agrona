@@ -1069,6 +1069,36 @@ class Int2IntHashMapTest
     }
 
     @Test
+    void replaceShouldThrowIllegalArgumentExceptionIfValueIsMissingValue()
+    {
+        final int key = 42;
+        final int value = 8;
+        map.put(key, value);
+
+        final IllegalArgumentException exception =
+            assertThrowsExactly(IllegalArgumentException.class, () -> map.replace(key, MISSING_VALUE));
+        assertEquals("cannot accept missingValue", exception.getMessage());
+
+        assertEquals(1, map.size());
+        assertEquals(value, map.get(key));
+    }
+
+    @Test
+    void replaceShouldThrowIllegalArgumentExceptionIfNewValueIsMissingValue()
+    {
+        final int key = 42;
+        final int value = 8;
+        map.put(key, value);
+
+        final IllegalArgumentException exception =
+            assertThrowsExactly(IllegalArgumentException.class, () -> map.replace(key, value, MISSING_VALUE));
+        assertEquals("cannot accept missingValue", exception.getMessage());
+
+        assertEquals(1, map.size());
+        assertEquals(value, map.get(key));
+    }
+
+    @Test
     void replaceAllIntShouldThrowIllegalArgumentExceptionIfANewValueIsAMissingValue()
     {
         final IntIntFunction function = (key, value) -> MISSING_VALUE;
