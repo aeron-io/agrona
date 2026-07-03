@@ -17,22 +17,33 @@ package org.agrona.concurrent;
 
 import org.agrona.ErrorHandler;
 import org.agrona.LangUtil;
-import org.agrona.collections.MutableBoolean;
+import org.agrona.collections.MutableInteger;
 import org.agrona.concurrent.status.AtomicCounter;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.Answer;
 
 import java.nio.channels.ClosedByInterruptException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.AdditionalAnswers.answersWithDelay;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class AgentRunnerTest
 {
@@ -111,85 +122,213 @@ class AgentRunnerTest
     @Test
     void shouldNotReportClosedByInterruptException() throws Exception
     {
-        when(mockAgent.doWork()).thenThrow(new ClosedByInterruptException());
-
-        assertExceptionNotReported();
+        assertExceptionNotReported(() -> new ClosedByInterruptException());
     }
 
     @Test
     void shouldNotReportRethrownClosedByInterruptException() throws Exception
     {
-        when(mockAgent.doWork()).thenAnswer(
-            (inv) ->
+        assertExceptionNotReported(() ->
+        {
+            try
+            {
+                throw new ClosedByInterruptException();
+            }
+            catch (final ClosedByInterruptException ex)
+            {
+                LangUtil.rethrowUnchecked(ex);
+            }
+        });
+    }
+
+    @Test
+    void shouldInterruptRunnerThreadIfCloseCallIsItselfInterruped() throws Exception
+    {
+        final CountDownLatch runLatch = new CountDownLatch(1);
+        when(mockAgent.doWork()).then((Answer<Void>)invocation ->
+        {
+            runLatch.countDown();
+            while (true)
             {
                 try
                 {
-                    throw new ClosedByInterruptException();
+                    Thread.sleep(10);
                 }
-                catch (final ClosedByInterruptException ex)
+                catch (final InterruptedException ex)
                 {
-                    LangUtil.rethrowUnchecked(ex);
+                    break;
                 }
+            }
+            return null;
+        });
 
-                return null;
-            });
+        final Thread runnerThread = new Thread(runner);
+        runnerThread.start();
 
-        assertExceptionNotReported();
+        runLatch.await();
+
+        final CountDownLatch closeLatch = new CountDownLatch(1);
+        final CopyOnWriteArrayList<Thread> closeActions = new CopyOnWriteArrayList<>();
+        final Thread closerThread = new Thread(() ->
+        {
+            closeLatch.countDown();
+            runner.close(Integer.MAX_VALUE, closeActions::add);
+        });
+        closerThread.start();
+
+        closeLatch.await();
+
+        closerThread.interrupt();
+        closerThread.join();
+
+        assertFalse(closerThread.isAlive());
+        assertFalse(runnerThread.isAlive());
+        assertEquals(1, closeActions.size());
+        assertSame(runnerThread, closeActions.get(0));
     }
 
     @Test
-    void shouldRaiseInterruptFlagByClose() throws Exception
+    void shouldNotInterruptRunnerThreadIfCloseCompletesOnTime() throws Exception
     {
-        when(mockAgent.doWork()).then(answersWithDelay(500, RETURNS_DEFAULTS));
-
-        new Thread(runner).start();
-
-        while (runner.thread() == null)
+        final CountDownLatch startLatch = new CountDownLatch(1);
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+        when(mockAgent.doWork()).then((Answer<Void>)invocation ->
         {
-            Thread.yield();
-        }
+            startLatch.countDown();
+            try
+            {
+                Thread.sleep(50);
+            }
+            catch (final InterruptedException ex)
+            {
+                interrupted.set(true);
+            }
+
+            finished.set(true);
+            return null;
+        });
+
+        final Thread runnerThread = new Thread(runner);
+        runnerThread.start();
+
+        startLatch.await();
+
+        final MutableInteger failCount = new MutableInteger();
+        runner.close(300, (t) -> failCount.increment());
+
+        assertFalse(Thread.interrupted());
+        assertFalse(runnerThread.isAlive());
+        assertTrue(finished.get());
+        assertFalse(interrupted.get());
+        assertEquals(0, failCount.get());
+    }
+
+    @Test
+    void shouldInterruptRunnerThreadIfCloseDoesNotCompleteWithinCloseBudget() throws Exception
+    {
+        final CountDownLatch startLatch = new CountDownLatch(1);
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        final AtomicInteger interrupted = new AtomicInteger();
+        when(mockAgent.doWork()).then((Answer<Void>)invocation ->
+        {
+            startLatch.countDown();
+
+            try
+            {
+                Thread.sleep(Integer.MAX_VALUE);
+            }
+            catch (final InterruptedException ex)
+            {
+                interrupted.getAndIncrement();
+            }
+
+            try
+            {
+                Thread.sleep(Integer.MAX_VALUE);
+            }
+            catch (final InterruptedException ex)
+            {
+                interrupted.getAndIncrement();
+            }
+
+            finished.set(true);
+            return null;
+        });
+
+        final Thread runnerThread = new Thread(runner);
+        runnerThread.start();
+
+        startLatch.await();
+
+        final MutableInteger failCount = new MutableInteger();
+        runner.close(50, (t) -> failCount.increment());
+
+        assertFalse(Thread.interrupted());
+        assertFalse(runnerThread.isAlive());
+        assertTrue(finished.get());
+        assertEquals(2, interrupted.get());
+        assertEquals(2, failCount.get());
+    }
+
+    @Test
+    void shouldInterruptRunnerThreadIfCloseCompletesOnTimeWhenMainThreadIsInterruptedBeforeTheCloseCall()
+        throws Exception
+    {
+        final CountDownLatch startLatch = new CountDownLatch(1);
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+        when(mockAgent.doWork()).then((Answer<Void>)invocation ->
+        {
+            startLatch.countDown();
+            try
+            {
+                Thread.sleep(50);
+            }
+            catch (final InterruptedException ex)
+            {
+                interrupted.set(true);
+            }
+
+            finished.set(true);
+            return null;
+        });
+
+        final Thread runnerThread = new Thread(runner);
+        runnerThread.start();
+
+        startLatch.await();
 
         Thread.currentThread().interrupt();
-
-        final MutableBoolean actionCalled = new MutableBoolean();
-        final Consumer<Thread> failedCloseAction = (ignore) -> actionCalled.set(true);
-        runner.close(AgentRunner.RETRY_CLOSE_TIMEOUT_MS, failedCloseAction);
+        final MutableInteger failCount = new MutableInteger();
+        runner.close(300, (t) -> failCount.increment());
 
         assertTrue(Thread.interrupted());
-        assertTrue(actionCalled.get());
+        assertFalse(runnerThread.isAlive());
+        assertTrue(finished.get());
+        assertTrue(interrupted.get());
+        assertEquals(1, failCount.get());
     }
 
-    @Test
-    void shouldInvokeActionOnRetryCloseTimeout() throws Exception
+    private void assertExceptionNotReported(final Runnable task) throws Exception
     {
-        when(mockAgent.doWork()).then(answersWithDelay(500, RETURNS_DEFAULTS));
-
-        final Thread agentRunnerThread = new Thread(runner);
-        agentRunnerThread.start();
-
-        Thread.sleep(100);
-
-        final AtomicInteger closeTimeoutCalls = new AtomicInteger();
-        runner.close(
-            1,
-            (t) ->
+        final CountDownLatch latch = new CountDownLatch(1);
+        when(mockAgent.doWork()).thenAnswer(
+            (invocation) ->
             {
-                closeTimeoutCalls.incrementAndGet();
-                assertSame(t, agentRunnerThread);
-            });
+                latch.countDown();
+                task.run();
+                return null;
+            }
+        );
 
-        assertThat(closeTimeoutCalls.get(), greaterThan(0));
-    }
-
-    private void assertExceptionNotReported() throws Exception
-    {
         new Thread(runner).start();
 
-        Thread.sleep(100);
+        latch.await();
 
         runner.close();
 
-        verify(mockAgent, times(1)).onStart();
+        verify(mockAgent).onStart();
         verify(mockAgent, atLeastOnce()).doWork();
         verify(mockErrorHandler, never()).onError(any());
         verify(mockAtomicCounter, never()).increment();

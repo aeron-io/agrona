@@ -186,7 +186,7 @@ public class AgentRunner implements Runnable, AutoCloseable
      * <p>
      * This is equivalent to calling {@link AgentRunner#close(int, Consumer)}
      * using the default {@link AgentRunner#RETRY_CLOSE_TIMEOUT_MS} value and a
-     * null action.
+     * {@code null} action.
      */
     public final void close()
     {
@@ -198,21 +198,29 @@ public class AgentRunner implements Runnable, AutoCloseable
      * <p>
      * This will wait for the work loop to exit. The close timeout parameter
      * controls how long we should wait before retrying to stop the agent by
-     * interrupting the thread. If the calling thread has its interrupt flag
-     * set then this method can return early before waiting for the running
-     * agent to close.
+     * interrupting the thread.
+     * <p>
+     * <em><strong>NOTE:</strong> if the caller thread is interrupted while invoking this method then the agent thread
+     * will be interrupted as well but the loop <strong>will not</strong> exit until the agent thread fully terminates.
+     * </em>
      * <p>
      * An optional action can be invoked whenever we time out while waiting
      * which accepts the agent runner thread as the parameter (e.g. to obtain
-     * and log a stack trace from the thread). If the action is null, a message
-     * is written to stderr. Please note  that a retry close timeout of zero
+     * and log a stack trace from the thread). If the action is {@code null}, a message
+     * is written to {@code stderr}. Please note that a retry close timeout of zero
      * waits indefinitely, in which case the fail action is only called on interrupt.
      *
-     * @param retryCloseTimeoutMs how long to wait before retrying.
+     * @param retryCloseTimeoutMs timeout in milliseconds that defines how long to wait before interrupting the agent
+     *                            thread.
      * @param closeFailAction     function to invoke before retrying after close timeout.
      */
     public final void close(final int retryCloseTimeoutMs, final Consumer<Thread> closeFailAction)
     {
+        if (isClosed)
+        {
+            return;
+        }
+
         isRunning = false;
 
         final Thread thread = this.thread.getAndSet(TOMBSTONE);
@@ -237,41 +245,41 @@ public class AgentRunner implements Runnable, AutoCloseable
         }
         else if (TOMBSTONE != thread)
         {
-            while (true)
+            boolean wasInterrupted = false;
+            try
             {
-                try
+                while (thread.isAlive())
                 {
-                    if (isClosed)
+                    try
                     {
-                        return;
+                        if (wasInterrupted && !thread.isInterrupted())
+                        {
+                            failAction(closeFailAction, thread, "close interrupted");
+                            thread.interrupt();
+                        }
+
+                        thread.join(retryCloseTimeoutMs);
+
+                        if (thread.isAlive())
+                        {
+                            failAction(closeFailAction, thread, "timeout");
+                            if (!thread.isInterrupted())
+                            {
+                                thread.interrupt();
+                            }
+                        }
                     }
-
-                    thread.join(retryCloseTimeoutMs);
-
-                    if (!thread.isAlive() || isClosed)
+                    catch (final InterruptedException ignore)
                     {
-                        return;
-                    }
-
-                    failAction(closeFailAction, thread, "timeout, retrying...");
-
-                    if (!thread.isInterrupted())
-                    {
-                        thread.interrupt();
+                        wasInterrupted = true;
                     }
                 }
-                catch (final InterruptedException ignore)
+            }
+            finally
+            {
+                if (wasInterrupted)
                 {
                     Thread.currentThread().interrupt();
-                    failAction(closeFailAction, thread, "thread interrupt");
-
-                    if (!isClosed && !thread.isInterrupted())
-                    {
-                        thread.interrupt();
-                        Thread.yield();
-                    }
-
-                    return;
                 }
             }
         }
@@ -281,7 +289,7 @@ public class AgentRunner implements Runnable, AutoCloseable
     {
         if (null == closeFailAction)
         {
-            System.err.println(agent.roleName() + " failed to close due to " + message);
+            System.err.println(agent.roleName() + " failed to close due to " + message + ", retrying...");
         }
         else
         {

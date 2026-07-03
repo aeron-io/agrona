@@ -1,6 +1,20 @@
 = Changelog
 
-== 2.5.0 (unreleased)
+== 2.5.0 (2026-07-03)
+
+* *[Breaking]* `org.agrona.concurrent.AgentRunner.close()` methods are no longer interruptible.
++
+Previously when a thread was interrupted while calling `org.agrona.concurrent.AgentRunner.close()` or
+`org.agrona.concurrent.AgentRunner.close(int, java.util.function.Consumer<java.lang.Thread>)`
+it would immediately exit that method after interrupting agent thread. Now the thread will remain in the waiting loop
+until agent thread has terminated.
++
+[IMPORTANT]
+====
+Make sure that the `org.agrona.concurrent.Agent.doWork` eventually terminates, i.e. do not use blocking operations or handle thread
+interruption correctly.
+====
+
 * Upgrade to `Gradle` 9.6.1.
 * Upgrade to `JUnit` 6.1.1.
 * Upgrade to `Versions` 0.54.0.
