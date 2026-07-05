@@ -77,13 +77,28 @@ class AgentRunnerTest
     @Test
     void shouldHandleAgentTerminationExceptionThrownByAgent() throws Exception
     {
-        final RuntimeException expectedException = new AgentTerminationException();
-        when(mockAgent.doWork()).thenThrow(expectedException);
+        final RuntimeException terminationException = new AgentTerminationException();
+        when(mockAgent.doWork()).thenThrow(terminationException);
 
         runner.run();
 
         verify(mockAgent).doWork();
-        verify(mockErrorHandler).onError(expectedException);
+        verify(mockErrorHandler).onError(terminationException);
+        verify(mockAtomicCounter, never()).increment();
+        verify(mockAgent, times(1)).onClose();
+        assertTrue(runner.isClosed());
+    }
+
+    @Test
+    void shouldNotErrorWhenAgentTerminationExceptionThrownByAgentAsExpected() throws Exception
+    {
+        final RuntimeException terminationException = new AgentTerminationException(true);
+        when(mockAgent.doWork()).thenThrow(terminationException);
+
+        runner.run();
+
+        verify(mockAgent).doWork();
+        verify(mockErrorHandler, never()).onError(any());
         verify(mockAtomicCounter, never()).increment();
         verify(mockAgent, times(1)).onClose();
         assertTrue(runner.isClosed());

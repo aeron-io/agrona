@@ -158,7 +158,10 @@ public class AgentInvoker implements AutoCloseable
             catch (final AgentTerminationException ex)
             {
                 isRunning = false;
-                handleError(ex);
+                if (!ex.isExpected())
+                {
+                    handleError(ex);
+                }
                 close();
             }
             catch (final Throwable t)

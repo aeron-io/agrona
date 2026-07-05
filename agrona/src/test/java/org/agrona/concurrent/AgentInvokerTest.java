@@ -141,6 +141,28 @@ class AgentInvokerTest
     }
 
     @Test
+    void shouldHandleExpectedAgentTerminationExceptionThrownByAgentByNotReportingIt() throws Exception
+    {
+        final RuntimeException terminationException = new AgentTerminationException(true);
+        when(mockAgent.doWork()).thenThrow(terminationException);
+
+        invoker.start();
+        invoker.invoke();
+
+        verify(mockAgent).doWork();
+        verify(mockErrorHandler, never()).onError(any());
+        verify(mockAtomicCounter, never()).increment();
+        verify(mockAgent).onClose();
+        assertTrue(invoker.isClosed());
+
+        reset(mockAgent);
+        invoker.invoke();
+
+        verify(mockAgent, never()).doWork();
+        assertTrue(invoker.isClosed());
+    }
+
+    @Test
     void shouldStopRunningOnRuntimeException() throws Exception
     {
         try
