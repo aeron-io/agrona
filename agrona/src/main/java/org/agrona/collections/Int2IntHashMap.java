@@ -960,10 +960,16 @@ public class Int2IntHashMap implements Map<Integer, Integer>
      * @param value value to be associated with the specified key.
      * @return the previous value associated with the specified key, or
      * {@link #missingValue()} if there was no mapping for the key.
+     * @throws IllegalArgumentException if value is {@link #missingValue()}
      */
     public int replace(final int key, final int value)
     {
         final int missingValue = this.missingValue;
+        if (missingValue == value)
+        {
+            throw new IllegalArgumentException("cannot accept missingValue");
+        }
+
         final int[] entries = this.entries;
         @DoNotSub final int mask = entries.length - 1;
         @DoNotSub int keyIndex = Hashing.evenHash(key, mask);
@@ -990,10 +996,16 @@ public class Int2IntHashMap implements Map<Integer, Integer>
      * @param oldValue value expected to be associated with the specified key.
      * @param newValue value to be associated with the specified key.
      * @return {@code true} if the value was replaced.
+     * @throws IllegalArgumentException if newValue is {@link #missingValue()}
      */
     public boolean replace(final int key, final int oldValue, final int newValue)
     {
         final int missingValue = this.missingValue;
+        if (missingValue == newValue)
+        {
+            throw new IllegalArgumentException("cannot accept missingValue");
+        }
+
         final int[] entries = this.entries;
         @DoNotSub final int mask = entries.length - 1;
         @DoNotSub int keyIndex = Hashing.evenHash(key, mask);
