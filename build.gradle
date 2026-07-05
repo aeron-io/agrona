@@ -273,7 +273,6 @@ project(':agrona') {
         testImplementation libs.guava.testlib
         testImplementation libs.junit4 // Compatibility with JUnit 4
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-        testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }
 
