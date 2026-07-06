@@ -3,7 +3,7 @@
 == 2.6.0 (unreleased)
 
 * **[Java]** Reject `missingValue` in `Int2IntHashMap.replace`. (https://github.com/aeron-io/agrona/pull/364[#364])
-* Upgrade to `Shadow` 9.5.0.
+* Upgrade to `Shadow` 9.5.1.
 
 == 2.5.0 (2026-07-03)
 
