@@ -47,6 +47,18 @@ class AsciiSequenceViewTest
     }
 
     @Test
+    void shouldMapHighBytesToLatin1WithoutSignExtension()
+    {
+        buffer.putByte(INDEX, (byte)0x80);
+        buffer.putByte(INDEX + 1, (byte)0xFF);
+
+        asciiSequenceView.wrap(buffer, INDEX, 2);
+
+        assertThat(asciiSequenceView.charAt(0), is(''));
+        assertThat(asciiSequenceView.charAt(1), is('ÿ'));
+    }
+
+    @Test
     void shouldToString()
     {
         final String data = "a little bit of ascii";
