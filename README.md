@@ -1,7 +1,7 @@
 Agrona
 ======
 
-[![Javadocs](https://www.javadoc.io/badge/org.agrona/agrona.svg)](https://www.javadoc.io/doc/org.agrona/agrona)
+[![Javadocs](https://www.javadoc.io/badge/org.agrona/agrona.svg)](https://www.javadoc.io/static/org.agrona/agrona)
 [![GitHub](https://img.shields.io/github/license/aeron-io/Agrona.svg)](https://github.com/aeron-io/agrona/blob/master/LICENSE)
 
 [![Actions Status](https://github.com/aeron-io/agrona/workflows/Continuous%20Integration/badge.svg)](https://github.com/aeron-io/agrona/actions)
