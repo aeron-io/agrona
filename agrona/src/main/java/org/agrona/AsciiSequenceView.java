@@ -83,7 +83,7 @@ public class AsciiSequenceView implements CharSequence
             throw new StringIndexOutOfBoundsException("index=" + index + " length=" + length);
         }
 
-        return (char)buffer.getByte(offset + index);
+        return (char)(buffer.getByte(offset + index) & 0xFF);
     }
 
     /**
