@@ -244,6 +244,17 @@ public final class AsciiEncoding
     }
 
     /**
+     * Check if the {@code value} is an ASCII-encoded digit.
+     *
+     * @param value to be checked.
+     * @return {@code true} if the {@code value} is an ASCII-encoded digit.
+     */
+    public static boolean isDigit(final char value)
+    {
+        return value >= 0x30 && value <= 0x39;
+    }
+
+    /**
      * Get the digit value of an ASCII encoded {@code byte}.
      *
      * @param index within the string the value is encoded.
@@ -427,8 +438,8 @@ public final class AsciiEncoding
             i += 4;
         }
 
-        byte digit;
-        while (i < end && isDigit(digit = (byte)cs.charAt(i)))
+        char digit;
+        while (i < end && isDigit(digit = cs.charAt(i)))
         {
             tally = (tally * 10) + (digit - 0x30);
             i++;
@@ -458,8 +469,8 @@ public final class AsciiEncoding
             tally = parseEightDigitsLittleEndian(octet);
             i += 8;
 
-            byte digit;
-            while (i < end && isDigit(digit = (byte)cs.charAt(i)))
+            char digit;
+            while (i < end && isDigit(digit = cs.charAt(i)))
             {
                 tally = (tally * 10L) + (digit - 0x30);
                 i++;
@@ -502,8 +513,8 @@ public final class AsciiEncoding
             i += 4;
         }
 
-        byte digit;
-        while (i < end && isDigit(digit = (byte)cs.charAt(i)))
+        char digit;
+        while (i < end && isDigit(digit = cs.charAt(i)))
         {
             tally = (tally * 10) + (digit - 0x30);
             i++;
@@ -552,9 +563,9 @@ public final class AsciiEncoding
             i += 8;
         }
 
-        byte digit;
+        char digit;
         int lastDigits = 0;
-        while (i < end && isDigit(digit = (byte)cs.charAt(i)))
+        while (i < end && isDigit(digit = cs.charAt(i)))
         {
             lastDigits = (lastDigits * 10) + (digit - 0x30);
             i++;
