@@ -102,6 +102,23 @@ class AsciiEncodingTest
     }
 
     @Test
+    void shouldRejectNonAsciiCharsWhoseLowByteLooksLikeADigit()
+    {
+        // U+0130 / U+0132 have digit low bytes (0x30 / 0x32); narrowing to byte
+        // would accept them as digits, so they must be rejected like getDigit is.
+        assertFalse(isDigit('İ'));
+        assertThrows(AsciiNumberFormatException.class, () -> getDigit(0, 'İ'));
+
+        assertThrows(AsciiNumberFormatException.class, () -> parseIntAscii("İ", 0, 1));
+        assertThrows(AsciiNumberFormatException.class, () -> parseIntAscii("1Ĳ", 0, 2));
+        assertThrows(AsciiNumberFormatException.class, () -> parseLongAscii("İ", 0, 1));
+        // 10-digit int / 19-digit long tails exercise the overflow-check paths.
+        assertThrows(AsciiNumberFormatException.class, () -> parseIntAscii("123456789İ", 0, 10));
+        assertThrows(
+            AsciiNumberFormatException.class, () -> parseLongAscii("123456789012345678İ", 0, 19));
+    }
+
+    @Test
     void shouldThrowExceptionWhenParsingLongWhichCanOverFlow()
     {
         final String maxValuePlusOneDigit = Long.MAX_VALUE + "1";
