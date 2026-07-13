@@ -7,7 +7,8 @@
 * **[Java]** Reject non-ASCII digit look-alikes in `AsciiEncoding` parsing. (https://github.com/aeron-io/agrona/pull/366[#366])
 * **[Java]** Reject `missingValue` inputs in `Int2IntHashMap.replace` methods.
 * **[Java]** Support graceful shutdown of agents. Add an `isExpected` flag to `AgentTerminationException`. Don't log an expected `AgentTerminationException` with the error handler within the `AgentRunner` and `AgentInvoker`.
-* Upgrade to `Shadow` 9.5.1.
+* **[Java]** Upgrade to `JUnit` 6.1.2.
+* **[Java]** Upgrade to `Shadow` 9.5.1.
 
 == 2.5.0 (2026-07-03)
 
