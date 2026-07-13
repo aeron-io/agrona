@@ -133,7 +133,7 @@ public class AgentTerminationException extends RuntimeException
     public AgentTerminationException(
         final String message, final Throwable cause, final boolean enableSuppression, final boolean writableStackTrace)
     {
-        this(message, cause, enableSuppression, writableStackTrace, false);
+        this(message, cause, false, enableSuppression, writableStackTrace);
     }
 
     /**
@@ -141,16 +141,16 @@ public class AgentTerminationException extends RuntimeException
      *
      * @param message            to assign.
      * @param cause              of the error.
+     * @param isExpected         if the termination is for a graceful shutdown.
      * @param enableSuppression  true to enable suppression.
      * @param writableStackTrace true to enable writing a full stack trace.
-     * @param isExpected         if the termination is for a graceful shutdown.
      */
     public AgentTerminationException(
         final String message,
         final Throwable cause,
+        final boolean isExpected,
         final boolean enableSuppression,
-        final boolean writableStackTrace,
-        final boolean isExpected)
+        final boolean writableStackTrace)
     {
         super(message, cause, enableSuppression, writableStackTrace);
         this.isExpected = isExpected;
