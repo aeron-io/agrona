@@ -20,8 +20,6 @@ import org.agrona.concurrent.AtomicBuffer;
 import org.agrona.concurrent.ControlledMessageHandler;
 import org.agrona.concurrent.MessageHandler;
 
-import java.lang.invoke.VarHandle;
-
 import static java.lang.Math.max;
 import static org.agrona.BitUtil.align;
 import static org.agrona.concurrent.ControlledMessageHandler.Action.*;
@@ -100,8 +98,7 @@ public final class OneToOneRingBuffer implements RingBuffer
             return false;
         }
 
-        buffer.putIntRelease(lengthOffset(recordIndex), -recordLength);
-        VarHandle.releaseFence();
+        buffer.putIntOpaque(lengthOffset(recordIndex), -recordLength);
 
         buffer.putBytes(encodedMsgOffset(recordIndex), srcBuffer, offset, length);
         buffer.putInt(typeOffset(recordIndex), msgTypeId);
@@ -127,8 +124,7 @@ public final class OneToOneRingBuffer implements RingBuffer
             return recordIndex;
         }
 
-        buffer.putIntRelease(lengthOffset(recordIndex), -recordLength);
-        VarHandle.releaseFence();
+        buffer.putIntOpaque(lengthOffset(recordIndex), -recordLength);
         buffer.putInt(typeOffset(recordIndex), msgTypeId);
 
         return encodedMsgOffset(recordIndex);
@@ -472,9 +468,6 @@ public final class OneToOneRingBuffer implements RingBuffer
         if (0 != padding)
         {
             buffer.putLong(0, 0L);
-            buffer.putIntRelease(lengthOffset(recordIndex), -padding);
-            VarHandle.releaseFence();
-
             buffer.putInt(typeOffset(recordIndex), PADDING_MSG_TYPE_ID);
             buffer.putIntRelease(lengthOffset(recordIndex), padding);
         }
