@@ -35,6 +35,7 @@ public class SystemEpochClock implements EpochClock
     /**
      * {@inheritDoc}
      */
+    @Override
     public long time()
     {
         return System.currentTimeMillis();

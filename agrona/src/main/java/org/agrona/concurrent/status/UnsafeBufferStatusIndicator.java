@@ -56,6 +56,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
     /**
      * {@inheritDoc}
      */
+    @Override
     public int id()
     {
         return counterId;
@@ -64,6 +65,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setVolatile(final long value)
     {
         UnsafeApi.putLongVolatile(byteArray, addressOffset, value);
@@ -72,6 +74,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setOrdered(final long value)
     {
         setRelease(value);
@@ -80,6 +83,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setRelease(final long value)
     {
         UnsafeApi.putLongRelease(byteArray, addressOffset, value);
@@ -88,6 +92,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setOpaque(final long value)
     {
         UnsafeApi.putLongOpaque(byteArray, addressOffset, value);
@@ -96,6 +101,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getVolatile()
     {
         return UnsafeApi.getLongVolatile(byteArray, addressOffset);
@@ -104,6 +110,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getAcquire()
     {
         return UnsafeApi.getLongAcquire(byteArray, addressOffset);
@@ -112,6 +119,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getOpaque()
     {
         return UnsafeApi.getLongOpaque(byteArray, addressOffset);
@@ -120,6 +128,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
       /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "UnsafeBufferStatusIndicator{" +

@@ -37,6 +37,7 @@ public class SystemEpochNanoClock implements EpochNanoClock
     /**
      * {@inheritDoc}
      */
+    @Override
     public long nanoTime()
     {
         return HighResolutionClock.epochNanos();

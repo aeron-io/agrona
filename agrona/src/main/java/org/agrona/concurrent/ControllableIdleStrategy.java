@@ -90,6 +90,7 @@ public final class ControllableIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void idle()
     {
         final int status = (int)statusIndicator.getVolatile();
@@ -117,6 +118,7 @@ public final class ControllableIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void reset()
     {
     }
@@ -124,6 +126,7 @@ public final class ControllableIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String alias()
     {
         return ALIAS;
@@ -132,6 +135,7 @@ public final class ControllableIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "ControllableIdleStrategy{" +

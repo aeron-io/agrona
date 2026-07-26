@@ -739,6 +739,7 @@ public class AtomicCounter implements AutoCloseable
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "AtomicCounter{" +

@@ -157,6 +157,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean add(final E e)
     {
         return offer(e);
@@ -165,6 +166,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean offer(final E e)
     {
         if (null == e)
@@ -182,6 +184,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public E remove()
     {
         final E e = poll();
@@ -196,6 +199,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public E poll()
     {
         E value = null;
@@ -226,6 +230,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public E element()
     {
         final E e = peek();
@@ -240,6 +245,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public E peek()
     {
         final Node<E> next = head.next;
@@ -279,6 +285,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return head == tail;
@@ -287,6 +294,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean contains(final Object o)
     {
         throw new UnsupportedOperationException();
@@ -295,6 +303,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public Iterator<E> iterator()
     {
         throw new UnsupportedOperationException();
@@ -303,6 +312,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object[] toArray()
     {
         throw new UnsupportedOperationException();
@@ -311,6 +321,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public <T> T[] toArray(final T[] a)
     {
         throw new UnsupportedOperationException();
@@ -319,6 +330,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean remove(final Object o)
     {
         throw new UnsupportedOperationException();
@@ -327,6 +339,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean containsAll(final Collection<?> c)
     {
         throw new UnsupportedOperationException();
@@ -335,6 +348,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean addAll(final Collection<? extends E> c)
     {
         throw new UnsupportedOperationException();
@@ -343,6 +357,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean removeAll(final Collection<?> c)
     {
         throw new UnsupportedOperationException();
@@ -351,6 +366,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean retainAll(final Collection<?> c)
     {
         throw new UnsupportedOperationException();
@@ -359,6 +375,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         throw new UnsupportedOperationException();
@@ -367,6 +384,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder();

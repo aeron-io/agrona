@@ -55,6 +55,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public byte[] byteArray()
     {
         return byteArray;
@@ -63,6 +64,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long addressOffset()
     {
         return addressOffset;
@@ -71,6 +73,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int capacity()
     {
         return capacity;
@@ -79,6 +82,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void checkLimit(final int limit)
     {
         if (limit > capacity)
@@ -90,6 +94,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setMemory(final int index, final int length, final byte value)
     {
         ensureCapacity(index, length);
@@ -129,6 +134,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getLong(final int index, final ByteOrder byteOrder)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -148,6 +154,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putLong(final int index, final long value, final ByteOrder byteOrder)
     {
         ensureCapacity(index, SIZE_OF_LONG);
@@ -164,6 +171,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getLong(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -177,6 +185,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putLong(final int index, final long value)
     {
         ensureCapacity(index, SIZE_OF_LONG);
@@ -187,6 +196,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getInt(final int index, final ByteOrder byteOrder)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -206,6 +216,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putInt(final int index, final int value, final ByteOrder byteOrder)
     {
         ensureCapacity(index, SIZE_OF_INT);
@@ -222,6 +233,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getInt(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -235,6 +247,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putInt(final int index, final int value)
     {
         ensureCapacity(index, SIZE_OF_INT);
@@ -245,6 +258,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public double getDouble(final int index, final ByteOrder byteOrder)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -266,6 +280,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putDouble(final int index, final double value, final ByteOrder byteOrder)
     {
         ensureCapacity(index, SIZE_OF_DOUBLE);
@@ -284,6 +299,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public double getDouble(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -297,6 +313,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putDouble(final int index, final double value)
     {
         ensureCapacity(index, SIZE_OF_DOUBLE);
@@ -307,6 +324,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public float getFloat(final int index, final ByteOrder byteOrder)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -328,6 +346,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putFloat(final int index, final float value, final ByteOrder byteOrder)
     {
         ensureCapacity(index, SIZE_OF_FLOAT);
@@ -346,6 +365,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public float getFloat(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -359,6 +379,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putFloat(final int index, final float value)
     {
         ensureCapacity(index, SIZE_OF_FLOAT);
@@ -369,6 +390,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public short getShort(final int index, final ByteOrder byteOrder)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -388,6 +410,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putShort(final int index, final short value, final ByteOrder byteOrder)
     {
         ensureCapacity(index, SIZE_OF_SHORT);
@@ -404,6 +427,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public short getShort(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -417,6 +441,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putShort(final int index, final short value)
     {
         ensureCapacity(index, SIZE_OF_SHORT);
@@ -427,6 +452,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public byte getByte(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -440,6 +466,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putByte(final int index, final byte value)
     {
         ensureCapacity(index, SIZE_OF_BYTE);
@@ -450,6 +477,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void getBytes(final int index, final byte[] dst)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -463,6 +491,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void getBytes(final int index, final byte[] dst, final int offset, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -477,6 +506,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void getBytes(final int index, final MutableDirectBuffer dstBuffer, final int dstIndex, final int length)
     {
         dstBuffer.putBytes(dstIndex, this, index, length);
@@ -485,6 +515,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void getBytes(final int index, final ByteBuffer dstBuffer, final int length)
     {
         final int dstOffset = dstBuffer.position();
@@ -495,6 +526,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void getBytes(final int index, final ByteBuffer dstBuffer, final int dstOffset, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -522,6 +554,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putBytes(final int index, final byte[] src)
     {
         ensureCapacity(index, src.length);
@@ -532,6 +565,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putBytes(final int index, final byte[] src, final int offset, final int length)
     {
         ensureCapacity(index, length);
@@ -546,6 +580,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putBytes(final int index, final ByteBuffer srcBuffer, final int length)
     {
         final int srcIndex = srcBuffer.position();
@@ -556,6 +591,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putBytes(final int index, final ByteBuffer srcBuffer, final int srcIndex, final int length)
     {
         ensureCapacity(index, length);
@@ -583,6 +619,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putBytes(final int index, final DirectBuffer srcBuffer, final int srcIndex, final int length)
     {
         ensureCapacity(index, length);
@@ -602,6 +639,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public char getChar(final int index, final ByteOrder byteOrder)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -621,6 +659,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putChar(final int index, final char value, final ByteOrder byteOrder)
     {
         ensureCapacity(index, SIZE_OF_CHAR);
@@ -637,6 +676,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public char getChar(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -650,6 +690,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putChar(final int index, final char value)
     {
         ensureCapacity(index, SIZE_OF_CHAR);
@@ -660,6 +701,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getStringAscii(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -679,6 +721,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getStringAscii(final int index, final Appendable appendable)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -698,6 +741,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getStringAscii(final int index, final ByteOrder byteOrder)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -723,6 +767,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getStringAscii(final int index, final Appendable appendable, final ByteOrder byteOrder)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -748,6 +793,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getStringAscii(final int index, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -769,6 +815,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getStringAscii(final int index, final int length, final Appendable appendable)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -797,6 +844,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringAscii(final int index, final String value)
     {
         if (null == value)
@@ -832,6 +880,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringAscii(final int index, final CharSequence value)
     {
         if (null == value)
@@ -867,6 +916,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringAscii(final int index, final String value, final ByteOrder byteOrder)
     {
         if (null == value)
@@ -908,6 +958,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringAscii(final int index, final CharSequence value, final ByteOrder byteOrder)
     {
         if (null == value)
@@ -949,6 +1000,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getStringWithoutLengthAscii(final int index, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -970,6 +1022,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getStringWithoutLengthAscii(final int index, final int length, final Appendable appendable)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -998,6 +1051,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringWithoutLengthAscii(final int index, final String value)
     {
         if (null == value)
@@ -1027,6 +1081,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringWithoutLengthAscii(final int index, final CharSequence value)
     {
         if (null == value)
@@ -1056,6 +1111,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringWithoutLengthAscii(final int index, final String value, final int valueOffset, final int length)
     {
         if (null == value)
@@ -1085,6 +1141,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringWithoutLengthAscii(
         final int index, final CharSequence value, final int valueOffset, final int length)
     {
@@ -1115,6 +1172,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getStringUtf8(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -1134,6 +1192,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getStringUtf8(final int index, final ByteOrder byteOrder)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -1159,6 +1218,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getStringUtf8(final int index, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -1176,6 +1236,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringUtf8(final int index, final String value)
     {
         return putStringUtf8(index, value, Integer.MAX_VALUE);
@@ -1184,6 +1245,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringUtf8(final int index, final String value, final ByteOrder byteOrder)
     {
         return putStringUtf8(index, value, byteOrder, Integer.MAX_VALUE);
@@ -1192,6 +1254,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringUtf8(final int index, final String value, final int maxEncodedLength)
     {
         final byte[] bytes = value != null ? value.getBytes(UTF_8) : NULL_BYTES;
@@ -1213,6 +1276,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringUtf8(final int index, final String value, final ByteOrder byteOrder, final int maxEncodedLength)
     {
         final byte[] bytes = value != null ? value.getBytes(UTF_8) : NULL_BYTES;
@@ -1240,6 +1304,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getStringWithoutLengthUtf8(final int index, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -1261,6 +1326,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putStringWithoutLengthUtf8(final int index, final String value)
     {
         final byte[] bytes = value != null ? value.getBytes(UTF_8) : NULL_BYTES;
@@ -1274,6 +1340,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int parseNaturalIntAscii(final int index, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -1304,6 +1371,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long parseNaturalLongAscii(final int index, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -1329,6 +1397,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int parseIntAscii(final int index, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -1372,6 +1441,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long parseLongAscii(final int index, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -1414,6 +1484,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putIntAscii(final int index, final int value)
     {
         if (0 == value)
@@ -1462,6 +1533,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putNaturalIntAscii(final int index, final int value)
     {
         if (0 == value)
@@ -1482,6 +1554,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putNaturalPaddedIntAscii(final int offset, final int length, final int value)
     {
         ensureCapacity(offset, length);
@@ -1506,6 +1579,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putNaturalIntAsciiFromEnd(final int value, final int endExclusive)
     {
         final int length = digitCount(value);
@@ -1529,6 +1603,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putNaturalLongAscii(final int index, final long value)
     {
         if (0L == value)
@@ -1549,6 +1624,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int putLongAscii(final int index, final long value)
     {
         if (0L == value)
@@ -1597,6 +1673,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void boundsCheck(final int index, final int length)
     {
         boundsCheck0(index, length);
@@ -1605,6 +1682,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(final Object obj)
     {
         if (this == obj)
@@ -1653,6 +1731,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         final byte[] array = byteArray;
@@ -1675,6 +1754,7 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int compareTo(final DirectBuffer that)
     {
         if (this == that)

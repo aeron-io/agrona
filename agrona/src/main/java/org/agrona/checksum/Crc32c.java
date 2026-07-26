@@ -78,6 +78,7 @@ public final class Crc32c implements Checksum
     /**
      * {@inheritDoc}
      */
+    @Override
     public int compute(final long address, final int offset, final int length)
     {
         try

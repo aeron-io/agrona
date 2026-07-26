@@ -123,6 +123,7 @@ public class DirectBufferInputStream extends InputStream
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean markSupported()
     {
         return false;
@@ -131,6 +132,7 @@ public class DirectBufferInputStream extends InputStream
     /**
      * {@inheritDoc}
      */
+    @Override
     public int available()
     {
         return length - position;
@@ -139,6 +141,7 @@ public class DirectBufferInputStream extends InputStream
     /**
      * {@inheritDoc}
      */
+    @Override
     public long skip(final long n)
     {
         final int skipped = (int)Math.min(n, available());
@@ -150,6 +153,7 @@ public class DirectBufferInputStream extends InputStream
     /**
      * {@inheritDoc}
      */
+    @Override
     public int read()
     {
         int b = -1;
@@ -165,6 +169,7 @@ public class DirectBufferInputStream extends InputStream
     /**
      * {@inheritDoc}
      */
+    @Override
     public int read(final byte[] dstBytes, final int dstOffset, final int length)
     {
         int bytesRead = -1;
@@ -182,6 +187,7 @@ public class DirectBufferInputStream extends InputStream
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close()
     {
     }

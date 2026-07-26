@@ -157,6 +157,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean add(final Integer value)
     {
         return add(value.intValue());
@@ -242,6 +243,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean remove(final Object value)
     {
         return remove((int)value);
@@ -330,6 +332,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean contains(final Object value)
     {
         return contains((int)value);
@@ -369,6 +372,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @DoNotSub public int size()
     {
         return sizeOfArrayValues + (containsMissingValue ? 1 : 0);
@@ -377,6 +381,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return size() == 0;
@@ -385,6 +390,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         if (size() > 0)
@@ -398,6 +404,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean addAll(final Collection<? extends Integer> coll)
     {
         boolean added = false;
@@ -498,6 +505,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean removeIf(final Predicate<? super Integer> filter)
     {
         return super.removeIf(filter);
@@ -531,6 +539,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean removeAll(final Collection<?> coll)
     {
         boolean removed = false;
@@ -573,6 +582,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean retainAll(final Collection<?> coll)
     {
         boolean removed = false;
@@ -642,6 +652,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public IntIterator iterator()
     {
         IntIterator iterator = this.iterator;
@@ -701,6 +712,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder();
@@ -733,6 +745,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T[] toArray(final T[] a)
     {
@@ -752,6 +765,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object[] toArray()
     {
         final Object[] arrayCopy = new Object[size()];
@@ -781,6 +795,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(final Object other)
     {
         if (other == this)
@@ -821,6 +836,7 @@ public class IntHashSet extends AbstractSet<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @DoNotSub public int hashCode()
     {
         @DoNotSub int hashCode = 0;
@@ -886,6 +902,7 @@ public class IntHashSet extends AbstractSet<Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean hasNext()
         {
             return remaining > 0;
@@ -904,6 +921,7 @@ public class IntHashSet extends AbstractSet<Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public Integer next()
         {
             return nextValue();
@@ -934,6 +952,7 @@ public class IntHashSet extends AbstractSet<Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public void remove()
         {
             if (isPositionValid)

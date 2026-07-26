@@ -55,6 +55,7 @@ public final class NoOpIdleStrategy implements IdleStrategy
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public void idle(final int workCount)
     {
     }
@@ -64,6 +65,7 @@ public final class NoOpIdleStrategy implements IdleStrategy
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public void idle()
     {
     }
@@ -71,6 +73,7 @@ public final class NoOpIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void reset()
     {
     }
@@ -78,6 +81,7 @@ public final class NoOpIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String alias()
     {
         return ALIAS;
@@ -86,6 +90,7 @@ public final class NoOpIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "NoOpIdleStrategy{alias=" + ALIAS + "}";

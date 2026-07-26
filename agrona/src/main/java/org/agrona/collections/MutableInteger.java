@@ -207,6 +207,7 @@ public class MutableInteger extends Number implements Comparable<MutableInteger>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -227,6 +228,7 @@ public class MutableInteger extends Number implements Comparable<MutableInteger>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         return Integer.hashCode(value);
@@ -235,6 +237,7 @@ public class MutableInteger extends Number implements Comparable<MutableInteger>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return Integer.toString(value);
@@ -243,6 +246,7 @@ public class MutableInteger extends Number implements Comparable<MutableInteger>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int compareTo(final MutableInteger that)
     {
         return compare(this.value, that.value);

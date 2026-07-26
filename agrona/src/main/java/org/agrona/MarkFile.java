@@ -255,6 +255,7 @@ public class MarkFile implements AutoCloseable
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close()
     {
         if (isClosed.compareAndSet(false, true))

@@ -136,6 +136,7 @@ public final class IntLruCache<E> implements AutoCloseable
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void close()
     {

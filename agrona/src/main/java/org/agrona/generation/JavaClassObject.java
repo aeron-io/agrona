@@ -51,6 +51,7 @@ public class JavaClassObject extends SimpleJavaFileObject
     /**
      * {@inheritDoc}
      */
+    @Override
     public OutputStream openOutputStream()
     {
         return baos;
@@ -59,6 +60,7 @@ public class JavaClassObject extends SimpleJavaFileObject
     /**
      * {@inheritDoc}
      */
+    @Override
     public Kind getKind()
     {
         return Kind.CLASS;

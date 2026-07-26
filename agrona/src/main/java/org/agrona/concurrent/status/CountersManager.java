@@ -500,6 +500,7 @@ public class CountersManager extends CountersReader
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return getClass().getSimpleName() + "{" +

@@ -32,6 +32,7 @@ public final class NullReference
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         return 0;
@@ -40,6 +41,7 @@ public final class NullReference
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(final Object obj)
     {
         return obj == this;

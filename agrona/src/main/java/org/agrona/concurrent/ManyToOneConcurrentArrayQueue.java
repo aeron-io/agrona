@@ -52,6 +52,7 @@ public class ManyToOneConcurrentArrayQueue<E> extends AbstractConcurrentArrayQue
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean offer(final E e)
     {
         if (null == e)
@@ -88,6 +89,7 @@ public class ManyToOneConcurrentArrayQueue<E> extends AbstractConcurrentArrayQue
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public E poll()
     {
@@ -108,6 +110,7 @@ public class ManyToOneConcurrentArrayQueue<E> extends AbstractConcurrentArrayQue
     /**
      * {@inheritDoc}
      */
+    @Override
     public int drain(final Consumer<E> elementConsumer)
     {
         return drain(elementConsumer, (int)(tail - head));
@@ -116,6 +119,7 @@ public class ManyToOneConcurrentArrayQueue<E> extends AbstractConcurrentArrayQue
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public int drain(final Consumer<E> elementConsumer, final int limit)
     {
@@ -147,6 +151,7 @@ public class ManyToOneConcurrentArrayQueue<E> extends AbstractConcurrentArrayQue
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public int drainTo(final Collection<? super E> target, final int limit)
     {

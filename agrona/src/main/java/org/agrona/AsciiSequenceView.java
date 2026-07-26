@@ -48,6 +48,7 @@ public class AsciiSequenceView implements CharSequence
     /**
      * {@inheritDoc}
      */
+    @Override
     public int length()
     {
         return length;
@@ -76,6 +77,7 @@ public class AsciiSequenceView implements CharSequence
     /**
      * {@inheritDoc}
      */
+    @Override
     public char charAt(final int index)
     {
         if (index < 0 || index >= length)
@@ -89,6 +91,7 @@ public class AsciiSequenceView implements CharSequence
     /**
      * {@inheritDoc}
      */
+    @Override
     public AsciiSequenceView subSequence(final int start, final int end)
     {
         if (start < 0)
@@ -158,6 +161,7 @@ public class AsciiSequenceView implements CharSequence
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         if (null == buffer || length <= 0)

@@ -65,6 +65,7 @@ public class CountedErrorHandler implements ErrorHandler, AutoCloseable
     /**
      * {@inheritDoc}
      */
+    @Override
     public void onError(final Throwable throwable)
     {
         if (isClosed)

@@ -70,6 +70,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isClosed()
     {
         return isClosed;
@@ -78,6 +79,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public int id()
     {
         return counterId;
@@ -86,6 +88,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getVolatile()
     {
         return UnsafeApi.getLongVolatile(byteArray, addressOffset);
@@ -94,6 +97,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getAcquire()
     {
         return UnsafeApi.getLongAcquire(byteArray, addressOffset);
@@ -102,6 +106,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getOpaque()
     {
         return UnsafeApi.getLongOpaque(byteArray, addressOffset);
@@ -110,6 +115,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public long get()
     {
         return UnsafeApi.getLong(byteArray, addressOffset);
@@ -118,6 +124,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setVolatile(final long value)
     {
         UnsafeApi.putLongVolatile(byteArray, addressOffset, value);
@@ -126,6 +133,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setOrdered(final long value)
     {
         setRelease(value);
@@ -134,6 +142,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setRelease(final long value)
     {
         UnsafeApi.putLongRelease(byteArray, addressOffset, value);
@@ -142,6 +151,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setOpaque(final long value)
     {
         UnsafeApi.putLongOpaque(byteArray, addressOffset, value);
@@ -150,6 +160,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void set(final long value)
     {
         UnsafeApi.putLong(byteArray, addressOffset, value);
@@ -158,6 +169,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean proposeMax(final long proposedValue)
     {
         boolean updated = false;
@@ -176,6 +188,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean proposeMaxOrdered(final long proposedValue)
     {
         return proposeMaxRelease(proposedValue);
@@ -184,6 +197,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean proposeMaxRelease(final long proposedValue)
     {
         boolean updated = false;
@@ -202,6 +216,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean proposeMaxOpaque(final long proposedValue)
     {
         boolean updated = false;
@@ -220,6 +235,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close()
     {
         if (!isClosed)
@@ -235,6 +251,7 @@ public class UnsafeBufferPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "UnsafeBufferPosition{" +

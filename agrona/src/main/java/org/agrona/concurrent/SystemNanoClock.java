@@ -37,6 +37,7 @@ public class SystemNanoClock implements NanoClock
     /**
      * {@inheritDoc}
      */
+    @Override
     public long nanoTime()
     {
         return System.nanoTime();

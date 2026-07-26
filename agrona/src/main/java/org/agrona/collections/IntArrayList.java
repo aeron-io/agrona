@@ -123,6 +123,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @DoNotSub public int size()
     {
         return size;
@@ -141,6 +142,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         size = 0;
@@ -160,6 +162,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer get(
         @DoNotSub final int index)
     {
@@ -185,6 +188,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean add(final Integer element)
     {
         return addInt(null == element ? nullValue : element);
@@ -209,6 +213,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void add(
         @DoNotSub final int index,
         final Integer element)
@@ -243,6 +248,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer set(
         @DoNotSub final int index,
         final Integer element)
@@ -274,6 +280,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean contains(final Object o)
     {
         return containsInt(null == o ? nullValue : (int)o);
@@ -546,6 +553,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean remove(final Object o)
     {
         return removeInt(null == o ? nullValue : (int)o);
@@ -785,6 +793,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(final Object other)
     {
         if (other == this)
@@ -832,6 +841,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @DoNotSub public int hashCode()
     {
         @DoNotSub int hashCode = 1;
@@ -849,6 +859,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void forEach(final Consumer<? super Integer> action)
     {
         requireNonNull(action);
@@ -879,6 +890,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder();

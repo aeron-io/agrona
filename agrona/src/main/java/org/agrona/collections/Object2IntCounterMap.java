@@ -510,6 +510,7 @@ public class Object2IntCounterMap<K>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder();

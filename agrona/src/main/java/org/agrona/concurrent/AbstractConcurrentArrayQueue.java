@@ -162,6 +162,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public long addedCount()
     {
         return tail;
@@ -170,6 +171,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public long removedCount()
     {
         return head;
@@ -178,6 +180,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int capacity()
     {
         return capacity;
@@ -186,6 +189,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int remainingCapacity()
     {
         return capacity - size();
@@ -194,6 +198,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public E peek()
     {
@@ -203,6 +208,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean add(final E e)
     {
         if (offer(e))
@@ -216,6 +222,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public E remove()
     {
         final E e = poll();
@@ -230,6 +237,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public E element()
     {
         final E e = peek();
@@ -244,6 +252,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean contains(final Object o)
     {
         if (null == o)
@@ -269,6 +278,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Iterator<E> iterator()
     {
         throw new UnsupportedOperationException();
@@ -277,6 +287,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object[] toArray()
     {
         throw new UnsupportedOperationException();
@@ -285,6 +296,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public <T> T[] toArray(final T[] a)
     {
         throw new UnsupportedOperationException();
@@ -293,6 +305,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean remove(final Object o)
     {
         throw new UnsupportedOperationException();
@@ -301,6 +314,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean containsAll(final Collection<?> c)
     {
         for (final Object o : c)
@@ -317,6 +331,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean addAll(final Collection<? extends E> c)
     {
         for (final E e : c)
@@ -330,6 +345,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean removeAll(final Collection<?> c)
     {
         throw new UnsupportedOperationException();
@@ -338,6 +354,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean retainAll(final Collection<?> c)
     {
         throw new UnsupportedOperationException();
@@ -346,6 +363,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         Object value;
@@ -359,6 +377,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return head >= tail;
@@ -367,6 +386,7 @@ public abstract class AbstractConcurrentArrayQueue<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int size()
     {
         long currentHeadBefore;

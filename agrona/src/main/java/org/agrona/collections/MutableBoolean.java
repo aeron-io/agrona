@@ -65,6 +65,7 @@ public class MutableBoolean
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -85,6 +86,7 @@ public class MutableBoolean
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         return Boolean.hashCode(value);
@@ -93,6 +95,7 @@ public class MutableBoolean
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return Boolean.toString(value);

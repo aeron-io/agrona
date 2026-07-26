@@ -45,6 +45,7 @@ public class ClassFileManager<M extends JavaFileManager> extends ForwardingJavaF
     /**
      * {@inheritDoc}
      */
+    @Override
     public ClassLoader getClassLoader(final Location location)
     {
         return new SecureClassLoader()
@@ -60,6 +61,7 @@ public class ClassFileManager<M extends JavaFileManager> extends ForwardingJavaF
     /**
      * {@inheritDoc}
      */
+    @Override
     public JavaFileObject getJavaFileForOutput(
         final Location location, final String className, final JavaFileObject.Kind kind, final FileObject sibling)
     {

@@ -498,6 +498,7 @@ public class Int2IntCounterMap
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder();

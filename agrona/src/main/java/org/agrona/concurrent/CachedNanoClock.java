@@ -65,6 +65,7 @@ public class CachedNanoClock extends CachedNanoClockValue implements NanoClock
     /**
      * {@inheritDoc}
      */
+    @Override
     public long nanoTime()
     {
         return timeNs;

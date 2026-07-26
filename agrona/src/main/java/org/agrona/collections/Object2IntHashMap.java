@@ -171,6 +171,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @DoNotSub public int size()
     {
         return size;
@@ -179,6 +180,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return 0 == size;
@@ -191,6 +193,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
      * @param key for indexing the {@link Map}.
      * @return true if the key is found otherwise false.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public boolean containsKey(final Object key)
     {
@@ -200,6 +203,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean containsValue(final Object value)
     {
         return containsValue((int)value);
@@ -251,6 +255,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public Integer get(final Object key)
     {
@@ -496,6 +501,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer put(final K key, final Integer value)
     {
         return valueOrNull(put(key, (int)value));
@@ -549,6 +555,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer putIfAbsent(final K key, final Integer value)
     {
         return valueOrNull(putIfAbsent(key, (int)value));
@@ -601,6 +608,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean remove(final Object key, final Object value)
     {
         return remove(key, (int)value);
@@ -647,6 +655,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public Integer remove(final Object key)
     {
@@ -691,6 +700,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         if (size > 0)
@@ -714,6 +724,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putAll(final Map<? extends K, ? extends Integer> map)
     {
         for (final Entry<? extends K, ? extends Integer> entry : map.entrySet())
@@ -748,6 +759,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public KeySet keySet()
     {
         if (null == keySet)
@@ -761,6 +773,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public ValueCollection values()
     {
         if (null == valueCollection)
@@ -774,6 +787,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public EntrySet entrySet()
     {
         if (null == entrySet)
@@ -787,6 +801,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         if (isEmpty())
@@ -813,6 +828,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -862,6 +878,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @DoNotSub public int hashCode()
     {
         @DoNotSub int result = 0;
@@ -993,6 +1010,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void forEach(final BiConsumer<? super K, ? super Integer> action)
     {
         forEachInt(action::accept);
@@ -1125,6 +1143,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public KeyIterator iterator()
         {
             KeyIterator keyIterator = this.keyIterator;
@@ -1140,6 +1159,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         @DoNotSub public int size()
         {
             return Object2IntHashMap.this.size();
@@ -1148,6 +1168,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean contains(final Object o)
         {
             return Object2IntHashMap.this.containsKey(o);
@@ -1156,6 +1177,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         @SuppressWarnings("unchecked")
         public boolean remove(final Object o)
         {
@@ -1165,6 +1187,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public void clear()
         {
             Object2IntHashMap.this.clear();
@@ -1188,6 +1211,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public ValueIterator iterator()
         {
             ValueIterator valueIterator = this.valueIterator;
@@ -1203,6 +1227,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         @DoNotSub public int size()
         {
             return Object2IntHashMap.this.size();
@@ -1211,6 +1236,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean contains(final Object o)
         {
             return containsValue(o);
@@ -1230,6 +1256,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public void clear()
         {
             Object2IntHashMap.this.clear();
@@ -1274,6 +1301,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public EntryIterator iterator()
         {
             EntryIterator entryIterator = this.entryIterator;
@@ -1290,6 +1318,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         @DoNotSub public int size()
         {
             return Object2IntHashMap.this.size();
@@ -1298,6 +1327,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public void clear()
         {
             Object2IntHashMap.this.clear();
@@ -1306,6 +1336,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean contains(final Object o)
         {
             if (!(o instanceof Entry))
@@ -1344,6 +1375,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public Object[] toArray()
         {
             return toArray(new Object[size()]);
@@ -1352,6 +1384,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         @SuppressWarnings("unchecked")
         public <T> T[] toArray(final T[] a)
         {
@@ -1402,6 +1435,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean hasNext()
         {
             return remaining > 0;
@@ -1443,11 +1477,13 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public abstract T next();
 
         /**
          * {@inheritDoc}
          */
+        @Override
         public void remove()
         {
             if (isPositionValid)
@@ -1506,6 +1542,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public Integer next()
         {
             return nextInt();
@@ -1538,6 +1575,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public K next()
         {
             findNext();
@@ -1562,6 +1600,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public Entry<K, Integer> next()
         {
             findNext();
@@ -1581,6 +1620,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public K getKey()
         {
             return keys[position()];
@@ -1599,6 +1639,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public Integer getValue()
         {
             return getIntValue();
@@ -1607,6 +1648,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public Integer setValue(final Integer value)
         {
             return setValue((int)value);
@@ -1636,6 +1678,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         @DoNotSub public int hashCode()
         {
             return getKey().hashCode() ^ Integer.hashCode(getIntValue());
@@ -1644,6 +1687,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean equals(final Object o)
         {
             if (this == o)
@@ -1684,6 +1728,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
             /**
              * {@inheritDoc}
              */
+            @Override
             public K getKey()
             {
                 return k;
@@ -1692,6 +1737,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
             /**
              * {@inheritDoc}
              */
+            @Override
             public Integer getValue()
             {
                 return v;
@@ -1700,6 +1746,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
             /**
              * {@inheritDoc}
              */
+            @Override
             public Integer setValue(final Integer value)
             {
                 final Integer oldValue = Object2IntHashMap.this.put(k, value);
@@ -1710,6 +1757,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
             /**
              * {@inheritDoc}
              */
+            @Override
             @DoNotSub public int hashCode()
             {
                 return getKey().hashCode() ^ Integer.hashCode(v);
@@ -1718,6 +1766,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
             /**
              * {@inheritDoc}
              */
+            @Override
             public boolean equals(final Object o)
             {
                 if (this == o)
@@ -1738,6 +1787,7 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
             /**
              * {@inheritDoc}
              */
+            @Override
             public String toString()
             {
                 return k + "=" + v;

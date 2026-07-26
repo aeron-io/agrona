@@ -47,6 +47,7 @@ public class UnmodifiableCollectionView<V, E> extends AbstractCollection<V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int size()
     {
         return elements.size();
@@ -55,6 +56,7 @@ public class UnmodifiableCollectionView<V, E> extends AbstractCollection<V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public ReusableIterator iterator()
     {
         return iterator.reset();
@@ -77,6 +79,7 @@ public class UnmodifiableCollectionView<V, E> extends AbstractCollection<V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean hasNext()
         {
             return delegate.hasNext();
@@ -85,6 +88,7 @@ public class UnmodifiableCollectionView<V, E> extends AbstractCollection<V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public V next()
         {
             return viewer.apply(delegate.next());

@@ -69,6 +69,7 @@ public class MutableReference<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -89,6 +90,7 @@ public class MutableReference<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         return ref != null ? ref.hashCode() : 0;
@@ -97,6 +99,7 @@ public class MutableReference<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return null == ref ? "null" : ref.toString();

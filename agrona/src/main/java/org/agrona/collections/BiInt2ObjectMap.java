@@ -827,6 +827,7 @@ public class BiInt2ObjectMap<V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder();

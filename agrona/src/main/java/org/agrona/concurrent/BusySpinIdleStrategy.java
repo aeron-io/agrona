@@ -44,6 +44,7 @@ public final class BusySpinIdleStrategy implements IdleStrategy
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public void idle(final int workCount)
     {
         if (workCount > 0)
@@ -57,6 +58,7 @@ public final class BusySpinIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void idle()
     {
         Thread.onSpinWait();
@@ -65,6 +67,7 @@ public final class BusySpinIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void reset()
     {
     }
@@ -72,6 +75,7 @@ public final class BusySpinIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String alias()
     {
         return ALIAS;
@@ -80,6 +84,7 @@ public final class BusySpinIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "BusySpinIdleStrategy{alias=" + ALIAS + "}";

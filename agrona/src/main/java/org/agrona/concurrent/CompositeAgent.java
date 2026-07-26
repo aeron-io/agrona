@@ -72,6 +72,7 @@ public class CompositeAgent implements Agent
     /**
      * {@inheritDoc}
      */
+    @Override
     public String roleName()
     {
         return roleName;
@@ -85,6 +86,7 @@ public class CompositeAgent implements Agent
      * @throws RuntimeException if any sub-agent throws an exception onStart. The agents exceptions are collected as
      *                          suppressed exceptions in the thrown exception.
      */
+    @Override
     public void onStart()
     {
         RuntimeException ce = null;
@@ -113,6 +115,7 @@ public class CompositeAgent implements Agent
     /**
      * {@inheritDoc}
      */
+    @Override
     public int doWork() throws Exception
     {
         int workCount = 0;
@@ -137,6 +140,7 @@ public class CompositeAgent implements Agent
      * @throws RuntimeException if any sub-agent throws an exception onClose. The agents exceptions are collected as
      *                          suppressed exceptions in the thrown exception.
      */
+    @Override
     public void onClose()
     {
         RuntimeException ce = null;

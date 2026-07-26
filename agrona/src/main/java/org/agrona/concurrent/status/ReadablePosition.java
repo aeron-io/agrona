@@ -67,5 +67,6 @@ public abstract class ReadablePosition implements AutoCloseable
     /**
      * {@inheritDoc}
      */
+    @Override
     public abstract void close();
 }

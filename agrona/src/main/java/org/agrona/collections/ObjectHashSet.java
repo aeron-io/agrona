@@ -297,6 +297,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean contains(final Object value)
     {
         final int mask = values.length - 1;
@@ -318,6 +319,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int size()
     {
         return size;
@@ -326,6 +328,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return size == 0;
@@ -334,6 +337,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         if (size > 0)
@@ -346,6 +350,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean containsAll(final Collection<?> coll)
     {
         for (final Object t : coll)
@@ -362,6 +367,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean addAll(final Collection<? extends T> coll)
     {
         boolean acc = false;
@@ -427,6 +433,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean removeAll(final Collection<?> coll)
     {
         boolean acc = false;
@@ -464,6 +471,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public ObjectIterator iterator()
     {
         ObjectIterator iterator = this.iterator;
@@ -499,6 +507,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder();
@@ -525,6 +534,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(final Object other)
     {
         if (other == this)
@@ -562,6 +572,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         int hashCode = 0;
@@ -580,6 +591,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void forEach(final Consumer<? super T> action)
     {
         int remaining = size;
@@ -650,6 +662,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean hasNext()
         {
             return remaining > 0;
@@ -658,6 +671,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
         /**
          * {@inheritDoc}
          */
+        @Override
         public T next()
         {
             return nextValue();
@@ -699,6 +713,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
         /**
          * {@inheritDoc}
          */
+        @Override
         @SuppressWarnings("unchecked")
         public void remove()
         {

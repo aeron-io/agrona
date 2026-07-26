@@ -174,6 +174,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public void idle(final int workCount)
     {
         if (workCount > 0)
@@ -189,6 +190,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public void idle()
     {
         switch (state)
@@ -229,6 +231,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public void reset()
     {
         spins = 0;
@@ -240,6 +243,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public String alias()
     {
         return ALIAS;
@@ -248,6 +252,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "BackoffIdleStrategy{" +

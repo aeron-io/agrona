@@ -126,6 +126,7 @@ public class DynamicCompositeAgent implements Agent
      * <p>
      * Note that one agent throwing an exception on start may result in other agents not being started.
      */
+    @Override
     public void onStart()
     {
         for (final Agent agent : agents)
@@ -139,6 +140,7 @@ public class DynamicCompositeAgent implements Agent
     /**
      * {@inheritDoc}
      */
+    @Override
     public int doWork() throws Exception
     {
         int workCount = 0;
@@ -175,6 +177,7 @@ public class DynamicCompositeAgent implements Agent
      * @throws RuntimeException if any sub-agent throws an exception onClose. The agents exceptions are collected as
      *                          suppressed exceptions in the thrown exception.
      */
+    @Override
     public void onClose()
     {
         status = Status.CLOSED;
@@ -208,6 +211,7 @@ public class DynamicCompositeAgent implements Agent
     /**
      * {@inheritDoc}
      */
+    @Override
     public String roleName()
     {
         return roleName;

@@ -41,6 +41,7 @@ public class StringWriterOutputManager implements DynamicPackageOutputManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public Writer createOutput(final String name)
     {
         final StringWriter stringWriter = new StringWriter();

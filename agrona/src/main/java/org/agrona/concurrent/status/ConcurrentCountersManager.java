@@ -81,6 +81,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public int available()
     {
         lock.lock();
@@ -97,6 +98,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public int allocate(final String label, final int typeId)
     {
         lock.lock();
@@ -113,6 +115,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public int allocate(final String label, final int typeId, final Consumer<MutableDirectBuffer> keyFunc)
     {
         lock.lock();
@@ -129,6 +132,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public int allocate(
         final int typeId,
         final DirectBuffer keyBuffer,
@@ -152,6 +156,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public void free(final int counterId)
     {
         lock.lock();
@@ -168,6 +173,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setCounterValue(final int counterId, final long value)
     {
         lock.lock();
@@ -184,6 +190,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setCounterRegistrationId(final int counterId, final long registrationId)
     {
         lock.lock();
@@ -200,6 +207,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setCounterOwnerId(final int counterId, final long ownerId)
     {
         lock.lock();
@@ -216,6 +224,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setCounterReferenceId(final int counterId, final long referenceId)
     {
         lock.lock();
@@ -232,6 +241,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setCounterLabel(final int counterId, final String label)
     {
         lock.lock();
@@ -248,6 +258,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setCounterKey(final int counterId, final Consumer<MutableDirectBuffer> keyFunc)
     {
         lock.lock();
@@ -264,6 +275,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setCounterKey(final int counterId, final DirectBuffer keyBuffer, final int offset, final int length)
     {
         lock.lock();
@@ -280,6 +292,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public void appendToLabel(final int counterId, final String label)
     {
         lock.lock();
@@ -296,6 +309,7 @@ public class ConcurrentCountersManager extends CountersManager
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         lock.lock();

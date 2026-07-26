@@ -145,6 +145,7 @@ public class ExpandableDirectBufferOutputStream extends OutputStream
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close()
     {
     }

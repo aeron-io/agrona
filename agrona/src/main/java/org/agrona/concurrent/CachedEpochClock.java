@@ -65,6 +65,7 @@ public class CachedEpochClock extends CachedEpochClockValue implements EpochCloc
     /**
      * {@inheritDoc}
      */
+    @Override
     public long time()
     {
         return timeMs;

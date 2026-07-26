@@ -136,6 +136,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int size()
     {
         return size;
@@ -144,6 +145,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return size == 0;
@@ -152,6 +154,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public V get(final Object key)
     {
         return unmapNullValue(getMapped(key));
@@ -292,6 +295,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         if (size > 0)
@@ -314,6 +318,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void forEach(final BiConsumer<? super K, ? super V> consumer)
     {
@@ -334,6 +339,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean containsKey(final Object key)
     {
         return null != getMapped(key);
@@ -342,6 +348,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putAll(final Map<? extends K, ? extends V> map)
     {
         for (final Entry<? extends K, ? extends V> entry : map.entrySet())
@@ -353,6 +360,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public KeySet keySet()
     {
         if (null == keySet)
@@ -366,6 +374,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public ValueCollection values()
     {
         if (null == valueCollection)
@@ -379,6 +388,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public EntrySet entrySet()
     {
         if (null == entrySet)
@@ -392,6 +402,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public V remove(final Object key)
     {
         final Object[] entries = this.entries;
@@ -452,6 +463,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         if (isEmpty())
@@ -478,6 +490,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     @SuppressWarnings("unchecked")
     public boolean equals(final Object o)
     {
@@ -499,6 +512,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         return entrySet().hashCode();
@@ -507,6 +521,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public V computeIfAbsent(final K key, final Function<? super K, ? extends V> mappingFunction)
     {
         final Object[] entries = this.entries;
@@ -798,6 +813,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         @SuppressWarnings("unchecked")
         public K next()
         {
@@ -821,6 +837,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public V next()
         {
             findNext();
@@ -845,6 +862,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         @SuppressWarnings("unchecked")
         public K getKey()
         {
@@ -854,6 +872,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public V getValue()
         {
             return unmapNullValue(entries[keyPosition() + 1]);
@@ -862,6 +881,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         @SuppressWarnings("unchecked")
         public V setValue(final V value)
         {
@@ -888,6 +908,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public Entry<K, V> next()
         {
             findNext();
@@ -908,6 +929,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public int hashCode()
         {
             return getKey().hashCode() ^ Objects.hashCode(getValue());
@@ -916,6 +938,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean equals(final Object o)
         {
             if (this == o)
@@ -955,6 +978,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
             /**
              * {@inheritDoc}
              */
+            @Override
             public K getKey()
             {
                 return k;
@@ -963,6 +987,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
             /**
              * {@inheritDoc}
              */
+            @Override
             public V getValue()
             {
                 return v;
@@ -971,6 +996,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
             /**
              * {@inheritDoc}
              */
+            @Override
             public V setValue(final V value)
             {
                 final V oldValue = Object2ObjectHashMap.this.put(k, value);
@@ -981,6 +1007,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
             /**
              * {@inheritDoc}
              */
+            @Override
             public int hashCode()
             {
                 return k.hashCode() ^ Objects.hashCode(v);
@@ -989,6 +1016,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
             /**
              * {@inheritDoc}
              */
+            @Override
             public boolean equals(final Object o)
             {
                 if (this == o)
@@ -1007,6 +1035,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
             /**
              * {@inheritDoc}
              */
+            @Override
             public String toString()
             {
                 return k + "=" + v;
@@ -1031,6 +1060,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public KeyIterator iterator()
         {
             KeyIterator keyIterator = this.keyIterator;
@@ -1046,6 +1076,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public int size()
         {
             return Object2ObjectHashMap.this.size();
@@ -1054,6 +1085,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean isEmpty()
         {
             return Object2ObjectHashMap.this.isEmpty();
@@ -1062,6 +1094,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public void clear()
         {
             Object2ObjectHashMap.this.clear();
@@ -1070,6 +1103,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean contains(final Object o)
         {
             return containsKey(o);
@@ -1078,6 +1112,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         @SuppressWarnings("unchecked")
         public void forEach(final Consumer<? super K> action)
         {
@@ -1112,6 +1147,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public ValueIterator iterator()
         {
             ValueIterator valueIterator = this.valueIterator;
@@ -1127,6 +1163,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public int size()
         {
             return Object2ObjectHashMap.this.size();
@@ -1135,6 +1172,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean contains(final Object o)
         {
             return containsValue(o);
@@ -1143,6 +1181,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public void forEach(final Consumer<? super V> action)
         {
             int remaining = size;
@@ -1177,6 +1216,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public EntryIterator iterator()
         {
             EntryIterator entryIterator = this.entryIterator;
@@ -1192,6 +1232,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public int size()
         {
             return Object2ObjectHashMap.this.size();
@@ -1200,6 +1241,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean isEmpty()
         {
             return Object2ObjectHashMap.this.isEmpty();
@@ -1208,6 +1250,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public void clear()
         {
             Object2ObjectHashMap.this.clear();
@@ -1216,6 +1259,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean contains(final Object o)
         {
             if (!(o instanceof Entry))
@@ -1231,6 +1275,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         public Object[] toArray()
         {
             return toArray(new Object[size()]);
@@ -1239,6 +1284,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
         /**
          * {@inheritDoc}
          */
+        @Override
         @SuppressWarnings("unchecked")
         public <T> T[] toArray(final T[] a)
         {

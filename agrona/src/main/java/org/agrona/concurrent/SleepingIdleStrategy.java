@@ -71,6 +71,7 @@ public final class SleepingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void idle(final int workCount)
     {
         if (workCount > 0)
@@ -84,6 +85,7 @@ public final class SleepingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void idle()
     {
         LockSupport.parkNanos(sleepPeriodNs);
@@ -92,6 +94,7 @@ public final class SleepingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void reset()
     {
     }
@@ -99,6 +102,7 @@ public final class SleepingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String alias()
     {
         return ALIAS;
@@ -107,6 +111,7 @@ public final class SleepingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "SleepingIdleStrategy{" +

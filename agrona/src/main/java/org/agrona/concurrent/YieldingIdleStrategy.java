@@ -40,6 +40,7 @@ public final class YieldingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void idle(final int workCount)
     {
         if (workCount > 0)
@@ -53,6 +54,7 @@ public final class YieldingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void idle()
     {
         Thread.yield();
@@ -61,6 +63,7 @@ public final class YieldingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void reset()
     {
     }
@@ -68,6 +71,7 @@ public final class YieldingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String alias()
     {
         return ALIAS;
@@ -76,6 +80,7 @@ public final class YieldingIdleStrategy implements IdleStrategy
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "YieldingIdleStrategy{alias=" + ALIAS + "}";

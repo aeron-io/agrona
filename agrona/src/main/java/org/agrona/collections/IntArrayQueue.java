@@ -136,6 +136,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     @DoNotSub public int size()
     {
         return (tail - head) & (elements.length - 1);
@@ -144,6 +145,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return head == tail;
@@ -152,6 +154,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         if (head != tail)
@@ -165,6 +168,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean offer(final Integer element)
     {
         return offerInt(element);
@@ -197,6 +201,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean add(final Integer element)
     {
         return offerInt(element);
@@ -216,6 +221,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer peek()
     {
         final int element = elements[head];
@@ -236,6 +242,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer poll()
     {
         final int element = pollInt();
@@ -265,6 +272,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer remove()
     {
         final int element = pollInt();
@@ -279,6 +287,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer element()
     {
         final int element = elements[head];
@@ -327,6 +336,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder();
@@ -351,6 +361,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void forEach(final Consumer<? super Integer> action)
     {
         for (@DoNotSub int i = head; i != tail; )
@@ -377,6 +388,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
     /**
      * {@inheritDoc}
      */
+    @Override
     public IntIterator iterator()
     {
         IntIterator iterator = this.iterator;
@@ -437,6 +449,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public boolean hasNext()
         {
             return index != tail;
@@ -445,6 +458,7 @@ public class IntArrayQueue extends AbstractQueue<Integer>
         /**
          * {@inheritDoc}
          */
+        @Override
         public Integer next()
         {
             return nextValue();

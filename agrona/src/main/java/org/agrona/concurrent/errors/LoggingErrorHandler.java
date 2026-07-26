@@ -97,6 +97,7 @@ public class LoggingErrorHandler implements ErrorHandler, AutoCloseable
     /**
      * {@inheritDoc}
      */
+    @Override
     public void onError(final Throwable throwable)
     {
         if (isClosed)

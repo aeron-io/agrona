@@ -78,6 +78,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int capacity()
     {
         return capacity;
@@ -86,6 +87,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean write(final int msgTypeId, final DirectBuffer srcBuffer, final int offset, final int length)
     {
         checkTypeId(msgTypeId);
@@ -113,6 +115,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int tryClaim(final int msgTypeId, final int length)
     {
         checkTypeId(msgTypeId);
@@ -137,6 +140,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void commit(final int index)
     {
         final int recordIndex = computeRecordIndex(index);
@@ -149,6 +153,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void abort(final int index)
     {
         final int recordIndex = computeRecordIndex(index);
@@ -162,6 +167,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int read(final MessageHandler handler)
     {
         return read(handler, Integer.MAX_VALUE);
@@ -170,6 +176,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int read(final MessageHandler handler, final int messageCountLimit)
     {
         int messagesRead = 0;
@@ -221,6 +228,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int controlledRead(final ControlledMessageHandler handler)
     {
         return controlledRead(handler, Integer.MAX_VALUE);
@@ -229,6 +237,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int controlledRead(final ControlledMessageHandler handler, final int messageCountLimit)
     {
         int messagesRead = 0;
@@ -301,6 +310,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int maxMsgLength()
     {
         return maxMsgLength;
@@ -309,6 +319,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long nextCorrelationId()
     {
         return buffer.getAndAddLong(correlationIdCounterIndex, 1);
@@ -317,6 +328,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public AtomicBuffer buffer()
     {
         return buffer;
@@ -325,6 +337,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void consumerHeartbeatTime(final long time)
     {
         buffer.putLongRelease(consumerHeartbeatIndex, time);
@@ -333,6 +346,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long consumerHeartbeatTime()
     {
         return buffer.getLongVolatile(consumerHeartbeatIndex);
@@ -341,6 +355,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long producerPosition()
     {
         return buffer.getLongVolatile(tailPositionIndex);
@@ -349,6 +364,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long consumerPosition()
     {
         return buffer.getLongVolatile(headPositionIndex);
@@ -357,6 +373,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int size()
     {
         final AtomicBuffer buffer = this.buffer;
@@ -390,6 +407,7 @@ public final class OneToOneRingBuffer implements RingBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean unblock()
     {
         return false;

@@ -30,6 +30,7 @@ public class SystemEpochMicroClock implements EpochMicroClock
     /**
      * {@inheritDoc}
      */
+    @Override
     public long microTime()
     {
         return HighResolutionClock.epochMicros();

@@ -59,6 +59,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isClosed()
     {
         return isClosed;
@@ -67,6 +68,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public int id()
     {
         return id;
@@ -75,6 +77,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public long get()
     {
         return value.getPlain();
@@ -83,6 +86,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getVolatile()
     {
         return value.get();
@@ -91,6 +95,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getAcquire()
     {
         return value.getAcquire();
@@ -99,6 +104,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getOpaque()
     {
         return value.getOpaque();
@@ -107,6 +113,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void set(final long value)
     {
         this.value.setPlain(value);
@@ -115,6 +122,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setOpaque(final long value)
     {
         this.value.setOpaque(value);
@@ -123,6 +131,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setOrdered(final long value)
     {
         setRelease(value);
@@ -131,6 +140,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setRelease(final long value)
     {
         this.value.setRelease(value);
@@ -139,6 +149,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setVolatile(final long value)
     {
         this.value.set(value);
@@ -147,6 +158,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean proposeMax(final long proposedValue)
     {
         return proposeMaxRelease(proposedValue);
@@ -155,6 +167,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean proposeMaxOrdered(final long proposedValue)
     {
         return proposeMaxRelease(proposedValue);
@@ -163,6 +176,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean proposeMaxRelease(final long proposedValue)
     {
         boolean updated = false;
@@ -179,6 +193,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean proposeMaxOpaque(final long proposedValue)
     {
         boolean updated = false;
@@ -195,6 +210,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close()
     {
         isClosed = true;
@@ -203,6 +219,7 @@ public class AtomicLongPosition extends Position
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "AtomicLongPosition{" +

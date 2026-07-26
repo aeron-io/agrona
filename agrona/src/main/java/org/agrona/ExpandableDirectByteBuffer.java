@@ -70,6 +70,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final byte[] buffer)
     {
         throw new UnsupportedOperationException();
@@ -78,6 +79,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final byte[] buffer, final int offset, final int length)
     {
         throw new UnsupportedOperationException();
@@ -86,6 +88,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final ByteBuffer buffer)
     {
         throw new UnsupportedOperationException();
@@ -94,6 +97,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final ByteBuffer buffer, final int offset, final int length)
     {
         throw new UnsupportedOperationException();
@@ -102,6 +106,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final DirectBuffer buffer)
     {
         throw new UnsupportedOperationException();
@@ -110,6 +115,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final DirectBuffer buffer, final int offset, final int length)
     {
         throw new UnsupportedOperationException();
@@ -118,6 +124,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final long address, final int length)
     {
         throw new UnsupportedOperationException();
@@ -126,6 +133,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public byte[] byteArray()
     {
         return null;
@@ -134,6 +142,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public ByteBuffer byteBuffer()
     {
         return byteBuffer;
@@ -142,6 +151,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isExpandable()
     {
         return true;
@@ -150,6 +160,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int wrapAdjustment()
     {
         return 0;
@@ -158,6 +169,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void checkLimit(final int limit)
     {
         ensureCapacity(limit, 0);
@@ -166,6 +178,7 @@ public class ExpandableDirectByteBuffer extends AbstractMutableDirectBuffer
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "ExpandableDirectByteBuffer{" +

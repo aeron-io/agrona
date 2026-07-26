@@ -198,6 +198,7 @@ public final class ShutdownSignalBarrier implements AutoCloseable
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "ShutdownSignalBarrier{" +

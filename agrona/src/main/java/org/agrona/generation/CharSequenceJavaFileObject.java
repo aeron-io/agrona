@@ -40,6 +40,7 @@ public class CharSequenceJavaFileObject extends SimpleJavaFileObject
     /**
      * {@inheritDoc}
      */
+    @Override
     public CharSequence getCharContent(final boolean ignoreEncodingErrors)
     {
         return sourceCode;

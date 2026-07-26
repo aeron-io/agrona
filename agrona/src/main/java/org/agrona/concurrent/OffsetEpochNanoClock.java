@@ -115,6 +115,7 @@ public class OffsetEpochNanoClock implements EpochNanoClock
     /**
      * {@inheritDoc}
      */
+    @Override
     public long nanoTime()
     {
         final TimeFields timeFields = this.timeFields;

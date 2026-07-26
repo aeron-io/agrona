@@ -171,6 +171,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final byte[] buffer)
     {
         capacity = buffer.length;
@@ -187,6 +188,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final byte[] buffer, final int offset, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -208,6 +210,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final ByteBuffer buffer)
     {
         capacity = buffer.capacity();
@@ -235,6 +238,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final ByteBuffer buffer, final int offset, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -267,6 +271,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final DirectBuffer buffer)
     {
         capacity = buffer.capacity();
@@ -289,6 +294,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final DirectBuffer buffer, final int offset, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -316,6 +322,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void wrap(final long address, final int length)
     {
         capacity = length;
@@ -328,6 +335,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public ByteBuffer byteBuffer()
     {
         return byteBuffer;
@@ -336,6 +344,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int wrapAdjustment()
     {
         return wrapAdjustment;
@@ -344,6 +353,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isExpandable()
     {
         return false;
@@ -352,6 +362,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void verifyAlignment()
     {
         if (null != byteArray)
@@ -377,6 +388,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getLongVolatile(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -390,6 +402,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putLongVolatile(final int index, final long value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -403,6 +416,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getLongAcquire(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -416,6 +430,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putLongOrdered(final int index, final long value)
     {
         putLongRelease(index, value);
@@ -424,6 +439,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putLongRelease(final int index, final long value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -437,6 +453,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public long addLongOrdered(final int index, final long increment)
     {
         return addLongRelease(index, increment);
@@ -445,6 +462,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public long addLongRelease(final int index, final long increment)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -458,6 +476,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putLongOpaque(final int index, final long value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -471,6 +490,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getLongOpaque(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -484,6 +504,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public long addLongOpaque(final int index, final long increment)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -500,6 +521,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean compareAndSetLong(final int index, final long expectedValue, final long updateValue)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -513,6 +535,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public long compareAndExchangeLong(final int index, final long expectedValue, final long updateValue)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -527,6 +550,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getAndSetLong(final int index, final long value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -540,6 +564,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getAndAddLong(final int index, final long delta)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -553,6 +578,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getIntVolatile(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -566,6 +592,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putIntVolatile(final int index, final int value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -579,6 +606,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getIntAcquire(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -592,6 +620,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putIntOrdered(final int index, final int value)
     {
         putIntRelease(index, value);
@@ -600,6 +629,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putIntRelease(final int index, final int value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -613,6 +643,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int addIntOrdered(final int index, final int increment)
     {
         return addIntRelease(index, increment);
@@ -621,6 +652,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int addIntRelease(final int index, final int increment)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -635,6 +667,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putIntOpaque(final int index, final int value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -648,6 +681,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getIntOpaque(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -661,6 +695,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int addIntOpaque(final int index, final int increment)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -677,6 +712,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean compareAndSetInt(final int index, final int expectedValue, final int updateValue)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -690,6 +726,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int compareAndExchangeInt(final int index, final int expectedValue, final int updateValue)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -703,6 +740,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getAndSetInt(final int index, final int value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -716,6 +754,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getAndAddInt(final int index, final int delta)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -729,6 +768,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public short getShortVolatile(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -742,6 +782,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putShortVolatile(final int index, final short value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -755,6 +796,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public byte getByteVolatile(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -768,6 +810,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putByteVolatile(final int index, final byte value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -781,6 +824,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public char getCharVolatile(final int index)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -794,6 +838,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putCharVolatile(final int index, final char value)
     {
         if (SHOULD_BOUNDS_CHECK)
@@ -808,6 +853,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "UnsafeBuffer{" +

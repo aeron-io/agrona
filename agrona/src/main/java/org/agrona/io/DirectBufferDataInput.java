@@ -128,6 +128,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public void readFully(final byte[] destination) throws EOFException
     {
         if (destination == null)
@@ -141,6 +142,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public void readFully(final byte[] destination, final int destinationOffset, final int length) throws EOFException
     {
         if (destination == null)
@@ -172,6 +174,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public int skipBytes(final int n)
     {
         final int toSkip = Math.min(n, remaining());
@@ -183,6 +186,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean readBoolean() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_BYTE);
@@ -193,6 +197,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public byte readByte() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_BYTE);
@@ -203,6 +208,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public int readUnsignedByte() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_BYTE);
@@ -213,6 +219,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public short readShort() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_SHORT);
@@ -226,6 +233,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public int readUnsignedShort() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_SHORT);
@@ -239,6 +247,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public char readChar() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_CHAR);
@@ -252,6 +261,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public int readInt() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_INT);
@@ -265,6 +275,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public long readLong() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_LONG);
@@ -278,6 +289,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public float readFloat() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_FLOAT);
@@ -291,6 +303,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public double readDouble() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_DOUBLE);
@@ -304,6 +317,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public String readLine() throws IOException
     {
         if (remaining() == 0)
@@ -361,6 +375,7 @@ public class DirectBufferDataInput implements DataInput
     /**
      * {@inheritDoc}
      */
+    @Override
     public String readUTF() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_SHORT);
