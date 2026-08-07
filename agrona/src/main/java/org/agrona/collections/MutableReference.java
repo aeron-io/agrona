@@ -67,6 +67,18 @@ public class MutableReference<T>
     }
 
     /**
+     * Set and return the reference.
+     *
+     * @param ref to be assigned.
+     * @return the reference that was assigned.
+     */
+    public T setAndGet(final T ref)
+    {
+        set(ref);
+        return ref;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

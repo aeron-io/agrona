@@ -65,6 +65,18 @@ public class MutableInteger extends Number implements Comparable<MutableInteger>
     }
 
     /**
+     * Set and return the value.
+     *
+     * @param value to be assigned.
+     * @return the value that was assigned.
+     */
+    public long setAndGet(final int value)
+    {
+        set(value);
+        return value;
+    }
+
+    /**
      * Return value as {@code byte}.
      *
      * @return value as {@code byte}.

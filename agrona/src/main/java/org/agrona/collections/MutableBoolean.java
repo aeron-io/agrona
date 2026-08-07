@@ -63,6 +63,18 @@ public class MutableBoolean
     }
 
     /**
+     * Set and return the value.
+     *
+     * @param value to be assigned.
+     * @return the value that was assigned.
+     */
+    public boolean setAndGet(final boolean value)
+    {
+        set(value);
+        return value;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

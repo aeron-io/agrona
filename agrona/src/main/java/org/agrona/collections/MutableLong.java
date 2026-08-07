@@ -65,6 +65,18 @@ public class MutableLong extends Number implements Comparable<MutableLong>
     }
 
     /**
+     * Set and return the value.
+     *
+     * @param value to be assigned.
+     * @return the value that was assigned.
+     */
+    public long setAndGet(final long value)
+    {
+        set(value);
+        return value;
+    }
+
+    /**
      * Return value as {@code byte}.
      *
      * @return value as {@code byte}.
