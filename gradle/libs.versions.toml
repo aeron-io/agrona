@@ -15,7 +15,7 @@ junit4 = "4.13.2"
 mockito = "5.23.0"
 plexus = "3.3.0"
 shadow = "9.6.0"
-versions = "0.54.0"
+versions = "0.61.0"
 
 [libraries]
 byteBuddy = { group = "net.bytebuddy", name = "byte-buddy", version.ref = "byteBuddy" }
@@ -38,4 +38,4 @@ plexus-utils = { group = "org.codehaus.plexus", name = "plexus-utils", version.r
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
-versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }
+versions = { id = "io.github.ben-manes.versions", version.ref = "versions" }
