@@ -147,6 +147,8 @@ allprojects {
 
             force libs.byteBuddy,
                   libs.byteBuddy.agent,
+                  // Guava and JUnit do not agree on version of jspecify
+                  libs.jspecify,
                   // patching conflicting Checkstyle dependencies
                   libs.commons.codec,
                   libs.commons.lang3,
