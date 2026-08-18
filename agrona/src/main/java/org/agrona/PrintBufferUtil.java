@@ -104,6 +104,90 @@ public final class PrintBufferUtil
     }
 
     /**
+     * Appends a <a href="http://en.wikipedia.org/wiki/Hex_dump">hex dump</a>
+     * of the specified buffer's subregion to the supplied builder.
+     *
+     * @param sb        to append to.
+     * @param buffer    of data.
+     * @param fromIndex where should we start to print.
+     * @param length    how much should we print.
+     */
+    public static void appendHexDump(
+        final StringBuilder sb,
+        final DirectBuffer buffer,
+        final int fromIndex,
+        final int length)
+    {
+        if (length < 0)
+        {
+            throw new IllegalArgumentException("length < 0: " + length);
+        }
+
+        final int endIndex = fromIndex + length;
+
+        for (int srcIdx = fromIndex; srcIdx < endIndex; srcIdx++)
+        {
+            sb.append(PrintBufferUtil.byteToHexStringPadded(0xFF & buffer.getByte(srcIdx)));
+        }
+    }
+
+    /**
+     * Appends a <a href="http://en.wikipedia.org/wiki/Hex_dump">hex dump</a>
+     * of the specified buffer's subregion to the supplied builder.
+     *
+     * @param sb        to append to.
+     * @param buffer    of data.
+     */
+    public static void appendHexDump(
+        final StringBuilder sb,
+        final DirectBuffer buffer)
+    {
+        appendHexDump(sb, buffer, 0, buffer.capacity());
+    }
+
+    /**
+     * Appends a <a href="http://en.wikipedia.org/wiki/Hex_dump">hex dump</a>
+     * of the specified byte array's subregion to the supplied builder.
+     *
+     * @param sb        to append to.
+     * @param buffer    of data.
+     * @param fromIndex where should we start to print.
+     * @param length    how much should we print.
+     */
+    public static void appendHexDump(
+        final StringBuilder sb,
+        final byte[] buffer,
+        final int fromIndex,
+        final int length)
+    {
+        if (length < 0)
+        {
+            throw new IllegalArgumentException("length < 0: " + length);
+        }
+
+        final int endIndex = fromIndex + length;
+
+        for (int srcIdx = fromIndex; srcIdx < endIndex; srcIdx++)
+        {
+            sb.append(PrintBufferUtil.byteToHexStringPadded(0xFF & buffer[srcIdx]));
+        }
+    }
+
+    /**
+     * Appends a <a href="http://en.wikipedia.org/wiki/Hex_dump">hex dump</a>
+     * of the specified byte array's subregion to the supplied builder.
+     *
+     * @param sb        to append to.
+     * @param buffer    of data.
+     */
+    public static void appendHexDump(
+        final StringBuilder sb,
+        final byte[] buffer)
+    {
+        appendHexDump(sb, buffer, 0, buffer.length);
+    }
+
+    /**
      * Returns a hexadecimal dump of the specified {@link DirectBuffer} that is easy to read by humans.
      *
      * @param buffer dumped buffer.
