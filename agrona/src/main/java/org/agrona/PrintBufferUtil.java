@@ -180,9 +180,7 @@ public final class PrintBufferUtil
      * @param sb        to append to.
      * @param buffer    of data.
      */
-    public static void appendHexDump(
-        final StringBuilder sb,
-        final byte[] buffer)
+    public static void appendHexDump(final StringBuilder sb, final byte[] buffer)
     {
         appendHexDump(sb, buffer, 0, buffer.length);
     }
