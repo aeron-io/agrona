@@ -40,7 +40,7 @@ jobs:
         with:
           cache-provider: basic
       - name: Publish a release
-        run: ./gradlew publish uploadArtifactsToCentralPortal
+        run: ./gradlew publish uploadArtifactsToCentralPortal --rerun-tasks
         env:
           SIGNING_GPG_SECRET_KEY: ${{ secrets.GPG_RSA_SIGN_KEY }}
           SIGNING_GPG_PASSWORD: ${{ secrets.GPG_RSA_SIGN_KEYPASS }}
