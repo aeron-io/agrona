@@ -2,6 +2,8 @@
 
 == 2.7.0 (unreleased)
 
+* **[Java]** Upgrade to `ByteBuddy` 1.18.12.
+
 == 2.6.0 (2026-08-20)
 
 * **[Java]** Reject `missingValue` in `Int2IntHashMap.replace`. (https://github.com/aeron-io/agrona/pull/364[#364])
