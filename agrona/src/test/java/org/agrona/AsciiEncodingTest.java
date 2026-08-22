@@ -116,6 +116,11 @@ class AsciiEncodingTest
         assertThrows(AsciiNumberFormatException.class, () -> parseIntAscii("123456789İ", 0, 10));
         assertThrows(
             AsciiNumberFormatException.class, () -> parseLongAscii("123456789012345678İ", 0, 19));
+
+        // A look-alike in the top lane of a 4-/8-char SWAR window: its high byte
+        // shifts out of the word, leaving only the digit-looking low byte.
+        assertThrows(AsciiNumberFormatException.class, () -> parseIntAscii("123İ", 0, 4));
+        assertThrows(AsciiNumberFormatException.class, () -> parseLongAscii("1234567İ", 0, 8));
     }
 
     @Test

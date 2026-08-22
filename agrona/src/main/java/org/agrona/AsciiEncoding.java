@@ -595,21 +595,37 @@ public final class AsciiEncoding
 
     private static int readFourBytesLittleEndian(final CharSequence cs, final int index)
     {
-        return cs.charAt(index + 3) << 24 |
-            cs.charAt(index + 2) << 16 |
-            cs.charAt(index + 1) << 8 |
-            cs.charAt(index);
+        final int c0 = cs.charAt(index);
+        final int c1 = cs.charAt(index + 1);
+        final int c2 = cs.charAt(index + 2);
+        final int c3 = cs.charAt(index + 3);
+        // A char above 0xFF is not ASCII; its high byte would otherwise be shifted
+        // out of the packed word (leaving a digit look-alike), so force the digit
+        // check to fail here instead.
+        final int nonAscii = ((c0 | c1 | c2 | c3) & 0xFF00) != 0 ? 0xFFFFFFFF : 0;
+        return nonAscii | c3 << 24 | c2 << 16 | c1 << 8 | c0;
     }
 
     private static long readEightBytesLittleEndian(final CharSequence cs, final int index)
     {
-        return (long)cs.charAt(index + 7) << 56 |
-            (long)cs.charAt(index + 6) << 48 |
-            (long)cs.charAt(index + 5) << 40 |
-            (long)cs.charAt(index + 4) << 32 |
-            (long)cs.charAt(index + 3) << 24 |
-            (long)cs.charAt(index + 2) << 16 |
-            cs.charAt(index + 1) << 8 |
-            cs.charAt(index);
+        final int c0 = cs.charAt(index);
+        final int c1 = cs.charAt(index + 1);
+        final int c2 = cs.charAt(index + 2);
+        final int c3 = cs.charAt(index + 3);
+        final int c4 = cs.charAt(index + 4);
+        final int c5 = cs.charAt(index + 5);
+        final int c6 = cs.charAt(index + 6);
+        final int c7 = cs.charAt(index + 7);
+        // See readFourBytesLittleEndian: reject a non-ASCII char whose high byte
+        // would be shifted out of the packed word.
+        final long nonAscii = ((c0 | c1 | c2 | c3 | c4 | c5 | c6 | c7) & 0xFF00) != 0 ? -1L : 0L;
+        return nonAscii | (long)c7 << 56 |
+            (long)c6 << 48 |
+            (long)c5 << 40 |
+            (long)c4 << 32 |
+            (long)c3 << 24 |
+            (long)c2 << 16 |
+            c1 << 8 |
+            c0;
     }
 }
