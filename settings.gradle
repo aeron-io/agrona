@@ -1,1 +1,1 @@
-include ':agrona', 'agrona-benchmarks', 'agrona-concurrency-tests'
+include ':agrona', 'agrona-benchmarks', 'agrona-concurrency-tests', ':agrona-native-lib'
