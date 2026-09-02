@@ -370,6 +370,24 @@ project(':agrona') {
         }
     }
 
+    tasks.register('bundleNativeLibrary', Copy) {
+        description = 'Bundle the native library'
+        onlyIf('runs only on Linux') {
+            OperatingSystem.current().isLinux()
+        }
+        dependsOn project(':agrona-native-lib').tasks.named('compileNative')
+        from(project(':agrona-native-lib').layout.buildDirectory.dir('lib'))
+        into layout.buildDirectory.dir('native/linux')
+    }
+
+    sourceSets {
+        main {
+            resources {
+                srcDir tasks.named('bundleNativeLibrary')
+            }
+        }
+    }
+
     jar {
         from sourceSets.generated.output
 
