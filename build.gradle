@@ -370,6 +370,7 @@ project(':agrona') {
         }
     }
 
+    def generatedResourceDir = layout.buildDirectory.dir('generated-resources')
     tasks.register('bundleNativeLibrary', Copy) {
         description = 'Bundle the native library'
         onlyIf('runs only on Linux') {
@@ -377,13 +378,17 @@ project(':agrona') {
         }
         dependsOn project(':agrona-native-lib').tasks.named('compileNative')
         from(project(':agrona-native-lib').layout.buildDirectory.dir('lib'))
-        into layout.buildDirectory.dir('native/linux')
+        into generatedResourceDir.get().dir('native/linux')
+    }
+
+    processResources {
+        dependsOn tasks.named('bundleNativeLibrary')
     }
 
     sourceSets {
         main {
             resources {
-                srcDir tasks.named('bundleNativeLibrary')
+                srcDir generatedResourceDir
             }
         }
     }
