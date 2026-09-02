@@ -17,6 +17,8 @@ package org.agrona.concurrent;
 
 import org.agrona.ErrorHandler;
 import org.agrona.LangUtil;
+import org.agrona.SystemUtil;
+import org.agrona.affinity.ThreadAffinity;
 import org.agrona.collections.MutableInteger;
 import org.agrona.concurrent.status.AtomicCounter;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
@@ -323,6 +326,28 @@ class AgentRunnerTest
         assertTrue(finished.get());
         assertTrue(interrupted.get());
         assertEquals(1, failCount.get());
+    }
+
+    @Test
+    void shouldReturnSameAffinityFromAgentWhenRunnerAffinityIsSet() throws Exception
+    {
+        assumeTrue(SystemUtil.isLinux());
+        final int affinity = 5;
+        doAnswer(invocation -> {
+            System.out.println("AAA");
+            assertEquals(affinity, ThreadAffinity.getAffinity());
+            return null;
+        }).when(mockAgent).onStart();
+
+        // Kill the runner immediately
+        final RuntimeException terminationException = new AgentTerminationException();
+        when(mockAgent.doWork()).thenThrow(terminationException);
+
+        final AgentRunner runner = new AgentRunner(
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent, affinity);
+        final Thread testThread = new Thread(runner);
+        testThread.start();
+        testThread.join();
     }
 
     private void assertExceptionNotReported(final Runnable task) throws Exception

@@ -21,6 +21,7 @@ package org.agrona.affinity;
  */
 public final class ThreadAffinity
 {
+    public static final int NO_AFFINITY = -1;
     static
     {
         System.loadLibrary("agrona-native-lib");
