@@ -19,6 +19,9 @@ plugins {
     alias(libs.plugins.versions)
 }
 
+import org.gradle.internal.jvm.Jvm
+import org.gradle.internal.os.OperatingSystem
+
 defaultTasks 'clean', 'build'
 
 static def rawBuildJavaVersion()
@@ -164,7 +167,7 @@ allprojects {
 
 jar.enabled = false
 
-subprojects {
+configure(subprojects.findAll { it.name != 'agrona-native-lib' }) {
     apply plugin: 'java-library'
     apply plugin: 'checkstyle'
 
@@ -261,7 +264,53 @@ subprojects {
     }
 }
 
+project(':agrona-native-lib') {
+    apply plugin: 'lifecycle-base'
+
+    def nativeLibraryName = 'agrona-native-lib'
+    def cSourceFile = file('src/main/c/org_agrona_affinity_ThreadAffinity.c')
+    def headersDir = file('src/main/headers')
+    def javaHome = Jvm.current().javaHome
+
+    def nativeLibOutputDir = layout.buildDirectory.dir('lib')
+    def sharedLibraryFile = nativeLibOutputDir.map { it.file("lib${nativeLibraryName}.so") }
+
+    tasks.register('compileNative', Exec) {
+        description = 'Compiles the JNI shared library for ThreadAffinity (Linux only).'
+        group = 'build'
+
+        onlyIf('runs only on Linux') {
+            OperatingSystem.current().isLinux()
+        }
+
+        inputs.file(cSourceFile)
+        inputs.dir(headersDir)
+        outputs.file(sharedLibraryFile)
+
+        doFirst {
+            nativeLibOutputDir.get().asFile.mkdirs()
+        }
+
+        executable = 'gcc'
+        args = [
+            '-shared',
+            '-fPIC',
+            '-o', sharedLibraryFile.get().asFile.absolutePath,
+            '-I', "${javaHome}/include",
+            '-I', "${javaHome}/include/linux",
+            '-I', headersDir.absolutePath,
+            cSourceFile.absolutePath
+        ]
+    }
+
+    tasks.named('assemble') {
+        dependsOn tasks.named('compileNative')
+    }
+}
+
 project(':agrona') {
+    evaluationDependsOn(':agrona-native-lib')
+
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
     apply plugin: 'net.bytebuddy.byte-buddy-gradle-plugin'
@@ -285,6 +334,10 @@ project(':agrona') {
     tasks {
         test {
             jvmArgs("-javaagent:${mockitoAgent.asPath}")
+
+            dependsOn project(':agrona-native-lib').tasks.named('compileNative')
+            systemProperty 'java.library.path',
+                project(':agrona-native-lib').layout.buildDirectory.dir('lib').get().asFile.absolutePath
         }
     }
 
