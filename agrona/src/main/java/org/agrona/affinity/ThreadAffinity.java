@@ -21,6 +21,9 @@ package org.agrona.affinity;
  */
 public final class ThreadAffinity
 {
+    /**
+     * Identifier for no affinity.
+     */
     public static final int NO_AFFINITY = -1;
     static
     {
