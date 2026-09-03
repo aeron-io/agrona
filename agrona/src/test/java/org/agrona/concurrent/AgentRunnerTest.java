@@ -18,6 +18,7 @@ package org.agrona.concurrent;
 import org.agrona.ErrorHandler;
 import org.agrona.LangUtil;
 import org.agrona.SystemUtil;
+import org.agrona.affinity.AffinedThreadFactory;
 import org.agrona.affinity.ThreadAffinity;
 import org.agrona.collections.MutableInteger;
 import org.agrona.concurrent.status.AtomicCounter;
@@ -329,25 +330,27 @@ class AgentRunnerTest
     }
 
     @Test
-    void shouldReturnSameAffinityFromAgentWhenRunnerAffinityIsSet() throws Exception
+    void shouldReturnSameAffinityFromAgentWhenAffinedThreadIsUsed() throws Exception
     {
         assumeTrue(SystemUtil.isLinux());
         final int affinity = 5;
-        doAnswer(invocation -> {
+        doAnswer(invocation ->
+        {
             System.out.println("AAA");
             assertEquals(affinity, ThreadAffinity.getAffinity());
             return null;
         }).when(mockAgent).onStart();
+
+        when(mockAgent.roleName()).thenReturn("test");
 
         // Kill the runner immediately
         final RuntimeException terminationException = new AgentTerminationException();
         when(mockAgent.doWork()).thenThrow(terminationException);
 
         final AgentRunner runner = new AgentRunner(
-            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent, affinity);
-        final Thread testThread = new Thread(runner);
-        testThread.start();
-        testThread.join();
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
+        final Thread affinedThread = AgentRunner.startOnThread(runner, new AffinedThreadFactory(affinity));
+        affinedThread.join();
     }
 
     private void assertExceptionNotReported(final Runnable task) throws Exception

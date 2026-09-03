@@ -16,7 +16,6 @@
 package org.agrona.concurrent;
 
 import org.agrona.ErrorHandler;
-import org.agrona.affinity.ThreadAffinity;
 import org.agrona.concurrent.status.AtomicCounter;
 
 import java.nio.channels.ClosedByInterruptException;
@@ -24,8 +23,6 @@ import java.util.Objects;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-
-import static org.agrona.affinity.ThreadAffinity.NO_AFFINITY;
 
 /**
  * Agent runner containing an {@link Agent} which is run on a {@link Thread}.
@@ -54,9 +51,6 @@ public class AgentRunner implements Runnable, AutoCloseable
     private final Agent agent;
     private final AtomicReference<Thread> thread = new AtomicReference<>();
 
-    private final int affinity;
-
-
     /**
      * Create an agent runner and initialise it.
      *
@@ -71,25 +65,6 @@ public class AgentRunner implements Runnable, AutoCloseable
         final AtomicCounter errorCounter,
         final Agent agent)
     {
-        this(idleStrategy, errorHandler, errorCounter, agent, NO_AFFINITY);
-    }
-
-    /**
-     * Create an agent runner and initialise it.
-     *
-     * @param idleStrategy to use for Agent run loop
-     * @param errorHandler to be called if an {@link Throwable} is encountered
-     * @param errorCounter to be incremented each time an exception is encountered. This may be null.
-     * @param agent        to be run in this thread.
-     * @param affinity     to be set for the thread, if -1 then no affinity is set.
-     */
-    public AgentRunner(
-        final IdleStrategy idleStrategy,
-        final ErrorHandler errorHandler,
-        final AtomicCounter errorCounter,
-        final Agent agent,
-        final int affinity)
-    {
         Objects.requireNonNull(idleStrategy, "idleStrategy");
         Objects.requireNonNull(errorHandler, "errorHandler");
         Objects.requireNonNull(agent, "agent");
@@ -98,7 +73,6 @@ public class AgentRunner implements Runnable, AutoCloseable
         this.errorHandler = errorHandler;
         this.errorCounter = errorCounter;
         this.agent = agent;
-        this.affinity = affinity;
     }
 
     /**
@@ -173,10 +147,6 @@ public class AgentRunner implements Runnable, AutoCloseable
             {
                 try
                 {
-                    if (NO_AFFINITY != affinity)
-                    {
-                        ThreadAffinity.setAffinity(affinity);
-                    }
                     agent.onStart();
                 }
                 catch (final Throwable t)
