@@ -351,6 +351,8 @@ class AgentRunnerTest
             idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
         final Thread affinedThread = AgentRunner.startOnThread(runner, new AffinedThreadFactory(affinity));
         affinedThread.join();
+
+        verify(mockAgent).onStart();
     }
 
     private void assertExceptionNotReported(final Runnable task) throws Exception
