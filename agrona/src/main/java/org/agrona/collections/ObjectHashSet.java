@@ -206,7 +206,6 @@ public class ObjectHashSet<T> extends AbstractSet<T>
         resizeThreshold = (int)(newCapacity * loadFactor);
 
         final T[] tempValues = (T[])new Object[newCapacity];
-        Arrays.fill(tempValues, MISSING_VALUE);
 
         for (final T value : values)
         {
