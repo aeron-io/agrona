@@ -16,7 +16,7 @@ jspecify = "1.0.1"
 mockito = "5.23.0"
 plexus = "3.3.0"
 shadow = "9.6.1"
-versions = "0.61.0"
+versions = "0.64.0"
 
 [libraries]
 byteBuddy = { group = "net.bytebuddy", name = "byte-buddy", version.ref = "byteBuddy" }
