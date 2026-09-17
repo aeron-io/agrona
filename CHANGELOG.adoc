@@ -2,6 +2,17 @@
 
 == 2.7.0 (unreleased)
 
+* **[Java]** Fix `ExpandableRingBuffer#append` bug when there is not enough contiguous space left and resize fails.
+(https://github.com/aeron-io/agrona/pull/370[#370])
+* **[Java]** Upgrade to `Gradle` 9.7.1.
+* **[Java]** Upgrade to `ByteBuddy` 1.18.14.
+* **[Java]** Upgrade to `Guava TestLib` 33.7.1-jre.
+* **[Java]** Upgrade to `Versions` 0.64.0.
+
+== 2.6.1 (2026-09-17)
+
+* **[Java]** Fix `ExpandableRingBuffer#append` bug when there is not enough contiguous space left and resize fails.
+(https://github.com/aeron-io/agrona/pull/370[#370])
 * **[Java]** Upgrade to `Gradle` 9.7.1.
 * **[Java]** Upgrade to `ByteBuddy` 1.18.14.
 * **[Java]** Upgrade to `Guava TestLib` 33.7.1-jre.
