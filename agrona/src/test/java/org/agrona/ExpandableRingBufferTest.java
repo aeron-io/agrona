@@ -234,6 +234,28 @@ class ExpandableRingBufferTest
     }
 
     @Test
+    void shouldRefuseMessageThatDoesNotFitBeforeWrapAtMaxCapacity()
+    {
+        final ExpandableRingBuffer ringBuffer = new ExpandableRingBuffer(1024, 1024, false);
+        final ExpandableRingBuffer.MessageConsumer mockConsumer = mock(ExpandableRingBuffer.MessageConsumer.class);
+        when(mockConsumer.onMessage(any(), anyInt(), anyInt(), anyInt())).thenReturn(Boolean.TRUE);
+
+        // Fifteen 64 byte records leave the tail at 960.
+        for (int i = 0; i < 15; i++)
+        {
+            assertTrue(ringBuffer.append(TEST_MSG, 0, 56));
+        }
+
+        // Free the oldest record: 128 bytes free in total, but only 64 of them before the wrap.
+        ringBuffer.consume(mockConsumer, 1);
+        assertThat(ringBuffer.size(), is(896));
+
+        // A 128 byte record fits in the free space but not contiguously, and the buffer cannot grow.
+        assertFalse(ringBuffer.append(TEST_MSG, 0, 120));
+        assertThat(ringBuffer.size(), is(896));
+    }
+
+    @Test
     void shouldIterateFromOffsetHeadWithExpansionDueToAppend()
     {
         final int alignedLengthOne = BitUtil.align(MSG_LENGTH_ONE + HEADER_LENGTH, HEADER_ALIGNMENT);

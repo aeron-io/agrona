@@ -381,7 +381,10 @@ public class ExpandableRingBuffer
         final int totalRemaining = capacity - (int)(tail - head);
         if (alignedLength > totalRemaining)
         {
-            resize(alignedLength);
+            if (!resize(alignedLength))
+            {
+                return false;
+            }
         }
         else if (tailOffset >= headOffset)
         {
@@ -394,9 +397,9 @@ public class ExpandableRingBuffer
                     buffer.putInt(tailOffset + MESSAGE_TYPE_OFFSET, MESSAGE_TYPE_PADDING);
                     tail += toEndRemaining;
                 }
-                else
+                else if (!resize(alignedLength))
                 {
-                    resize(alignedLength);
+                    return false;
                 }
             }
         }
@@ -412,12 +415,12 @@ public class ExpandableRingBuffer
         return true;
     }
 
-    private void resize(final int newMessageLength)
+    private boolean resize(final int newMessageLength)
     {
         final int newCapacity = BitUtil.findNextPositivePowerOfTwo(capacity + newMessageLength);
         if (newCapacity < capacity || newCapacity > maxCapacity)
         {
-            return;
+            return false;
         }
 
         final UnsafeBuffer tempBuffer = new UnsafeBuffer(
@@ -441,6 +444,8 @@ public class ExpandableRingBuffer
         mask = newCapacity - 1;
         head = 0;
         tail = tailOffset;
+
+        return true;
     }
 
     private void writeMessage(final DirectBuffer srcBuffer, final int srcOffset, final int srcLength)
