@@ -145,10 +145,7 @@ allprojects {
         resolutionStrategy {
             failOnVersionConflict()
 
-            force libs.byteBuddy,
-                  libs.byteBuddy.agent,
-                  // Guava and JUnit do not agree on version of jspecify
-                  libs.jspecify,
+            force libs.jspecify,
                   // patching conflicting Checkstyle dependencies
                   libs.commons.codec,
                   libs.commons.lang3,
@@ -369,94 +366,6 @@ project(':agrona') {
             useInMemoryPgpKeys(signingKey, signingPassword)
         }
         sign publishing.publications.agrona
-    }
-}
-
-project(':agrona-agent') {
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
-    apply plugin: 'com.gradleup.shadow'
-
-    compileJava.dependsOn(':agrona:byteBuddy')
-
-    dependencies {
-        implementation project(':agrona')
-        implementation libs.byteBuddy
-        compileOnly libs.findbugs.annotations
-        testCompileOnly libs.findbugs.annotations
-        testImplementation platform(libs.junit.bom)
-        testImplementation 'org.junit.jupiter:junit-jupiter-params'
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-        testImplementation libs.byteBuddy.agent
-    }
-
-    shadowJar {
-        archiveClassifier.set('')
-
-        manifest.attributes(
-            'Automatic-Module-Name': 'org.agrona.agent',
-            'Implementation-Title': 'Agrona',
-            'Implementation-Vendor': 'Adaptive Financial Consulting Limited',
-            'Implementation-Version': agronaVersion,
-            'Agent-Class': 'org.agrona.agent.BufferAlignmentAgent',
-            'Premain-Class': 'org.agrona.agent.BufferAlignmentAgent',
-            'Can-Redefine-Classes': 'true',
-            'Can-Retransform-Classes': 'true'
-        )
-
-        relocate 'net.bytebuddy', 'org.agrona.shadow.net.bytebuddy'
-    }
-
-    jar.finalizedBy shadowJar
-
-    tasks.register('sourcesJar', Jar) {
-        dependsOn ':agrona:generatePrimitiveSpecialisations'
-        archiveClassifier.set('sources')
-        from sourceSets.main.allSource
-        from project(':agrona').sourceSets.main.allSource
-        from project(':agrona').sourceSets.generated.allSource
-    }
-
-    javadoc {
-        source += sourceSets.main.allJava
-        source += project(':agrona').sourceSets.main.allJava
-        source += project(':agrona').sourceSets.generated.allJava
-    }
-    javadoc.dependsOn ':agrona:generatePrimitiveSpecialisations'
-
-    tasks.register('javadocJar', Jar) {
-        dependsOn javadoc
-        archiveClassifier.set('javadoc')
-        from javadoc.destinationDir
-    }
-
-    publishing {
-        publications {
-            agronaAgent(MavenPublication) {
-                artifact shadowJar
-                artifact sourcesJar
-                artifact javadocJar
-                pom(projectPom)
-            }
-        }
-        repositories {
-            maven {
-                url = !isReleaseVersion ? sonatypeCentralPortalSnapshotsRepoUrl : sonatypeCentralPortalReleasesRepoUrl
-                credentials {
-                    username = sonatypeCentralPortalUsername
-                    password = sonatypeCentralPortalPassword
-                }
-            }
-        }
-    }
-
-    signing {
-        if (null != signingKey)
-        {
-            useInMemoryPgpKeys(signingKey, signingPassword)
-        }
-        sign publishing.publications.agronaAgent
     }
 }
 

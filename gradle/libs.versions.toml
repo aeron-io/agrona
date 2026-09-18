@@ -19,8 +19,6 @@ shadow = "9.6.1"
 versions = "0.64.0"
 
 [libraries]
-byteBuddy = { group = "net.bytebuddy", name = "byte-buddy", version.ref = "byteBuddy" }
-byteBuddy-agent = { group = "net.bytebuddy", name = "byte-buddy-agent", version.ref = "byteBuddy" }
 byteBuddy-gradle-plugin = { group = "net.bytebuddy", name = "byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
 commons-codec = { group = "commons-codec", name = "commons-codec", version.ref = "commons-codec" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }

@@ -83,9 +83,6 @@ public interface AtomicBuffer extends MutableDirectBuffer
      * Users are encouraged to call this method after constructing the {@link AtomicBuffer} instance in order to ensure
      * that the underlying buffer supports atomic access to {@code long} values.
      * <p>
-     * Agrona provides an agent ({@code org.agrona.agent.BufferAlignmentAgent}) that checks the alignment of indexes
-     * for all operations at runtime. The agent throws an exception if the unaligned access is detected.
-     * <p>
      * Note: on some platforms unaligned atomic access can lead to the JVM crashes, e.g.:
      * <pre>
      * {@code

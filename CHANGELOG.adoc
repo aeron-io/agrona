@@ -2,6 +2,13 @@
 
 == 2.7.0 (unreleased)
 
+=== New & Noteworthy
+
+* *[Breaking]* Remove `agrona-agent` module, i.e. `BufferAlignmentAgent` is no longer provided.
+
+=== Changelog
+
+* **[Java]** Fix `BiInt2NullableObjectMap#forEach` leaking `NullReference`. (https://github.com/aeron-io/agrona/pull/371[#371])
 * **[Java]** Fix `ExpandableRingBuffer#append` bug when there is not enough contiguous space left and resize fails.
 (https://github.com/aeron-io/agrona/pull/370[#370])
 * **[Java]** Upgrade to `Gradle` 9.7.1.
