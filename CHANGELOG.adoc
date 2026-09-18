@@ -8,6 +8,7 @@
 
 === Changelog
 
+* **[Java]** Reject non-ASCII digit look-alikes in AsciiEncoding SWAR fast paths. (https://github.com/aeron-io/agrona/pull/367[#367])
 * **[Java]** Eliminate more `Arrays.fill` calls when value is zero.
 * **[Java]** Refactor collection rehashing to eliminate redundant array filling. (https://github.com/aeron-io/agrona/pull/368[#368])
 * **[Java]** Fix `BiInt2NullableObjectMap#forEach` leaking `NullReference`. (https://github.com/aeron-io/agrona/pull/371[#371])
