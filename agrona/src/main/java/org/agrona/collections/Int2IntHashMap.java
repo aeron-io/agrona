@@ -1124,7 +1124,10 @@ public class Int2IntHashMap implements Map<Integer, Integer>
 
         /*@DoNotSub*/ resizeThreshold = (int)(newCapacity * loadFactor);
         entries = new int[entriesLength];
-        Arrays.fill(entries, missingValue);
+        if (0 != missingValue)
+        {
+            Arrays.fill(entries, missingValue);
+        }
     }
 
     private Integer valOrNull(final int value)

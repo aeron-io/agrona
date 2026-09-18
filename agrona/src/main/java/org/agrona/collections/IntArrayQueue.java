@@ -110,7 +110,10 @@ public class IntArrayQueue extends AbstractQueue<Integer>
         }
 
         elements = new int[capacity];
-        Arrays.fill(elements, nullValue);
+        if (0 != nullValue)
+        {
+            Arrays.fill(elements, nullValue);
+        }
     }
 
     /**
@@ -417,7 +420,10 @@ public class IntArrayQueue extends AbstractQueue<Integer>
         }
 
         final int[] array = new int[newCapacity];
-        Arrays.fill(array, oldCapacity, newCapacity, nullValue);
+        if (0 != nullValue)
+        {
+            Arrays.fill(array, oldCapacity, newCapacity, nullValue);
+        }
         System.arraycopy(elements, oldHead, array, 0, toEndOfArray);
         System.arraycopy(elements, 0, array, toEndOfArray, oldHead);
 

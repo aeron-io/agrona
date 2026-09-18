@@ -573,7 +573,10 @@ public class Int2IntCounterMap
 
         /*@DoNotSub*/ resizeThreshold = (int)(newCapacity * loadFactor);
         entries = new int[entriesLength];
-        Arrays.fill(entries, initialValue);
+        if (0 != initialValue)
+        {
+            Arrays.fill(entries, initialValue);
+        }
     }
 
     private void increaseCapacity()

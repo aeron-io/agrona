@@ -107,7 +107,10 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         this.shouldAvoidAllocation = shouldAvoidAllocation;
         keys = (K[])new Object[capacity];
         values = new int[capacity];
-        Arrays.fill(values, missingValue);
+        if (0 != missingValue)
+        {
+            Arrays.fill(values, missingValue);
+        }
     }
 
     /**
@@ -1063,8 +1066,10 @@ public class Object2IntHashMap<K> implements Map<K, Integer>
         @SuppressWarnings("unchecked")
         final K[] tempKeys = (K[])new Object[newCapacity];
         final int[] tempValues = new int[newCapacity];
-        Arrays.fill(tempValues, missingValue);
-
+        if (0 != missingValue)
+        {
+            Arrays.fill(tempValues, missingValue);
+        }
         final K[] keys = this.keys;
         final int[] values = this.values;
         for (@DoNotSub int i = 0, size = values.length; i < size; i++)

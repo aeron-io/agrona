@@ -8,6 +8,7 @@
 
 === Changelog
 
+* **[Java]** Eliminate more `Arrays.fill` calls when value is zero.
 * **[Java]** Refactor collection rehashing to eliminate redundant array filling. (https://github.com/aeron-io/agrona/pull/368[#368])
 * **[Java]** Fix `BiInt2NullableObjectMap#forEach` leaking `NullReference`. (https://github.com/aeron-io/agrona/pull/371[#371])
 * **[Java]** Fix `ExpandableRingBuffer#append` bug when there is not enough contiguous space left and resize fails.
