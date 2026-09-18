@@ -362,7 +362,6 @@ class Object2IntHashMapTest
         final int missingValue = -100;
         final Object2IntHashMap<String> map = new Object2IntHashMap<>(missingValue);
         final String key = "one";
-        final int newValue = 42;
         final ObjectIntToIntFunction<String> function = (k, v) -> missingValue;
         map.put("two", 2);
 
