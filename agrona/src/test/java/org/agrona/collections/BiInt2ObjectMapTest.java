@@ -133,6 +133,27 @@ class BiInt2ObjectMapTest
     }
 
     @Test
+    void shouldIterateValuesWithNullValues()
+    {
+        final BiInt2NullableObjectMap<String> map = new BiInt2NullableObjectMap<>();
+        final Set<String> expectedSet = new HashSet<>();
+        final int count = 7;
+
+        for (int i = 0; i < count; i++)
+        {
+            final String value = 0 == (i & 1) ? null : String.valueOf(i);
+            expectedSet.add(value);
+            map.put(i, i + 97, value);
+        }
+
+        final Set<String> actualSet = new HashSet<>();
+
+        map.forEach(actualSet::add);
+
+        assertThat(actualSet, equalTo(expectedSet));
+    }
+
+    @Test
     void shouldToString()
     {
         final int count = 7;
