@@ -76,7 +76,7 @@ public class Object2IntCounterMap<K>
 
         keys = (K[])new Object[capacity];
         values = new int[capacity];
-        if (initialValue != 0)
+        if (0 != initialValue)
         {
             Arrays.fill(values, initialValue);
         }
@@ -595,7 +595,7 @@ public class Object2IntCounterMap<K>
         @SuppressWarnings("unchecked") final K[] tempKeys = (K[])new Object[newCapacity];
         final int[] tempValues = new int[newCapacity];
         final int initialValue = this.initialValue;
-        if (initialValue != 0)
+        if (0 != initialValue)
         {
             Arrays.fill(tempValues, initialValue);
         }
