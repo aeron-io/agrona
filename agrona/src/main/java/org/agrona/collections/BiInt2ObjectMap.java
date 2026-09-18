@@ -600,7 +600,7 @@ public class BiInt2ObjectMap<V>
             final Object value = values[i];
             if (null != value)
             {
-                consumer.accept((V)value);
+                consumer.accept(unmapNullValue(value));
                 --remaining;
             }
         }
