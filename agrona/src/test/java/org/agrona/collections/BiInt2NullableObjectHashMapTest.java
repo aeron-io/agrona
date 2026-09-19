@@ -148,6 +148,24 @@ class BiBiInt2NullableObjectMapTest
 
     @ParameterizedTest
     @NullAndEmptySource
+    @ValueSource(strings = "value")
+    void removeShouldReturnThePreviousValue(final String value)
+    {
+        final BiInt2NullableObjectMap<String> map = new BiInt2NullableObjectMap<>();
+        map.put(3, 7, value);
+        map.put(4, 8, "remaining");
+
+        final String removed = map.remove(3, 7);
+
+        assertEquals(value, removed);
+        assertFalse(map.containsKey(3, 7));
+        assertEquals(1, map.size());
+        assertEquals("remaining", map.get(4, 8));
+        assertNull(map.remove(3, 7));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
     @ValueSource(strings = { "val 1", "你好" })
     void removeReturnsTrueAfterRemovingTheKey(final String value)
     {
