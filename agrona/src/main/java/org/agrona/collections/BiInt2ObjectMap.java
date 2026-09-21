@@ -338,7 +338,6 @@ public class BiInt2ObjectMap<V>
      * @return the previous value if found otherwise null
      * @see Map#remove(Object)
      */
-    @SuppressWarnings("unchecked")
     public V remove(final int keyPartA, final int keyPartB)
     {
         final long key = compoundKey(keyPartA, keyPartB);
@@ -362,7 +361,7 @@ public class BiInt2ObjectMap<V>
             index = ++index & mask;
         }
 
-        return (V)value;
+        return unmapNullValue(value);
     }
 
     /**
