@@ -8,6 +8,9 @@
 
 === Changelog
 
+* **[Java]** Unmap null values returned by `Int2ObjectHashMap.EntryIterator.setValue`. (https://github.com/aeron-io/agrona/pull/374[#374])
+* **[Java]** Unmap null values in `BiInt2ObjectMap.toString`. (https://github.com/aeron-io/agrona/pull/373[#373])
+* **[Java]** Unmap null values returned by `BiInt2ObjectMap.remove`. (https://github.com/aeron-io/agrona/pull/372[#372])
 * **[Java]** Reject non-ASCII digit look-alikes in AsciiEncoding SWAR fast paths. (https://github.com/aeron-io/agrona/pull/367[#367])
 * **[Java]** Eliminate more `Arrays.fill` calls when value is zero.
 * **[Java]** Refactor collection rehashing to eliminate redundant array filling. (https://github.com/aeron-io/agrona/pull/368[#368])
