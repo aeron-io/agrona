@@ -1756,7 +1756,7 @@ public class Int2ObjectHashMap<V> implements Map<Integer, V>
             final Object oldValue = values[pos];
             values[pos] = val;
 
-            return (V)oldValue;
+            return unmapNullValue(oldValue);
         }
 
         /**
