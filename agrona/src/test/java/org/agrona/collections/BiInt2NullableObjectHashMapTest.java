@@ -519,4 +519,13 @@ class BiBiInt2NullableObjectMapTest
         assertEquals(4, count.get());
         assertEquals(4, map.size());
     }
+
+    @Test
+    void toStringShouldUnmapNullValues()
+    {
+        final BiInt2NullableObjectMap<String> map = new BiInt2NullableObjectMap<>();
+        map.put(1, 2, null);
+
+        assertEquals("{1_2=null}", map.toString());
+    }
 }
