@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.stubbing.Answer;
 
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.IntFunction;
 
@@ -509,5 +510,17 @@ class Int2NullableObjectHashMapTest
 
         assertEquals(4, count.get());
         assertEquals(4, map.size());
+    }
+
+    @Test
+    void entrySetIteratorSetValueShouldReturnUnmappedPreviousValue()
+    {
+        final Int2NullableObjectHashMap<String> map = new Int2NullableObjectHashMap<>();
+        map.put(1, null);
+
+        final Map.Entry<Integer, String> entry = map.entrySet().iterator().next();
+
+        assertNull(entry.setValue("new"));
+        assertEquals("new", map.get(1));
     }
 }
