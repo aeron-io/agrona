@@ -264,40 +264,68 @@ configure(subprojects.findAll { it.name != 'agrona-native-lib' }) {
 project(':agrona-native-lib') {
     apply plugin: 'lifecycle-base'
 
-    def nativeLibraryName = 'agrona-native-lib'
     def cSourceFile = file('src/main/c/org_agrona_affinity_ThreadAffinity.c')
     def headersDir = file('src/main/headers')
+    def cmakeListsFile = file('CMakeLists.txt')
     def javaHome = Jvm.current().javaHome
 
-    def nativeLibOutputDir = layout.buildDirectory.dir('lib')
-    def sharedLibraryFile = nativeLibOutputDir.map { it.file("lib${nativeLibraryName}.so") }
+    def targetArchitectures = ['x86_64', 'aarch64']
 
-    tasks.register('compileNative', Exec) {
-        description = 'Compiles the JNI shared library for ThreadAffinity (Linux only).'
+    def compileNativeTasks = targetArchitectures.collect { arch ->
+        def buildDir = layout.buildDirectory.dir("cmake/${arch}")
+        def outputDir = layout.buildDirectory.dir("lib/${arch}")
+        def toolchainFile = file("cmake/toolchain-${arch}.cmake")
+        def archName = arch.capitalize()
+
+        tasks.register("cmakeConfigure${archName}", Exec) {
+            description = "Configures the CMake build for ThreadAffinity (${arch}, Linux only)."
+
+            onlyIf('runs only on Linux') {
+                OperatingSystem.current().isLinux()
+            }
+
+            inputs.file(cmakeListsFile)
+            inputs.file(toolchainFile)
+            outputs.dir(buildDir)
+
+            doFirst {
+                buildDir.get().asFile.mkdirs()
+            }
+
+            workingDir = buildDir.get().asFile
+            executable = 'cmake'
+            args = [
+                project.projectDir.absolutePath,
+                '-DCMAKE_BUILD_TYPE=Release',
+                "-DCMAKE_TOOLCHAIN_FILE=${toolchainFile.absolutePath}",
+                "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${outputDir.get().asFile.absolutePath}",
+                "-DJAVA_HOME=${javaHome}"
+            ]
+        }
+
+        tasks.register("compileNative${archName}", Exec) {
+            description = "Compiles the JNI shared library for ThreadAffinity (${arch}, Linux only)."
+            group = 'build'
+
+            onlyIf('runs only on Linux') {
+                OperatingSystem.current().isLinux()
+            }
+
+            dependsOn tasks.named("cmakeConfigure${archName}")
+            inputs.file(cSourceFile)
+            inputs.dir(headersDir)
+            outputs.file(outputDir.map { it.file('libagrona-native-lib.so') })
+
+            workingDir = buildDir.get().asFile
+            executable = 'cmake'
+            args = ['--build', '.']
+        }
+    }
+
+    tasks.register('compileNative') {
+        description = 'Compiles the JNI shared library for ThreadAffinity for every supported architecture (Linux only).'
         group = 'build'
-
-        onlyIf('runs only on Linux') {
-            OperatingSystem.current().isLinux()
-        }
-
-        inputs.file(cSourceFile)
-        inputs.dir(headersDir)
-        outputs.file(sharedLibraryFile)
-
-        doFirst {
-            nativeLibOutputDir.get().asFile.mkdirs()
-        }
-
-        executable = 'gcc'
-        args = [
-            '-shared',
-            '-fPIC',
-            '-o', sharedLibraryFile.get().asFile.absolutePath,
-            '-I', "${javaHome}/include",
-            '-I', "${javaHome}/include/linux",
-            '-I', headersDir.absolutePath,
-            cSourceFile.absolutePath
-        ]
+        dependsOn compileNativeTasks
     }
 
     tasks.named('assemble') {
@@ -333,8 +361,6 @@ project(':agrona') {
             jvmArgs("-javaagent:${mockitoAgent.asPath}")
 
             dependsOn project(':agrona-native-lib').tasks.named('compileNative')
-            systemProperty 'java.library.path',
-                project(':agrona-native-lib').layout.buildDirectory.dir('lib').get().asFile.absolutePath
         }
     }
 
