@@ -27,7 +27,8 @@ public final class ThreadAffinity
     public static final int NO_AFFINITY = -1;
     static
     {
-        System.loadLibrary("agrona-native-lib");
+        SharedLibraryLoader.load(
+            SharedLibraryLoader.resolveNativeLibraryResourcePath("/native/linux", "libagrona-native-lib.so"));
     }
 
     private ThreadAffinity()
