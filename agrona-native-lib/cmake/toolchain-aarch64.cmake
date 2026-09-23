@@ -1,4 +1,3 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
-set(CMAKE_C_COMPILER clang)
-set(CMAKE_C_COMPILER_TARGET aarch64-linux-gnu)
+set(CMAKE_C_COMPILER "${CMAKE_CURRENT_LIST_DIR}/zig/aarch64-linux-gnu-cc")

@@ -271,21 +271,34 @@ project(':agrona-native-lib') {
 
     def targetArchitectures = ['x86_64', 'aarch64']
 
+    def zigAvailable = providers.provider {
+        try {
+            def process = ['zig', 'version'].execute()
+            process.waitForProcessOutput(new StringBuilder(), new StringBuilder())
+            process.exitValue() == 0
+        }
+        catch (IOException ignore) {
+            false
+        }
+    }
+
     def compileNativeTasks = targetArchitectures.collect { arch ->
         def buildDir = layout.buildDirectory.dir("cmake/${arch}")
         def outputDir = layout.buildDirectory.dir("lib/${arch}")
         def toolchainFile = file("cmake/toolchain-${arch}.cmake")
+        def compilerWrapperFile = file("cmake/zig/${arch}-linux-gnu-cc")
         def archName = arch.capitalize()
 
         tasks.register("cmakeConfigure${archName}", Exec) {
-            description = "Configures the CMake build for ThreadAffinity (${arch}, Linux only)."
+            description = "Configures the CMake build for ThreadAffinity (${arch} Linux target)."
 
-            onlyIf('runs only on Linux') {
-                OperatingSystem.current().isLinux()
+            onlyIf('requires zig on PATH') {
+                zigAvailable.get()
             }
 
             inputs.file(cmakeListsFile)
             inputs.file(toolchainFile)
+            inputs.file(compilerWrapperFile)
             outputs.dir(buildDir)
 
             doFirst {
@@ -304,11 +317,11 @@ project(':agrona-native-lib') {
         }
 
         tasks.register("compileNative${archName}", Exec) {
-            description = "Compiles the JNI shared library for ThreadAffinity (${arch}, Linux only)."
+            description = "Compiles the JNI shared library for ThreadAffinity (${arch} Linux target)."
             group = 'build'
 
-            onlyIf('runs only on Linux') {
-                OperatingSystem.current().isLinux()
+            onlyIf('requires zig on PATH') {
+                zigAvailable.get()
             }
 
             dependsOn tasks.named("cmakeConfigure${archName}")
@@ -323,7 +336,7 @@ project(':agrona-native-lib') {
     }
 
     tasks.register('compileNative') {
-        description = 'Compiles the JNI shared library for ThreadAffinity for every supported architecture (Linux only).'
+        description = 'Compiles the JNI shared library for every supported Linux architecture.'
         group = 'build'
         dependsOn compileNativeTasks
     }
