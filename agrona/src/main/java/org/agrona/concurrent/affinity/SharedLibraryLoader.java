@@ -58,6 +58,8 @@ final class SharedLibraryLoader
             Files.copy(in, tempFile, REPLACE_EXISTING);
 
             System.load(tempFile.toAbsolutePath().toString());
+            // Can be safely deleted since the file has been loaded to memory
+            Files.deleteIfExists(tempFile);
             return true;
         }
         catch (final IOException ex)
