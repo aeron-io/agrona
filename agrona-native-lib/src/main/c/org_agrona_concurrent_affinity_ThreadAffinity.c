@@ -8,40 +8,53 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "org_agrona_concurrent_affinity_ThreadAffinity.h"
 
+
 JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinity(JNIEnv *env, jclass clz, jint cpu)
 {
-    cpu_set_t mask;
-    CPU_ZERO(&mask);
-    CPU_SET(cpu, &mask);
-    if (sched_setaffinity(0, sizeof(mask), &mask) < 0)
+    const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
+    const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
+    cpu_set_t *mask;
+    mask = CPU_ALLOC(num_cpus);
+    CPU_ZERO_S(mask_alloc_size, mask);
+    CPU_SET_S(cpu, mask_alloc_size, mask);
+    if (sched_setaffinity(0, mask_alloc_size, mask) < 0)
     {
+        CPU_FREE(mask);
         // AERON_SET_ERR(errno, "failed to set thread affinity name=%s, cpu_affinity_no=%" PRIu8, name, cpu_affinity_no);
         // return -1;
         // TODO: Raise exception
     }
+    CPU_FREE(mask);
 }
 
 
 JNIEXPORT jint JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinity(JNIEnv *env, jclass clz)
 {
-    cpu_set_t mask;
-    CPU_ZERO(&mask);
-    if (sched_getaffinity(0, sizeof(mask), &mask) < 0)
+    const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
+    const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
+
+    cpu_set_t *mask;
+    mask = CPU_ALLOC(num_cpus);
+    CPU_ZERO_S(mask_alloc_size, mask);
+    if (sched_getaffinity(0, mask_alloc_size, mask) < 0)
     {
         // AERON_SET_ERR(errno, "%s", "failed to get thread affinity");
+        CPU_FREE(mask);
         return -1;
     }
 
-    for (uint8_t i = 0; i < UINT8_MAX; i++)
+    for (size_t cpu = 0; cpu < num_cpus; cpu++)
     {
-        if (CPU_ISSET(i, &mask))
+        if (CPU_ISSET_S(cpu, num_cpus, mask))
         {
-            return i;
+            return cpu;
             break;
         }
     }
-    return 0;
+    CPU_FREE(mask);
+    return -1;
 }
