@@ -28,6 +28,7 @@ build-local.properties
 build/
 !buildSrc/
 !buildSrc/src/**/build
+.zig-cache
 
 # Benchmark timings
 timings.log
