@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 final class SharedLibraryLoader
 {
     private SharedLibraryLoader()
@@ -53,13 +55,14 @@ final class SharedLibraryLoader
             final Path tempFile = Files.createTempFile("agrona-native-lib", suffix);
             tempFile.toFile().deleteOnExit();
 
-            Files.copy(in, tempFile);
+            Files.copy(in, tempFile, REPLACE_EXISTING);
 
             System.load(tempFile.toAbsolutePath().toString());
             return true;
         }
         catch (final IOException ex)
         {
+            ex.printStackTrace(System.err);
             return false;
         }
     }

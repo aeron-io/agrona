@@ -264,9 +264,9 @@ subprojects {
 project(':agrona-native-lib') {
     apply plugin: 'lifecycle-base'
 
-    def cSourceFile = file('src/main/c/org_agrona_affinity_ThreadAffinity.c')
+    def cSourcesDir = file('src/main/c')
     def headersDir = file('src/main/headers')
-    def cmakeListsFile = file('CMakeLists.txt')
+    def buildScriptFile = file('src/build.zig')
     def javaHome = Jvm.current().javaHome
 
     def targetArchitectures = ['x86_64', 'aarch64']
@@ -283,53 +283,34 @@ project(':agrona-native-lib') {
     }
 
     def compileNativeTasks = targetArchitectures.collect { arch ->
-        def buildDir = layout.buildDirectory.dir("cmake/${arch}")
+        def buildDir = layout.buildDirectory.dir("zig/${arch}")
         def outputDir = layout.buildDirectory.dir("lib/${arch}")
-        def toolchainFile = file("cmake/toolchain-${arch}.cmake")
         def archName = arch.capitalize()
-
-        tasks.register("cmakeConfigure${archName}", Exec) {
-            description = "Configures the CMake build for ThreadAffinity (${arch} Linux target)."
-
-            onlyIf('requires zig on PATH') {
-                zigAvailable.get()
-            }
-
-            inputs.file(cmakeListsFile)
-            inputs.file(toolchainFile)
-            outputs.dir(buildDir)
-
-            doFirst {
-                buildDir.get().asFile.mkdirs()
-            }
-
-            workingDir = buildDir.get().asFile
-            executable = 'cmake'
-            args = [
-                project.projectDir.absolutePath,
-                '-DCMAKE_BUILD_TYPE=Release',
-                "-DCMAKE_TOOLCHAIN_FILE=${toolchainFile.absolutePath}",
-                "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${outputDir.get().asFile.absolutePath}",
-                "-DJAVA_HOME=${javaHome}"
-            ]
-        }
 
         tasks.register("compileNative${archName}", Exec) {
             description = "Compiles the JNI shared library for ThreadAffinity (${arch} Linux target)."
             group = 'build'
 
+            // TODO: Bootstrap zig instead
             onlyIf('requires zig on PATH') {
                 zigAvailable.get()
             }
 
-            dependsOn tasks.named("cmakeConfigure${archName}")
-            inputs.file(cSourceFile)
+            inputs.dir(cSourcesDir)
+            inputs.file(buildScriptFile)
             inputs.dir(headersDir)
             outputs.file(outputDir.map { it.file('libagrona-native-lib.so') })
 
-            workingDir = buildDir.get().asFile
-            executable = 'cmake'
-            args = ['--build', '.']
+            workingDir = project.projectDir
+            executable = 'zig'
+            args = ['build',
+                    '--build-file', buildScriptFile.absolutePath,
+                    '--cache-dir', buildDir.get().dir('cache').asFile.absolutePath,
+                    '--prefix', buildDir.get().asFile.absolutePath,
+                    '--prefix-lib-dir', outputDir.get().asFile.absolutePath,
+                    "-Dtarget=${arch}-linux-gnu",
+                    '-Doptimize=ReleaseFast',
+                    "-Djava_home=${javaHome}"]
         }
     }
 

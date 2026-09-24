@@ -43,10 +43,11 @@ public final class ThreadAffinity
      */
     public static void setAffinity(final int cpu)
     {
-        if (isLoaded)
+        if (!isLoaded)
         {
-            nativeSetAffinity(cpu);
+            throw new IllegalStateException("Failed to load native library");
         }
+        nativeSetAffinity(cpu);
     }
 
     private static native void nativeSetAffinity(int cpu);
@@ -58,11 +59,11 @@ public final class ThreadAffinity
      */
     public static int getAffinity()
     {
-        if (isLoaded)
+        if (!isLoaded)
         {
-            return nativeGetAffinity();
+            throw new IllegalStateException("Failed to load native library");
         }
-        return NO_AFFINITY;
+        return nativeGetAffinity();
     }
 
     private static native int nativeGetAffinity();
