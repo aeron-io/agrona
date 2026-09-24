@@ -164,7 +164,7 @@ allprojects {
 
 jar.enabled = false
 
-configure(subprojects.findAll { it.name != 'agrona-native-lib' }) {
+subprojects {
     apply plugin: 'java-library'
     apply plugin: 'checkstyle'
 
@@ -286,7 +286,6 @@ project(':agrona-native-lib') {
         def buildDir = layout.buildDirectory.dir("cmake/${arch}")
         def outputDir = layout.buildDirectory.dir("lib/${arch}")
         def toolchainFile = file("cmake/toolchain-${arch}.cmake")
-        def compilerWrapperFile = file("cmake/zig/${arch}-linux-gnu-cc")
         def archName = arch.capitalize()
 
         tasks.register("cmakeConfigure${archName}", Exec) {
@@ -298,7 +297,6 @@ project(':agrona-native-lib') {
 
             inputs.file(cmakeListsFile)
             inputs.file(toolchainFile)
-            inputs.file(compilerWrapperFile)
             outputs.dir(buildDir)
 
             doFirst {

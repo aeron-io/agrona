@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.agrona.affinity;
+package org.agrona.concurrent.affinity;
 
 /**
  * JNI bindings for pinning the calling thread to a CPU core via the underlying OS thread affinity APIs.
@@ -25,9 +25,10 @@ public final class ThreadAffinity
      * Identifier for no affinity.
      */
     public static final int NO_AFFINITY = -1;
+    private static boolean isLoaded = false;
     static
     {
-        SharedLibraryLoader.load(
+        isLoaded = SharedLibraryLoader.load(
             SharedLibraryLoader.resolveNativeLibraryResourcePath("/native/linux", "libagrona-native-lib.so"));
     }
 
@@ -40,12 +41,29 @@ public final class ThreadAffinity
      *
      * @param cpu the id of the CPU core to pin the calling thread to.
      */
-    public static native void setAffinity(int cpu);
+    public static void setAffinity(final int cpu)
+    {
+        if (isLoaded)
+        {
+            nativeSetAffinity(cpu);
+        }
+    }
+
+    private static native void nativeSetAffinity(int cpu);
 
     /**
      * Gets the CPU affinity of the calling thread.
      *
      * @return the number of CPU cores written into {@code cpus}.
      */
-    public static native int getAffinity();
+    public static int getAffinity()
+    {
+        if (isLoaded)
+        {
+            return nativeGetAffinity();
+        }
+        return NO_AFFINITY;
+    }
+
+    private static native int nativeGetAffinity();
 }

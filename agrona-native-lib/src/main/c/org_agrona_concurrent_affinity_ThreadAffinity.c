@@ -9,9 +9,9 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
-#include "org_agrona_affinity_ThreadAffinity.h"
+#include "org_agrona_concurrent_affinity_ThreadAffinity.h"
 
-JNIEXPORT void JNICALL Java_org_agrona_affinity_ThreadAffinity_setAffinity(JNIEnv *env, jclass clz, jint cpu)
+JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinity(JNIEnv *env, jclass clz, jint cpu)
 {
     cpu_set_t mask;
     CPU_ZERO(&mask);
@@ -25,7 +25,7 @@ JNIEXPORT void JNICALL Java_org_agrona_affinity_ThreadAffinity_setAffinity(JNIEn
 }
 
 
-JNIEXPORT jint JNICALL Java_org_agrona_affinity_ThreadAffinity_getAffinity(JNIEnv *env, jclass clz)
+JNIEXPORT jint JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinity(JNIEnv *env, jclass clz)
 {
     cpu_set_t mask;
     CPU_ZERO(&mask);

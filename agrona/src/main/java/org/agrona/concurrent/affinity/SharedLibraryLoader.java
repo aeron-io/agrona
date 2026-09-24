@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.agrona.affinity;
+package org.agrona.concurrent.affinity;
 
 import org.agrona.SystemUtil;
 
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 
 final class SharedLibraryLoader
 {
@@ -41,30 +40,27 @@ final class SharedLibraryLoader
         return baseDir + "/" + archDir + "/" + libraryFileName;
     }
 
-    static void load(final String resourcePath)
+    static boolean load(final String resourcePath)
     {
         try (InputStream in = SharedLibraryLoader.class.getResourceAsStream(resourcePath))
         {
             if (null == in)
             {
-                throw new UnsatisfiedLinkError(
-                    "unable to locate native library resource on the classpath: " + resourcePath);
+                return false;
             }
 
             final String suffix = resourcePath.substring(resourcePath.lastIndexOf('.'));
             final Path tempFile = Files.createTempFile("agrona-native-lib", suffix);
             tempFile.toFile().deleteOnExit();
 
-            Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(in, tempFile);
 
             System.load(tempFile.toAbsolutePath().toString());
+            return true;
         }
         catch (final IOException ex)
         {
-            final UnsatisfiedLinkError error = new UnsatisfiedLinkError(
-                "failed to extract native library resource: " + resourcePath);
-            error.initCause(ex);
-            throw error;
+            return false;
         }
     }
 }

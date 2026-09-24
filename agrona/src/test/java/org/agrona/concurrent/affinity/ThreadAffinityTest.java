@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.agrona.affinity;
+package org.agrona.concurrent.affinity;
 
 import org.agrona.SystemUtil;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class ThreadAffinityTest
@@ -29,5 +30,13 @@ class ThreadAffinityTest
         assumeTrue(SystemUtil.isLinux());
         ThreadAffinity.setAffinity(5);
         assertEquals(5, ThreadAffinity.getAffinity());
+    }
+
+    @Test
+    void shouldNoOpWhenNotLinux()
+    {
+        assumeFalse(SystemUtil.isLinux());
+        ThreadAffinity.setAffinity(5);
+        assertEquals(ThreadAffinity.NO_AFFINITY, ThreadAffinity.getAffinity());
     }
 }
