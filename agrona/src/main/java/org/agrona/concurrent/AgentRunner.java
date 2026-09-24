@@ -16,6 +16,7 @@
 package org.agrona.concurrent;
 
 import org.agrona.ErrorHandler;
+import org.agrona.concurrent.affinity.ThreadAffinity;
 import org.agrona.concurrent.status.AtomicCounter;
 
 import java.nio.channels.ClosedByInterruptException;
@@ -44,6 +45,7 @@ public class AgentRunner implements Runnable, AutoCloseable
 
     private volatile boolean isRunning = true;
     private volatile boolean isClosed = false;
+    private int threadAffinity = ThreadAffinity.NO_AFFINITY;
 
     private final AtomicCounter errorCounter;
     private final ErrorHandler errorHandler;
@@ -95,6 +97,35 @@ public class AgentRunner implements Runnable, AutoCloseable
      */
     public static Thread startOnThread(final AgentRunner runner, final ThreadFactory threadFactory)
     {
+        return startOnThread(runner, threadFactory, ThreadAffinity.NO_AFFINITY);
+    }
+
+    /**
+     * Start the given agent runner on a new thread.
+     *
+     * @param runner        the agent runner to start.
+     * @param threadAffinity the affinity to use for the thread.
+     * @return the new thread that has been started.
+     */
+    public static Thread startOnThread(final AgentRunner runner, final int threadAffinity)
+    {
+        return startOnThread(runner, Thread::new, threadAffinity);
+    }
+
+    /**
+     * Start the given agent runner on a new thread.
+     *
+     * @param runner        the agent runner to start.
+     * @param threadFactory the factory to use to create the thread.
+     * @param threadAffinity the affinity to use for the thread.
+     * @return the new thread that has been started.
+     */
+    public static Thread startOnThread(
+        final AgentRunner runner,
+        final ThreadFactory threadFactory,
+        final int threadAffinity)
+    {
+        runner.threadAffinity = threadAffinity;
         final Thread thread = threadFactory.newThread(runner);
         thread.setName(runner.agent().roleName());
         thread.start();
@@ -159,6 +190,10 @@ public class AgentRunner implements Runnable, AutoCloseable
                     }
                 }
 
+                if (threadAffinity != ThreadAffinity.NO_AFFINITY)
+                {
+                    ThreadAffinity.setAffinity(threadAffinity);
+                }
                 workLoop(idleStrategy, agent);
 
                 try
