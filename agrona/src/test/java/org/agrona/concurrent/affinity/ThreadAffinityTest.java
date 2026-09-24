@@ -33,6 +33,14 @@ class ThreadAffinityTest
     }
 
     @Test
+    void setAndGetAffinityExplicitlyForCurrentThread()
+    {
+        assumeTrue(SystemUtil.isLinux());
+        ThreadAffinity.setAffinityFor(0, 5);
+        assertEquals(5, ThreadAffinity.getAffinityFor(0));
+    }
+
+    @Test
     void shouldNoOpWhenNotLinux()
     {
         assumeFalse(SystemUtil.isLinux());
