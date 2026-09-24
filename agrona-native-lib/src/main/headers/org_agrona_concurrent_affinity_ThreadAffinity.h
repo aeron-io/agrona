@@ -13,6 +13,12 @@ JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_native
 JNIEXPORT jint JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinity
   (JNIEnv *, jclass);
 
+JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinityFor
+  (JNIEnv *, jclass, jint, jint);
+
+JNIEXPORT jint JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinityFor
+  (JNIEnv *, jclass, jint);
+
 #ifdef __cplusplus
 }
 #endif

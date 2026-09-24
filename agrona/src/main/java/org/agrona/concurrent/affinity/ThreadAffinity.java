@@ -49,8 +49,24 @@ public final class ThreadAffinity
         }
         nativeSetAffinity(cpu);
     }
-
     private static native void nativeSetAffinity(int cpu);
+
+    /**
+     * Sets the CPU affinity of the calling thread.
+     *
+     * @param tid the id of the thread to pin to the CPU core.
+     * @param cpu the id of the CPU core to pin the calling thread to.
+     */
+    public static void setAffinityFor(final int tid, final int cpu)
+    {
+        if (!isLoaded)
+        {
+            throw new IllegalStateException("Failed to load native library");
+        }
+        nativeSetAffinityFor(tid, cpu);
+    }
+
+    private static native void nativeSetAffinityFor(int tid, int cpu);
 
     /**
      * Gets the CPU affinity of the calling thread.
@@ -67,4 +83,22 @@ public final class ThreadAffinity
     }
 
     private static native int nativeGetAffinity();
+
+
+    /**
+     * Gets the CPU affinity for a specific thread with id {@code tid}.
+     *
+     * @param tid the thread id
+     * @return the number of CPU cores written into {@code cpus}.
+     */
+    public static int getAffinityFor(final int tid)
+    {
+        if (!isLoaded)
+        {
+            throw new IllegalStateException("Failed to load native library");
+        }
+        return nativeGetAffinityFor(tid);
+    }
+
+    private static native int nativeGetAffinityFor(int tid);
 }
