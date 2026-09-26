@@ -25,7 +25,7 @@ import java.util.List;
 
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.agrona.concurrent.status.CountersReader.COUNTER_LENGTH;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class AtomicCounterTest
 {
@@ -46,5 +46,68 @@ class AtomicCounterTest
     {
         return Collections.singletonList(
             new UnsafeBuffer(allocateDirect(10 * COUNTER_LENGTH)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("buffers")
+    void shouldProvideBasicOperations(final AtomicBuffer buffer)
+    {
+        final int counterId = 1;
+        final AtomicCounter counter = new AtomicCounter(buffer, counterId);
+
+        counter.set(10L);
+        assertEquals(10L, counter.get());
+
+        assertEquals(10L, counter.getAndAdd(5L));
+        assertEquals(15L, counter.get());
+
+        assertEquals(15L, counter.increment());
+        assertEquals(16L, counter.decrement());
+
+        counter.setOrdered(20L);
+        assertEquals(20L, counter.get());
+
+        assertTrue(counter.compareAndSet(20L, 30L));
+        assertEquals(30L, counter.get());
+        assertFalse(counter.compareAndSet(20L, 40L));
+        assertEquals(30L, counter.get());
+    }
+
+    @ParameterizedTest
+    @MethodSource("buffers")
+    void shouldProposeMax(final AtomicBuffer buffer)
+    {
+        final int counterId = 1;
+        final AtomicCounter counter = new AtomicCounter(buffer, counterId);
+
+        counter.set(10L);
+        assertTrue(counter.proposeMax(20L));
+        assertEquals(20L, counter.get());
+
+        assertFalse(counter.proposeMax(15L));
+        assertEquals(20L, counter.get());
+    }
+
+    @ParameterizedTest
+    @MethodSource("buffers")
+    void shouldHandleMemoryOrderingVariants(final AtomicBuffer buffer)
+    {
+        final int counterId = 1;
+        final AtomicCounter counter = new AtomicCounter(buffer, counterId);
+
+        counter.setPlain(10L);
+        assertEquals(10L, counter.getPlain());
+
+        counter.setRelease(11L);
+        assertEquals(11L, counter.getAcquire());
+
+        counter.setOpaque(12L);
+        assertEquals(12L, counter.getOpaque());
+
+        assertEquals(12L, counter.incrementPlain());
+        assertEquals(13L, counter.incrementOrdered());
+
+        assertEquals(14L, counter.decrementPlain());
+        assertEquals(13L, counter.decrementOrdered());
     }
 }
