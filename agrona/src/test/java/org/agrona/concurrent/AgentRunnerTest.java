@@ -31,9 +31,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -333,19 +335,18 @@ class AgentRunnerTest
     void shouldReturnSameAffinityFromAgentWhenAffinedThreadIsUsed() throws Exception
     {
         assumeTrue(SystemUtil.isLinux());
-        final int affinity = 5;
+        final int affinity = pickAvailableCpu();
+        final AtomicInteger affinityOnStart = new AtomicInteger(Integer.MIN_VALUE);
         doAnswer(invocation ->
         {
-            System.out.println("AAA");
-            assertEquals(affinity, ThreadAffinity.getAffinity());
+            affinityOnStart.set(ThreadAffinity.getAffinity());
             return null;
         }).when(mockAgent).onStart();
 
         when(mockAgent.roleName()).thenReturn("test");
 
         // Kill the runner immediately
-        final RuntimeException terminationException = new AgentTerminationException();
-        when(mockAgent.doWork()).thenThrow(terminationException);
+        when(mockAgent.doWork()).thenThrow(new AgentTerminationException());
 
         final AgentRunner runner = new AgentRunner(
             idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
@@ -353,23 +354,26 @@ class AgentRunnerTest
         affinedThread.join();
 
         verify(mockAgent).onStart();
+        assertEquals(affinity, affinityOnStart.get());
     }
 
     @Test
     void shouldReturnSameAffinityFromAgentWhenAffinityIsSetOnStartOnThread() throws Exception
     {
         assumeTrue(SystemUtil.isLinux());
-        final int affinity = 5;
+        final int affinity = pickAvailableCpu();
+        final int[] available = ThreadAffinity.getAffinitiesFor(0);
+        final AtomicReference<int[]> affinitiesOnStart = new AtomicReference<>();
+        final AtomicInteger affinityInDoWork = new AtomicInteger(Integer.MIN_VALUE);
         doAnswer(invocation ->
         {
-            assertEquals(0, ThreadAffinity.getAffinity());
+            affinitiesOnStart.set(ThreadAffinity.getAffinitiesFor(0));
             return null;
         }).when(mockAgent).onStart();
 
         doAnswer(invocation ->
         {
-            // The affinity should, of course, already be set at this point
-            assertEquals(affinity, ThreadAffinity.getAffinity());
+            affinityInDoWork.set(ThreadAffinity.getAffinity());
             // Kill the runner
             throw new AgentTerminationException();
         }).when(mockAgent).doWork();
@@ -378,11 +382,30 @@ class AgentRunnerTest
 
         final AgentRunner runner = new AgentRunner(
             idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
-        final Thread thread = AgentRunner.startOnThread(runner, affinity);
-        thread.join();
-        final Thread threadWithFactory = AgentRunner.startOnThread(runner, Thread::new, affinity);
-        threadWithFactory.join();
+        AgentRunner.startOnThread(runner, affinity).join();
+
         verify(mockAgent).onStart();
+        // Affinity is applied after onStart, so the thread is not yet pinned there
+        assertArrayEquals(available, affinitiesOnStart.get());
+        assertEquals(affinity, affinityInDoWork.get());
+
+        affinitiesOnStart.set(null);
+        affinityInDoWork.set(Integer.MIN_VALUE);
+
+        final AgentRunner runnerWithFactory = new AgentRunner(
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
+        AgentRunner.startOnThread(runnerWithFactory, Thread::new, affinity).join();
+
+        verify(mockAgent, times(2)).onStart();
+        assertArrayEquals(available, affinitiesOnStart.get());
+        assertEquals(affinity, affinityInDoWork.get());
+    }
+
+    private static int pickAvailableCpu()
+    {
+        final int[] available = ThreadAffinity.getAffinitiesFor(0);
+        assumeTrue(available.length >= 2, "requires at least 2 available CPUs");
+        return available[available.length - 1];
     }
 
     private void assertExceptionNotReported(final Runnable task) throws Exception
