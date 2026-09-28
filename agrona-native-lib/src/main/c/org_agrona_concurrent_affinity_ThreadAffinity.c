@@ -25,7 +25,6 @@ JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_native
     CPU_SET_S(cpu, mask_alloc_size, mask);
     if (sched_setaffinity(tid, mask_alloc_size, mask) < 0)
     {
-        CPU_FREE(mask);
         // AERON_SET_ERR(errno, "failed to set thread affinity name=%s, cpu_affinity_no=%" PRIu8, name, cpu_affinity_no);
         // return -1;
         // TODO: Raise exception
@@ -43,21 +42,25 @@ JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_native
 
     jsize cpu_len = (*env)->GetArrayLength(env, cpus);
     jint *cpus_arr = (*env)->GetIntArrayElements(env, cpus, NULL);
+    if (cpus_arr == NULL)
+    {
+        CPU_FREE(mask);
+        return;
+    }
 
     for (jsize i = 0; i < cpu_len; i++)
     {
         CPU_SET_S(cpus_arr[i], mask_alloc_size, mask);
     }
+    (*env)->ReleaseIntArrayElements(env, cpus, cpus_arr, JNI_ABORT);
 
     if (sched_setaffinity(tid, mask_alloc_size, mask) < 0)
     {
-        CPU_FREE(mask);
         // AERON_SET_ERR(errno, "failed to set thread affinity name=%s, cpu_affinity_no=%" PRIu8, name, cpu_affinity_no);
         // return -1;
         // TODO: Raise exception
     }
     CPU_FREE(mask);
-    (*env)->ReleaseIntArrayElements(env, cpus, cpus_arr, JNI_ABORT);
 }
 
 JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinity(JNIEnv *env, jclass clz, jint cpu)
@@ -80,16 +83,17 @@ JNIEXPORT jint JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_native
         return -1;
     }
 
+    jint result = -1;
     for (size_t cpu = 0; cpu < num_cpus; cpu++)
     {
-        if (CPU_ISSET_S(cpu, num_cpus, mask))
+        if (CPU_ISSET_S(cpu, mask_alloc_size, mask))
         {
-            return cpu;
+            result = cpu;
             break;
         }
     }
     CPU_FREE(mask);
-    return -1;
+    return result;
 }
 
 JNIEXPORT jintArray JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinitiesFor
@@ -107,7 +111,7 @@ JNIEXPORT jintArray JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_n
         return NULL;
     }
 
-    const size_t count = CPU_COUNT_S(num_cpus, mask);
+    const size_t count = CPU_COUNT_S(mask_alloc_size, mask);
     jint *cpus_arr = (jint *)malloc(count * sizeof(jint));
     if (cpus_arr == NULL)
     {
@@ -118,7 +122,7 @@ JNIEXPORT jintArray JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_n
     size_t tracked_count = 0;
     for (size_t cpu = 0; cpu < num_cpus; cpu++)
     {
-        if (CPU_ISSET_S(cpu, num_cpus, mask))
+        if (CPU_ISSET_S(cpu, mask_alloc_size, mask))
         {
             cpus_arr[tracked_count++] = cpu;
         }
