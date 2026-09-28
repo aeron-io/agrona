@@ -179,6 +179,10 @@ public class AgentRunner implements Runnable, AutoCloseable
                 try
                 {
                     agent.onStart();
+                    if (threadAffinity != ThreadAffinity.NO_AFFINITY)
+                    {
+                        ThreadAffinity.setAffinity(threadAffinity);
+                    }
                 }
                 catch (final Throwable t)
                 {
@@ -190,10 +194,6 @@ public class AgentRunner implements Runnable, AutoCloseable
                     }
                 }
 
-                if (threadAffinity != ThreadAffinity.NO_AFFINITY)
-                {
-                    ThreadAffinity.setAffinity(threadAffinity);
-                }
                 workLoop(idleStrategy, agent);
 
                 try

@@ -20,6 +20,7 @@ import org.agrona.LangUtil;
 import org.agrona.SystemUtil;
 import org.agrona.concurrent.affinity.AffinedThreadFactory;
 import org.agrona.concurrent.affinity.ThreadAffinity;
+import org.agrona.concurrent.affinity.ThreadAffinityException;
 import org.agrona.collections.MutableInteger;
 import org.agrona.concurrent.status.AtomicCounter;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -399,6 +401,24 @@ class AgentRunnerTest
         verify(mockAgent, times(2)).onStart();
         assertArrayEquals(available, affinitiesOnStart.get());
         assertEquals(affinity, affinityInDoWork.get());
+    }
+
+    @Test
+    void shouldReportErrorAndCloseAgentWhenAffinityCannotBeSet() throws Exception
+    {
+        final Class<? extends Throwable> expectedException = SystemUtil.isLinux() ?
+            ThreadAffinityException.class : IllegalStateException.class;
+        when(mockAgent.roleName()).thenReturn("test");
+
+        final AgentRunner runner = new AgentRunner(
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
+        AgentRunner.startOnThread(runner, Integer.MAX_VALUE).join();
+
+        verify(mockAgent).onStart();
+        verify(mockAgent, never()).doWork();
+        verify(mockAgent).onClose();
+        verify(mockErrorHandler).onError(isA(expectedException));
+        assertTrue(runner.isClosed());
     }
 
     private static int pickAvailableCpu()
