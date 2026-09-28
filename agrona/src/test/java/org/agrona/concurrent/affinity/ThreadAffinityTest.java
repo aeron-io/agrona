@@ -15,47 +15,99 @@
  */
 package org.agrona.concurrent.affinity;
 
+import org.agrona.LangUtil;
 import org.agrona.SystemUtil;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-// TODO: Address clear test issue here where it is dependent on number of cores and id assignments
 class ThreadAffinityTest
 {
     @Test
-    void setAndGetAffinity()
+    void setAndGetAffinity() throws InterruptedException
     {
         assumeTrue(SystemUtil.isLinux());
-        ThreadAffinity.setAffinity(5);
-        assertEquals(5, ThreadAffinity.getAffinity());
+        runOnNewThread(() ->
+        {
+            final int[] available = ThreadAffinity.getAffinitiesFor(0);
+            assumeTrue(available.length >= 2, "requires at least 2 available CPUs");
+            final int cpu = available[available.length - 1];
+            ThreadAffinity.setAffinity(cpu);
+            assertEquals(cpu, ThreadAffinity.getAffinity());
+        });
     }
 
     @Test
-    void setAndGetAffinityExplicitlyForCurrentThread()
+    void setAndGetAffinityExplicitlyForCurrentThread() throws InterruptedException
     {
         assumeTrue(SystemUtil.isLinux());
-        ThreadAffinity.setAffinityFor(0, 5);
-        assertEquals(5, ThreadAffinity.getAffinityFor(0));
+        runOnNewThread(() ->
+        {
+            final int[] available = ThreadAffinity.getAffinitiesFor(0);
+            assumeTrue(available.length >= 2, "requires at least 2 available CPUs");
+            final int cpu = available[available.length - 1];
+            ThreadAffinity.setAffinityFor(0, cpu);
+            assertEquals(cpu, ThreadAffinity.getAffinityFor(0));
+        });
     }
 
     @Test
-    void setAndGetMultipleAffinities()
+    void setAndGetMultipleAffinities() throws InterruptedException
     {
         assumeTrue(SystemUtil.isLinux());
-        final int[] cpus = { 0, 3, 5 };
-        ThreadAffinity.setAffinitiesFor(0, cpus);
-        assertArrayEquals(cpus, ThreadAffinity.getAffinitiesFor(0));
+        runOnNewThread(() ->
+        {
+            final int[] available = ThreadAffinity.getAffinitiesFor(0);
+            assumeTrue(available.length >= 3, "requires at least 3 available CPUs");
+
+            final int[] cpus = new int[(available.length + 1) / 2];
+            for (int i = 0; i < cpus.length; i++)
+            {
+                cpus[i] = available[i * 2];
+            }
+
+            ThreadAffinity.setAffinitiesFor(0, cpus);
+            assertArrayEquals(cpus, ThreadAffinity.getAffinitiesFor(0));
+        });
     }
 
     @Test
-    void shouldNoOpWhenNotLinux()
+    void shouldFailOnLibraryLoadingIfNotLinux()
     {
         assumeFalse(SystemUtil.isLinux());
-        ThreadAffinity.setAffinity(5);
-        assertEquals(ThreadAffinity.NO_AFFINITY, ThreadAffinity.getAffinity());
+        assertThrows(IllegalStateException.class, () -> ThreadAffinity.setAffinity(5));
+        assertThrows(IllegalStateException.class, ThreadAffinity::getAffinity);
+    }
+
+    // This is to prevent the affinity from leaking to the rest of the test
+    private static void runOnNewThread(final Runnable task) throws InterruptedException
+    {
+        final AtomicReference<Throwable> error = new AtomicReference<>();
+        final Thread thread = new Thread(() ->
+        {
+            try
+            {
+                task.run();
+            }
+            catch (final Throwable ex)
+            {
+                error.set(ex);
+            }
+        });
+
+        thread.start();
+        thread.join();
+
+        final Throwable ex = error.get();
+        if (null != ex)
+        {
+            LangUtil.rethrowUnchecked(ex);
+        }
     }
 }
