@@ -7,27 +7,51 @@
 #include <jni.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "org_agrona_concurrent_affinity_ThreadAffinity.h"
 
+#define OOM_EXCEPTION "java/lang/OutOfMemoryError"
+#define THREAD_AFFINITY_EXCEPTION "org/agrona/concurrent/affinity/ThreadAffinityException"
 
-JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinityFor(
+static void handle_thread_affinity_error(JNIEnv *env, jint tid, cpu_set_t *mask, const char *action) {
+    const int err = errno;
+    CPU_FREE(mask);
+    char msg[256];
+    snprintf(msg, sizeof(msg), "failed to %s thread affinity tid=%d: %s", action, tid, strerror(err));
+    jclass ex = (*env)->FindClass(env, THREAD_AFFINITY_EXCEPTION);
+    if (ex != NULL)
+    {
+        (*env)->ThrowNew(env, ex, msg);
+    }
+}
+
+void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinityFor(
     JNIEnv *env, jclass clz, jint tid, jint cpu)
 {
     // TODO: Refactor with similar code
     const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
     const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
-    cpu_set_t *mask;
-    mask = CPU_ALLOC(num_cpus);
+    cpu_set_t *mask = CPU_ALLOC(num_cpus);
+    if (mask == NULL)
+    {
+        jclass ex = (*env)->FindClass(env, OOM_EXCEPTION);
+        if (ex != NULL)
+        {
+            (*env)->ThrowNew(env, ex, "failed to allocate CPU mask");
+        }
+        return;
+    }
+
     CPU_ZERO_S(mask_alloc_size, mask);
     CPU_SET_S(cpu, mask_alloc_size, mask);
     if (sched_setaffinity(tid, mask_alloc_size, mask) < 0)
     {
-        // AERON_SET_ERR(errno, "failed to set thread affinity name=%s, cpu_affinity_no=%" PRIu8, name, cpu_affinity_no);
-        // return -1;
-        // TODO: Raise exception
+        handle_thread_affinity_error(env, tid, mask, "set");
+        return;
     }
     CPU_FREE(mask);
 }
@@ -38,12 +62,22 @@ JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_native
     const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
     const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
     cpu_set_t *mask = CPU_ALLOC(num_cpus);
+    if (mask == NULL)
+    {
+        jclass ex = (*env)->FindClass(env, OOM_EXCEPTION);
+        if (ex != NULL)
+        {
+            (*env)->ThrowNew(env, ex, "failed to allocate CPU mask");
+        }
+        return;
+    }
     CPU_ZERO_S(mask_alloc_size, mask);
 
     jsize cpu_len = (*env)->GetArrayLength(env, cpus);
     jint *cpus_arr = (*env)->GetIntArrayElements(env, cpus, NULL);
     if (cpus_arr == NULL)
     {
+        // OutOfMemoryError already pending
         CPU_FREE(mask);
         return;
     }
@@ -56,30 +90,42 @@ JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_native
 
     if (sched_setaffinity(tid, mask_alloc_size, mask) < 0)
     {
-        // AERON_SET_ERR(errno, "failed to set thread affinity name=%s, cpu_affinity_no=%" PRIu8, name, cpu_affinity_no);
-        // return -1;
-        // TODO: Raise exception
+        handle_thread_affinity_error(env, tid, mask, "set");
+        return;
     }
     CPU_FREE(mask);
 }
 
-JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinity(JNIEnv *env, jclass clz, jint cpu)
+JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinity(
+    JNIEnv *env,
+    jclass clz,
+    jint cpu)
 {
     return Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinityFor(env, clz, 0, cpu);
 }
 
-JNIEXPORT jint JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinityFor(JNIEnv *env, jclass clz, jint tid)
+JNIEXPORT jint JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinityFor(
+    JNIEnv *env,
+    jclass clz,
+    jint tid)
 {
     const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
     const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
+    cpu_set_t *mask = CPU_ALLOC(num_cpus);
+    if (mask == NULL)
+    {
+        jclass ex = (*env)->FindClass(env, OOM_EXCEPTION);
+        if (ex != NULL)
+        {
+            (*env)->ThrowNew(env, ex, "failed to allocate CPU mask");
+        }
+        return -1;
+    }
 
-    cpu_set_t *mask;
-    mask = CPU_ALLOC(num_cpus);
     CPU_ZERO_S(mask_alloc_size, mask);
     if (sched_getaffinity(tid, mask_alloc_size, mask) < 0)
     {
-        // AERON_SET_ERR(errno, "%s", "failed to get thread affinity");
-        CPU_FREE(mask);
+        handle_thread_affinity_error(env, tid, mask, "get");
         return -1;
     }
 
@@ -101,13 +147,21 @@ JNIEXPORT jintArray JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_n
 {
     const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
     const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
-
     cpu_set_t *mask = CPU_ALLOC(num_cpus);
+    if (mask == NULL)
+    {
+        jclass ex = (*env)->FindClass(env, OOM_EXCEPTION);
+        if (ex != NULL)
+        {
+            (*env)->ThrowNew(env, ex, "failed to allocate CPU mask");
+        }
+        return NULL;
+    }
+
     CPU_ZERO_S(mask_alloc_size, mask);
     if (sched_getaffinity(tid, mask_alloc_size, mask) < 0)
     {
-        // AERON_SET_ERR(errno, "%s", "failed to get thread affinity");
-        CPU_FREE(mask);
+        handle_thread_affinity_error(env, tid, mask, "get");
         return NULL;
     }
 
@@ -116,6 +170,11 @@ JNIEXPORT jintArray JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_n
     if (cpus_arr == NULL)
     {
         CPU_FREE(mask);
+        jclass ex = (*env)->FindClass(env, OOM_EXCEPTION);
+        if (ex != NULL)
+        {
+            (*env)->ThrowNew(env, ex, "failed to allocate CPU array");
+        }
         return NULL;
     }
 
