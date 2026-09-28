@@ -18,10 +18,12 @@ package org.agrona.concurrent.affinity;
 import org.agrona.SystemUtil;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+// TODO: Address clear test issue here where it is dependent on number of cores and id assignments
 class ThreadAffinityTest
 {
     @Test
@@ -38,6 +40,15 @@ class ThreadAffinityTest
         assumeTrue(SystemUtil.isLinux());
         ThreadAffinity.setAffinityFor(0, 5);
         assertEquals(5, ThreadAffinity.getAffinityFor(0));
+    }
+
+    @Test
+    void setAndGetMultipleAffinities()
+    {
+        assumeTrue(SystemUtil.isLinux());
+        final int[] cpus = { 0, 3, 5 };
+        ThreadAffinity.setAffinitiesFor(0, cpus);
+        assertArrayEquals(cpus, ThreadAffinity.getAffinitiesFor(0));
     }
 
     @Test
