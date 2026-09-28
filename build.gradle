@@ -271,15 +271,45 @@ project(':agrona-native-lib') {
 
     def targetArchitectures = ['x86_64', 'aarch64']
 
-    def zigAvailable = providers.provider {
+    def zigVersion = libs.versions.zig.get()
+    def isWindows = OperatingSystem.current().isWindows()
+    def zigInstallDir = new File(gradle.gradleUserHomeDir, "caches/agrona/zig/${zigVersion}")
+    def bootstrappedZig = new File(zigInstallDir, 'zig')
+
+    def zigOverride = providers.gradleProperty('zig.executable')
+
+    def systemZigMatches = providers.provider {
         try {
+            def stdout = new StringBuilder()
             def process = ['zig', 'version'].execute()
-            process.waitForProcessOutput(new StringBuilder(), new StringBuilder())
-            process.exitValue() == 0
+            process.waitForProcessOutput(stdout, new StringBuilder())
+            process.exitValue() == 0 && stdout.toString().trim() == zigVersion
         }
         catch (IOException ignore) {
             false
         }
+    }
+
+    def zigExecutable = zigOverride
+        .orElse(providers.provider { systemZigMatches.get() ? 'zig' : bootstrappedZig.absolutePath })
+
+    def bootstrapZig = tasks.register('bootstrapZig', Exec) {
+        description = "Installs Zig ${zigVersion} into the Gradle user home if a matching Zig is not available."
+        group = 'build'
+
+        def installScript = file('scripts/install-zig.sh')
+
+        onlyIf('bootstrap not supported on Windows') {
+            !isWindows
+        }
+        onlyIf("requires no zig override, no zig ${zigVersion} on PATH and no bootstrapped zig") {
+            !zigOverride.isPresent() && !systemZigMatches.get() && !bootstrappedZig.exists()
+        }
+
+        inputs.file(installScript)
+        inputs.property('zigVersion', zigVersion)
+
+        commandLine 'bash', installScript.absolutePath, zigVersion, zigInstallDir.absolutePath
     }
 
     def compileNativeTasks = targetArchitectures.collect { arch ->
@@ -291,9 +321,10 @@ project(':agrona-native-lib') {
             description = "Compiles the JNI shared library for ThreadAffinity (${arch} Linux target)."
             group = 'build'
 
-            // TODO: Bootstrap zig instead
-            onlyIf('requires zig on PATH') {
-                zigAvailable.get()
+            dependsOn bootstrapZig
+
+            onlyIf("requires zig ${zigVersion} on Windows") {
+                !isWindows || zigOverride.isPresent() || systemZigMatches.get()
             }
 
             inputs.dir(cSourcesDir)
@@ -302,7 +333,9 @@ project(':agrona-native-lib') {
             outputs.file(outputDir.map { it.file('libagrona-native-lib.so') })
 
             workingDir = project.projectDir
-            executable = 'zig'
+            doFirst {
+                executable = zigExecutable.get()
+            }
             args = ['build',
                     '--build-file', buildScriptFile.absolutePath,
                     '--cache-dir', buildDir.get().dir('cache').asFile.absolutePath,

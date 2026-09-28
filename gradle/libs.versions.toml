@@ -17,6 +17,7 @@ mockito = "5.24.0"
 plexus = "3.3.0"
 shadow = "9.6.1"
 versions = "0.64.0"
+zig = "0.16.0"
 
 [libraries]
 byteBuddy-gradle-plugin = { group = "net.bytebuddy", name = "byte-buddy-gradle-plugin", version.ref = "byteBuddy" }
