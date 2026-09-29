@@ -21,6 +21,7 @@
 * **[Java]** Upgrade to `ByteBuddy` 1.18.14.
 * **[Java]** Upgrade to `Guava TestLib` 33.7.1-jre.
 * **[Java]** Upgrade to `Versions` 0.64.0.
+* **[Java]** Upgrade to `Mockito` 5.24.0.
 
 == 2.6.1 (2026-09-17)
 
