@@ -32,7 +32,6 @@ static void handle_thread_affinity_error(JNIEnv *env, jint tid, cpu_set_t *mask,
 void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinityFor(
     JNIEnv *env, jclass clz, jint tid, jint cpu)
 {
-    // TODO: Refactor with similar code
     const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
     const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
     cpu_set_t *mask = CPU_ALLOC(num_cpus);
@@ -77,7 +76,6 @@ JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_native
     jint *cpus_arr = (*env)->GetIntArrayElements(env, cpus, NULL);
     if (cpus_arr == NULL)
     {
-        // OutOfMemoryError already pending
         CPU_FREE(mask);
         return;
     }
