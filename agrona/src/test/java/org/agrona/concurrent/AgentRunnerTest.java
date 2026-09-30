@@ -333,7 +333,7 @@ class AgentRunnerTest
     }
 
     @Test
-    void shouldReturnSameAffinityFromAgentWhenAffinityIsSetOnStartOnThread() throws Exception
+    void shouldApplyAffinityPassedToConstructorAfterOnStart() throws Exception
     {
         assumeTrue(SystemUtil.isLinux());
         final int affinity = pickAvailableCpu();
@@ -356,8 +356,8 @@ class AgentRunnerTest
         when(mockAgent.roleName()).thenReturn("test");
 
         final AgentRunner runner = new AgentRunner(
-            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
-        AgentRunner.startOnThread(runner, affinity).join();
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent, affinity);
+        AgentRunner.startOnThread(runner).join();
 
         verify(mockAgent).onStart();
         // Affinity is applied after onStart, so the thread is not yet pinned there
@@ -368,8 +368,8 @@ class AgentRunnerTest
         affinityInDoWork.set(Integer.MIN_VALUE);
 
         final AgentRunner runnerWithFactory = new AgentRunner(
-            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
-        AgentRunner.startOnThread(runnerWithFactory, Thread::new, affinity).join();
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent, affinity);
+        AgentRunner.startOnThread(runnerWithFactory, Thread::new).join();
 
         verify(mockAgent, times(2)).onStart();
         assertArrayEquals(available, affinitiesOnStart.get());
@@ -384,8 +384,8 @@ class AgentRunnerTest
         when(mockAgent.roleName()).thenReturn("test");
 
         final AgentRunner runner = new AgentRunner(
-            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
-        AgentRunner.startOnThread(runner, Integer.MAX_VALUE).join();
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent, Integer.MAX_VALUE);
+        AgentRunner.startOnThread(runner).join();
 
         verify(mockAgent).onStart();
         verify(mockAgent, never()).doWork();

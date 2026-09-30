@@ -45,12 +45,12 @@ public class AgentRunner implements Runnable, AutoCloseable
 
     private volatile boolean isRunning = true;
     private volatile boolean isClosed = false;
-    private int threadAffinity = ThreadAffinity.NO_AFFINITY;
 
     private final AtomicCounter errorCounter;
     private final ErrorHandler errorHandler;
     private final IdleStrategy idleStrategy;
     private final Agent agent;
+    private final int threadAffinity;
     private final AtomicReference<Thread> thread = new AtomicReference<>();
 
     /**
@@ -67,6 +67,25 @@ public class AgentRunner implements Runnable, AutoCloseable
         final AtomicCounter errorCounter,
         final Agent agent)
     {
+        this(idleStrategy, errorHandler, errorCounter, agent, ThreadAffinity.NO_AFFINITY);
+    }
+
+    /**
+     * Create an agent runner and initialise it.
+     *
+     * @param idleStrategy   to use for Agent run loop
+     * @param errorHandler   to be called if an {@link Throwable} is encountered
+     * @param errorCounter   to be incremented each time an exception is encountered. This may be null.
+     * @param agent          to be run in this thread.
+     * @param threadAffinity CPU core to pin the agent thread to, or {@link ThreadAffinity#NO_AFFINITY}.
+     */
+    public AgentRunner(
+        final IdleStrategy idleStrategy,
+        final ErrorHandler errorHandler,
+        final AtomicCounter errorCounter,
+        final Agent agent,
+        final int threadAffinity)
+    {
         Objects.requireNonNull(idleStrategy, "idleStrategy");
         Objects.requireNonNull(errorHandler, "errorHandler");
         Objects.requireNonNull(agent, "agent");
@@ -75,6 +94,7 @@ public class AgentRunner implements Runnable, AutoCloseable
         this.errorHandler = errorHandler;
         this.errorCounter = errorCounter;
         this.agent = agent;
+        this.threadAffinity = threadAffinity;
     }
 
     /**
@@ -97,35 +117,6 @@ public class AgentRunner implements Runnable, AutoCloseable
      */
     public static Thread startOnThread(final AgentRunner runner, final ThreadFactory threadFactory)
     {
-        return startOnThread(runner, threadFactory, ThreadAffinity.NO_AFFINITY);
-    }
-
-    /**
-     * Start the given agent runner on a new thread.
-     *
-     * @param runner        the agent runner to start.
-     * @param threadAffinity the affinity to use for the thread.
-     * @return the new thread that has been started.
-     */
-    public static Thread startOnThread(final AgentRunner runner, final int threadAffinity)
-    {
-        return startOnThread(runner, Thread::new, threadAffinity);
-    }
-
-    /**
-     * Start the given agent runner on a new thread.
-     *
-     * @param runner        the agent runner to start.
-     * @param threadFactory the factory to use to create the thread.
-     * @param threadAffinity the affinity to use for the thread.
-     * @return the new thread that has been started.
-     */
-    public static Thread startOnThread(
-        final AgentRunner runner,
-        final ThreadFactory threadFactory,
-        final int threadAffinity)
-    {
-        runner.threadAffinity = threadAffinity;
         final Thread thread = threadFactory.newThread(runner);
         thread.setName(runner.agent().roleName());
         thread.start();
