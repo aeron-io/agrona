@@ -337,18 +337,18 @@ class AgentRunnerTest
     {
         assumeTrue(SystemUtil.isLinux());
         final int affinity = pickAvailableCpu();
-        final int[] available = ThreadAffinity.getAffinitiesFor(0);
+        final int[] available = ThreadAffinity.getAffinity(ThreadAffinity.CURRENT_THREAD);
         final AtomicReference<int[]> affinitiesOnStart = new AtomicReference<>();
-        final AtomicInteger affinityInDoWork = new AtomicInteger(Integer.MIN_VALUE);
+        final AtomicReference<int[]> affinityInDoWork = new AtomicReference<>();
         doAnswer(invocation ->
         {
-            affinitiesOnStart.set(ThreadAffinity.getAffinitiesFor(0));
+            affinitiesOnStart.set(ThreadAffinity.getAffinity(ThreadAffinity.CURRENT_THREAD));
             return null;
         }).when(mockAgent).onStart();
 
         doAnswer(invocation ->
         {
-            affinityInDoWork.set(ThreadAffinity.getAffinity());
+            affinityInDoWork.set(ThreadAffinity.getAffinity(ThreadAffinity.CURRENT_THREAD));
             // Kill the runner
             throw new AgentTerminationException();
         }).when(mockAgent).doWork();
@@ -362,10 +362,10 @@ class AgentRunnerTest
         verify(mockAgent).onStart();
         // Affinity is applied after onStart, so the thread is not yet pinned there
         assertArrayEquals(available, affinitiesOnStart.get());
-        assertEquals(affinity, affinityInDoWork.get());
+        assertArrayEquals(new int[]{ affinity }, affinityInDoWork.get());
 
         affinitiesOnStart.set(null);
-        affinityInDoWork.set(Integer.MIN_VALUE);
+        affinityInDoWork.set(null);
 
         final AgentRunner runnerWithFactory = new AgentRunner(
             idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent, affinity);
@@ -373,7 +373,7 @@ class AgentRunnerTest
 
         verify(mockAgent, times(2)).onStart();
         assertArrayEquals(available, affinitiesOnStart.get());
-        assertEquals(affinity, affinityInDoWork.get());
+        assertArrayEquals(new int[]{ affinity }, affinityInDoWork.get());
     }
 
     @Test
@@ -396,7 +396,7 @@ class AgentRunnerTest
 
     private static int pickAvailableCpu()
     {
-        final int[] available = ThreadAffinity.getAffinitiesFor(0);
+        final int[] available = ThreadAffinity.getAffinity(ThreadAffinity.CURRENT_THREAD);
         assumeTrue(available.length >= 2, "requires at least 2 available CPUs");
         return available[available.length - 1];
     }

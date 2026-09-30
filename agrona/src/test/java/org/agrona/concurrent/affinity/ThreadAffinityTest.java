@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.agrona.concurrent.affinity.ThreadAffinity.CURRENT_THREAD;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -30,30 +30,16 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 class ThreadAffinityTest
 {
     @Test
-    void setAndGetAffinity() throws InterruptedException
+    void setAndGetSingleAffinity() throws InterruptedException
     {
         assumeTrue(SystemUtil.isLinux());
         runOnNewThread(() ->
         {
-            final int[] available = ThreadAffinity.getAffinitiesFor(0);
+            final int[] available = ThreadAffinity.getAffinity(CURRENT_THREAD);
             assumeTrue(available.length >= 2, "requires at least 2 available CPUs");
-            final int cpu = available[available.length - 1];
-            ThreadAffinity.setAffinity(cpu);
-            assertEquals(cpu, ThreadAffinity.getAffinity());
-        });
-    }
-
-    @Test
-    void setAndGetAffinityExplicitlyForCurrentThread() throws InterruptedException
-    {
-        assumeTrue(SystemUtil.isLinux());
-        runOnNewThread(() ->
-        {
-            final int[] available = ThreadAffinity.getAffinitiesFor(0);
-            assumeTrue(available.length >= 2, "requires at least 2 available CPUs");
-            final int cpu = available[available.length - 1];
-            ThreadAffinity.setAffinityFor(0, cpu);
-            assertEquals(cpu, ThreadAffinity.getAffinityFor(0));
+            final int[] cpus = { available[available.length - 1] };
+            ThreadAffinity.setAffinity(CURRENT_THREAD, cpus);
+            assertArrayEquals(cpus, ThreadAffinity.getAffinity(CURRENT_THREAD));
         });
     }
 
@@ -63,7 +49,7 @@ class ThreadAffinityTest
         assumeTrue(SystemUtil.isLinux());
         runOnNewThread(() ->
         {
-            final int[] available = ThreadAffinity.getAffinitiesFor(0);
+            final int[] available = ThreadAffinity.getAffinity(CURRENT_THREAD);
             assumeTrue(available.length >= 3, "requires at least 3 available CPUs");
 
             final int[] cpus = new int[(available.length + 1) / 2];
@@ -72,8 +58,8 @@ class ThreadAffinityTest
                 cpus[i] = available[i * 2];
             }
 
-            ThreadAffinity.setAffinitiesFor(0, cpus);
-            assertArrayEquals(cpus, ThreadAffinity.getAffinitiesFor(0));
+            ThreadAffinity.setAffinity(CURRENT_THREAD, cpus);
+            assertArrayEquals(cpus, ThreadAffinity.getAffinity(CURRENT_THREAD));
         });
     }
 
@@ -81,23 +67,20 @@ class ThreadAffinityTest
     void shouldFailOnLibraryLoadingIfNotLinux()
     {
         assumeFalse(SystemUtil.isLinux());
-        assertThrows(IllegalStateException.class, () -> ThreadAffinity.setAffinity(5));
-        assertThrows(IllegalStateException.class, ThreadAffinity::getAffinity);
+        assertThrows(IllegalStateException.class, () -> ThreadAffinity.setAffinity(CURRENT_THREAD, new int[]{ 5 }));
+        assertThrows(IllegalStateException.class, () -> ThreadAffinity.getAffinity(CURRENT_THREAD));
     }
 
     @Test
     void shouldRejectInvalidArguments()
     {
         assumeTrue(SystemUtil.isLinux());
-        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinity(-1));
-        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinityFor(-1, 0));
-        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinityFor(0, -1));
-        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinitiesFor(-1, new int[]{ 0 }));
-        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinitiesFor(0, null));
-        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinitiesFor(0, new int[0]));
-        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinitiesFor(0, new int[]{ 0, -1 }));
-        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.getAffinityFor(-1));
-        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.getAffinitiesFor(-1));
+        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinity(-1, new int[]{ 0 }));
+        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinity(CURRENT_THREAD, null));
+        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.setAffinity(CURRENT_THREAD, new int[0]));
+        assertThrows(
+            IllegalArgumentException.class, () -> ThreadAffinity.setAffinity(CURRENT_THREAD, new int[]{ 0, -1 }));
+        assertThrows(IllegalArgumentException.class, () -> ThreadAffinity.getAffinity(-1));
     }
 
     @Test
@@ -107,11 +90,8 @@ class ThreadAffinityTest
         runOnNewThread(() ->
         {
             final int badTid = Integer.MAX_VALUE;
-            assertThrows(ThreadAffinityException.class, () -> ThreadAffinity.setAffinityFor(badTid, 0));
-            assertThrows(
-                ThreadAffinityException.class, () -> ThreadAffinity.setAffinitiesFor(badTid, new int[]{ 0 }));
-            assertThrows(ThreadAffinityException.class, () -> ThreadAffinity.getAffinityFor(badTid));
-            assertThrows(ThreadAffinityException.class, () -> ThreadAffinity.getAffinitiesFor(badTid));
+            assertThrows(ThreadAffinityException.class, () -> ThreadAffinity.setAffinity(badTid, new int[]{ 0 }));
+            assertThrows(ThreadAffinityException.class, () -> ThreadAffinity.getAffinity(badTid));
         });
     }
 
@@ -119,13 +99,9 @@ class ThreadAffinityTest
     void shouldThrowWhenCpuIsOutOfRange() throws InterruptedException
     {
         assumeTrue(SystemUtil.isLinux());
-        runOnNewThread(() ->
-        {
-            assertThrows(ThreadAffinityException.class, () -> ThreadAffinity.setAffinity(Integer.MAX_VALUE));
-            assertThrows(
-                ThreadAffinityException.class,
-                () -> ThreadAffinity.setAffinitiesFor(0, new int[]{ Integer.MAX_VALUE }));
-        });
+        runOnNewThread(() -> assertThrows(
+            ThreadAffinityException.class,
+            () -> ThreadAffinity.setAffinity(CURRENT_THREAD, new int[]{ Integer.MAX_VALUE })));
     }
 
     // This is to prevent the affinity from leaking to the rest of the test

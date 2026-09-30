@@ -29,34 +29,8 @@ static void handle_thread_affinity_error(JNIEnv *env, jint tid, cpu_set_t *mask,
     }
 }
 
-void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinityFor(
-    JNIEnv *env, jclass clz, jint tid, jint cpu)
-{
-    const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
-    const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
-    cpu_set_t *mask = CPU_ALLOC(num_cpus);
-    if (mask == NULL)
-    {
-        jclass ex = (*env)->FindClass(env, OOM_EXCEPTION);
-        if (ex != NULL)
-        {
-            (*env)->ThrowNew(env, ex, "failed to allocate CPU mask");
-        }
-        return;
-    }
-
-    CPU_ZERO_S(mask_alloc_size, mask);
-    CPU_SET_S(cpu, mask_alloc_size, mask);
-    if (sched_setaffinity(tid, mask_alloc_size, mask) < 0)
-    {
-        handle_thread_affinity_error(env, tid, mask, "set");
-        return;
-    }
-    CPU_FREE(mask);
-}
-
-JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinitiesFor
-  (JNIEnv *env, jclass clz, jint tid, jintArray cpus)
+JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinity(
+    JNIEnv *env, jclass clz, jint tid, jintArray cpus)
 {
     const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
     const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
@@ -94,54 +68,8 @@ JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_native
     CPU_FREE(mask);
 }
 
-JNIEXPORT void JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinity(
-    JNIEnv *env,
-    jclass clz,
-    jint cpu)
-{
-    return Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeSetAffinityFor(env, clz, 0, cpu);
-}
-
-JNIEXPORT jint JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinityFor(
-    JNIEnv *env,
-    jclass clz,
-    jint tid)
-{
-    const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
-    const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
-    cpu_set_t *mask = CPU_ALLOC(num_cpus);
-    if (mask == NULL)
-    {
-        jclass ex = (*env)->FindClass(env, OOM_EXCEPTION);
-        if (ex != NULL)
-        {
-            (*env)->ThrowNew(env, ex, "failed to allocate CPU mask");
-        }
-        return -1;
-    }
-
-    CPU_ZERO_S(mask_alloc_size, mask);
-    if (sched_getaffinity(tid, mask_alloc_size, mask) < 0)
-    {
-        handle_thread_affinity_error(env, tid, mask, "get");
-        return -1;
-    }
-
-    jint result = -1;
-    for (size_t cpu = 0; cpu < num_cpus; cpu++)
-    {
-        if (CPU_ISSET_S(cpu, mask_alloc_size, mask))
-        {
-            result = cpu;
-            break;
-        }
-    }
-    CPU_FREE(mask);
-    return result;
-}
-
-JNIEXPORT jintArray JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinitiesFor
-  (JNIEnv *env, jclass clz, jint tid)
+JNIEXPORT jintArray JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinity(
+    JNIEnv *env, jclass clz, jint tid)
 {
     const size_t num_cpus = sysconf(_SC_NPROCESSORS_CONF);
     const size_t mask_alloc_size = CPU_ALLOC_SIZE(num_cpus);
@@ -195,9 +123,4 @@ JNIEXPORT jintArray JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_n
     (*env)->SetIntArrayRegion(env, cpu_result, 0, count, cpus_arr);
     free(cpus_arr);
     return cpu_result;
-}
-
-JNIEXPORT jint JNICALL Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinity(JNIEnv *env, jclass clz)
-{
-    return Java_org_agrona_concurrent_affinity_ThreadAffinity_nativeGetAffinityFor(env, clz, 0);
 }
