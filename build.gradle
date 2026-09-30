@@ -273,7 +273,7 @@ project(':agrona-native-lib') {
 
     def zigVersion = libs.versions.zig.get()
     def isWindows = OperatingSystem.current().isWindows()
-    def zigInstallDir = new File(gradle.gradleUserHomeDir, "caches/agrona/zig/${zigVersion}")
+    def zigInstallDir = file('scripts/zig')
     def bootstrappedZig = new File(zigInstallDir, 'zig')
 
     def zigOverride = providers.gradleProperty('zig.executable')
@@ -294,7 +294,7 @@ project(':agrona-native-lib') {
         .orElse(providers.provider { systemZigMatches.get() ? 'zig' : bootstrappedZig.absolutePath })
 
     def bootstrapZig = tasks.register('bootstrapZig', Exec) {
-        description = "Installs Zig ${zigVersion} into the Gradle user home if a matching Zig is not available."
+        description = "Installs Zig ${zigVersion} into scripts/zig if a matching Zig is not available."
         group = 'build'
 
         def installScript = file('scripts/install-zig.sh')
@@ -302,8 +302,8 @@ project(':agrona-native-lib') {
         onlyIf('bootstrap not supported on Windows') {
             !isWindows
         }
-        onlyIf("requires no zig override, no zig ${zigVersion} on PATH and no bootstrapped zig") {
-            !zigOverride.isPresent() && !systemZigMatches.get() && !bootstrappedZig.exists()
+        onlyIf("requires no zig override and no zig ${zigVersion} on PATH") {
+            !zigOverride.isPresent() && !systemZigMatches.get()
         }
 
         inputs.file(installScript)
