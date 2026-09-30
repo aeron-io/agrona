@@ -25,10 +25,10 @@ public final class ThreadAffinity
      * Identifier for no affinity.
      */
     public static final int NO_AFFINITY = -1;
-    private static boolean isLoaded = false;
+    private static final boolean IS_LOADED;
     static
     {
-        isLoaded = SharedLibraryLoader.load("/native/linux", "libagrona-native-lib.so");
+        IS_LOADED = SharedLibraryLoader.load("/native/linux", "libagrona-native-lib.so");
     }
 
     private ThreadAffinity()
@@ -45,10 +45,7 @@ public final class ThreadAffinity
      */
     public static void setAffinity(final int cpu)
     {
-        if (!isLoaded)
-        {
-            throw new IllegalStateException("Failed to load native library");
-        }
+        checkLoaded();
         if (cpu < 0)
         {
             throw new IllegalArgumentException("cpu must be non-negative: cpu=" + cpu);
@@ -69,10 +66,7 @@ public final class ThreadAffinity
      */
     public static void setAffinityFor(final int tid, final int cpu)
     {
-        if (!isLoaded)
-        {
-            throw new IllegalStateException("Failed to load native library");
-        }
+        checkLoaded();
         if (tid < 0)
         {
             throw new IllegalArgumentException("tid must be non-negative: tid=" + tid);
@@ -98,10 +92,7 @@ public final class ThreadAffinity
      */
     public static void setAffinitiesFor(final int tid, final int[] cpus)
     {
-        if (!isLoaded)
-        {
-            throw new IllegalStateException("Failed to load native library");
-        }
+        checkLoaded();
         if (tid < 0)
         {
             throw new IllegalArgumentException("tid must be non-negative: tid=" + tid);
@@ -131,10 +122,7 @@ public final class ThreadAffinity
      */
     public static int getAffinity()
     {
-        if (!isLoaded)
-        {
-            throw new IllegalStateException("Failed to load native library");
-        }
+        checkLoaded();
         return nativeGetAffinity();
     }
 
@@ -151,10 +139,7 @@ public final class ThreadAffinity
      */
     public static int getAffinityFor(final int tid)
     {
-        if (!isLoaded)
-        {
-            throw new IllegalStateException("Failed to load native library");
-        }
+        checkLoaded();
         if (tid < 0)
         {
             throw new IllegalArgumentException("tid must be non-negative: tid=" + tid);
@@ -175,15 +160,20 @@ public final class ThreadAffinity
      */
     public static int[] getAffinitiesFor(final int tid)
     {
-        if (!isLoaded)
-        {
-            throw new IllegalStateException("Failed to load native library");
-        }
+        checkLoaded();
         if (tid < 0)
         {
             throw new IllegalArgumentException("tid must be non-negative: tid=" + tid);
         }
         return nativeGetAffinitiesFor(tid);
+    }
+
+    private static void checkLoaded()
+    {
+        if (!IS_LOADED)
+        {
+            throw new IllegalStateException("Failed to load native library");
+        }
     }
 
     private static native int[] nativeGetAffinitiesFor(int tid);
