@@ -170,7 +170,7 @@ public class AgentRunner implements Runnable, AutoCloseable
                 try
                 {
                     agent.onStart();
-                    if (threadAffinity != ThreadAffinity.NO_AFFINITY)
+                    if (ThreadAffinity.NO_AFFINITY != threadAffinity)
                     {
                         ThreadAffinity.setAffinity(ThreadAffinity.CURRENT_THREAD, new int[]{ threadAffinity });
                     }
