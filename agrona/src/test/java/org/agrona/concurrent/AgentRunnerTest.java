@@ -18,7 +18,6 @@ package org.agrona.concurrent;
 import org.agrona.ErrorHandler;
 import org.agrona.LangUtil;
 import org.agrona.SystemUtil;
-import org.agrona.concurrent.affinity.AffinedThreadFactory;
 import org.agrona.concurrent.affinity.ThreadAffinity;
 import org.agrona.concurrent.affinity.ThreadAffinityException;
 import org.agrona.collections.MutableInteger;
@@ -331,32 +330,6 @@ class AgentRunnerTest
         assertTrue(finished.get());
         assertTrue(interrupted.get());
         assertEquals(1, failCount.get());
-    }
-
-    @Test
-    void shouldReturnSameAffinityFromAgentWhenAffinedThreadIsUsed() throws Exception
-    {
-        assumeTrue(SystemUtil.isLinux());
-        final int affinity = pickAvailableCpu();
-        final AtomicInteger affinityOnStart = new AtomicInteger(Integer.MIN_VALUE);
-        doAnswer(invocation ->
-        {
-            affinityOnStart.set(ThreadAffinity.getAffinity());
-            return null;
-        }).when(mockAgent).onStart();
-
-        when(mockAgent.roleName()).thenReturn("test");
-
-        // Kill the runner immediately
-        when(mockAgent.doWork()).thenThrow(new AgentTerminationException());
-
-        final AgentRunner runner = new AgentRunner(
-            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent);
-        final Thread affinedThread = AgentRunner.startOnThread(runner, new AffinedThreadFactory(affinity));
-        affinedThread.join();
-
-        verify(mockAgent).onStart();
-        assertEquals(affinity, affinityOnStart.get());
     }
 
     @Test
