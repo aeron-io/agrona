@@ -28,8 +28,7 @@ public final class ThreadAffinity
     private static boolean isLoaded = false;
     static
     {
-        isLoaded = SharedLibraryLoader.load(
-            SharedLibraryLoader.resolveNativeLibraryResourcePath("/native/linux", "libagrona-native-lib.so"));
+        isLoaded = SharedLibraryLoader.load("/native/linux", "libagrona-native-lib.so");
     }
 
     private ThreadAffinity()

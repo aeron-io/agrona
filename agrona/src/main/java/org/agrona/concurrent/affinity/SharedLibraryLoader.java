@@ -30,11 +30,6 @@ final class SharedLibraryLoader
     {
     }
 
-    static String resolveNativeLibraryResourcePath(final String baseDir, final String libraryFileName)
-    {
-        return resolveNativeLibraryResourcePath(baseDir, libraryFileName, SystemUtil.isX64Arch(), SystemUtil.osArch());
-    }
-
     static String resolveNativeLibraryResourcePath(
         final String baseDir, final String libraryFileName, final boolean isX64Arch, final String osArch)
     {
@@ -42,8 +37,10 @@ final class SharedLibraryLoader
         return baseDir + "/" + archDir + "/" + libraryFileName;
     }
 
-    static boolean load(final String resourcePath)
+    static boolean load(final String baseDir, final String libraryFileName)
     {
+        final String resourcePath = resolveNativeLibraryResourcePath(
+            baseDir, libraryFileName, SystemUtil.isX64Arch(), SystemUtil.osArch());
         try (InputStream in = SharedLibraryLoader.class.getResourceAsStream(resourcePath))
         {
             if (null == in)
@@ -59,7 +56,7 @@ final class SharedLibraryLoader
 
             System.load(tempFile.toAbsolutePath().toString());
             // Can be safely deleted since the file has been loaded to memory
-            Files.deleteIfExists(tempFile);
+            tempFile.toFile().delete();
             return true;
         }
         catch (final IOException ex)
