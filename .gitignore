@@ -28,6 +28,9 @@ build-local.properties
 build/
 !buildSrc/
 !buildSrc/src/**/build
+.zig-cache
+/agrona-native-lib/scripts/zig/
+/agrona-native-lib/scripts/zig.tmp.*
 
 # Benchmark timings
 timings.log

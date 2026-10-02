@@ -17,6 +17,9 @@ package org.agrona.concurrent;
 
 import org.agrona.ErrorHandler;
 import org.agrona.LangUtil;
+import org.agrona.SystemUtil;
+import org.agrona.concurrent.affinity.ThreadAffinity;
+import org.agrona.concurrent.affinity.ThreadAffinityException;
 import org.agrona.collections.MutableInteger;
 import org.agrona.concurrent.status.AtomicCounter;
 import org.junit.jupiter.api.Test;
@@ -28,17 +31,21 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -323,6 +330,75 @@ class AgentRunnerTest
         assertTrue(finished.get());
         assertTrue(interrupted.get());
         assertEquals(1, failCount.get());
+    }
+
+    @Test
+    void shouldApplyAffinityPassedToConstructorAfterOnStart() throws Exception
+    {
+        assumeTrue(SystemUtil.isLinux());
+        final int affinity = pickAvailableCpu();
+        final int[] available = ThreadAffinity.getAffinity(ThreadAffinity.CURRENT_THREAD);
+        final AtomicReference<int[]> affinitiesOnStart = new AtomicReference<>();
+        final AtomicReference<int[]> affinityInDoWork = new AtomicReference<>();
+        doAnswer(invocation ->
+        {
+            affinitiesOnStart.set(ThreadAffinity.getAffinity(ThreadAffinity.CURRENT_THREAD));
+            return null;
+        }).when(mockAgent).onStart();
+
+        doAnswer(invocation ->
+        {
+            affinityInDoWork.set(ThreadAffinity.getAffinity(ThreadAffinity.CURRENT_THREAD));
+            // Kill the runner
+            throw new AgentTerminationException();
+        }).when(mockAgent).doWork();
+
+        when(mockAgent.roleName()).thenReturn("test");
+
+        final AgentRunner runner = new AgentRunner(
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent, affinity);
+        AgentRunner.startOnThread(runner).join();
+
+        verify(mockAgent).onStart();
+        // Affinity is applied after onStart, so the thread is not yet pinned there
+        assertArrayEquals(available, affinitiesOnStart.get());
+        assertArrayEquals(new int[]{ affinity }, affinityInDoWork.get());
+
+        affinitiesOnStart.set(null);
+        affinityInDoWork.set(null);
+
+        final AgentRunner runnerWithFactory = new AgentRunner(
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent, affinity);
+        AgentRunner.startOnThread(runnerWithFactory, Thread::new).join();
+
+        verify(mockAgent, times(2)).onStart();
+        assertArrayEquals(available, affinitiesOnStart.get());
+        assertArrayEquals(new int[]{ affinity }, affinityInDoWork.get());
+    }
+
+    @Test
+    void shouldReportErrorAndCloseAgentWhenAffinityCannotBeSet() throws Exception
+    {
+        final Class<? extends Throwable> expectedException = SystemUtil.isLinux() ?
+            ThreadAffinityException.class : IllegalStateException.class;
+        when(mockAgent.roleName()).thenReturn("test");
+
+        final AgentRunner runner = new AgentRunner(
+            idleStrategy, mockErrorHandler, mockAtomicCounter, mockAgent, Integer.MAX_VALUE);
+        AgentRunner.startOnThread(runner).join();
+
+        verify(mockAgent).onStart();
+        verify(mockAgent, never()).doWork();
+        verify(mockAgent).onClose();
+        verify(mockErrorHandler).onError(isA(expectedException));
+        assertTrue(runner.isClosed());
+    }
+
+    private static int pickAvailableCpu()
+    {
+        final int[] available = ThreadAffinity.getAffinity(ThreadAffinity.CURRENT_THREAD);
+        assumeTrue(available.length >= 2, "requires at least 2 available CPUs");
+        return available[available.length - 1];
     }
 
     private void assertExceptionNotReported(final Runnable task) throws Exception

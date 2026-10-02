@@ -16,6 +16,7 @@
 package org.agrona.concurrent;
 
 import org.agrona.ErrorHandler;
+import org.agrona.concurrent.affinity.ThreadAffinity;
 import org.agrona.concurrent.status.AtomicCounter;
 
 import java.nio.channels.ClosedByInterruptException;
@@ -49,6 +50,7 @@ public class AgentRunner implements Runnable, AutoCloseable
     private final ErrorHandler errorHandler;
     private final IdleStrategy idleStrategy;
     private final Agent agent;
+    private final int threadAffinity;
     private final AtomicReference<Thread> thread = new AtomicReference<>();
 
     /**
@@ -65,6 +67,25 @@ public class AgentRunner implements Runnable, AutoCloseable
         final AtomicCounter errorCounter,
         final Agent agent)
     {
+        this(idleStrategy, errorHandler, errorCounter, agent, ThreadAffinity.NO_AFFINITY);
+    }
+
+    /**
+     * Create an agent runner and initialise it.
+     *
+     * @param idleStrategy   to use for Agent run loop
+     * @param errorHandler   to be called if an {@link Throwable} is encountered
+     * @param errorCounter   to be incremented each time an exception is encountered. This may be null.
+     * @param agent          to be run in this thread.
+     * @param threadAffinity CPU core to pin the agent thread to, or {@link ThreadAffinity#NO_AFFINITY}.
+     */
+    public AgentRunner(
+        final IdleStrategy idleStrategy,
+        final ErrorHandler errorHandler,
+        final AtomicCounter errorCounter,
+        final Agent agent,
+        final int threadAffinity)
+    {
         Objects.requireNonNull(idleStrategy, "idleStrategy");
         Objects.requireNonNull(errorHandler, "errorHandler");
         Objects.requireNonNull(agent, "agent");
@@ -73,6 +94,7 @@ public class AgentRunner implements Runnable, AutoCloseable
         this.errorHandler = errorHandler;
         this.errorCounter = errorCounter;
         this.agent = agent;
+        this.threadAffinity = threadAffinity;
     }
 
     /**
@@ -148,6 +170,10 @@ public class AgentRunner implements Runnable, AutoCloseable
                 try
                 {
                     agent.onStart();
+                    if (ThreadAffinity.NO_AFFINITY != threadAffinity)
+                    {
+                        ThreadAffinity.setAffinity(ThreadAffinity.CURRENT_THREAD, new int[]{ threadAffinity });
+                    }
                 }
                 catch (final Throwable t)
                 {
