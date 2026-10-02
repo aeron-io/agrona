@@ -34,7 +34,7 @@ public final class ThreadAffinity
     private static final boolean IS_LOADED;
     static
     {
-        IS_LOADED = SharedLibraryLoader.load("/native/linux", "libagrona-native-lib.so");
+        IS_LOADED = SharedLibraryLoader.load();
     }
 
     private ThreadAffinity()

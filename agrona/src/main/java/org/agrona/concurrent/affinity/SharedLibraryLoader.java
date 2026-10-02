@@ -26,6 +26,9 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 final class SharedLibraryLoader
 {
+    private static final String LINUX_BASE_DIR = "/native/linux";
+    private static final String LIBRARY_FILE_NAME = "libagrona-native-lib.so";
+
     private SharedLibraryLoader()
     {
     }
@@ -37,10 +40,17 @@ final class SharedLibraryLoader
         return baseDir + "/" + archDir + "/" + libraryFileName;
     }
 
-    static boolean load(final String baseDir, final String libraryFileName)
+    static boolean load()
     {
+        // The native library is currently only built for Linux
+        if (!SystemUtil.isLinux())
+        {
+            return false;
+        }
+
+        // This will be made more dynamic if we start adding stuff from other OSes
         final String resourcePath = resolveNativeLibraryResourcePath(
-            baseDir, libraryFileName, SystemUtil.isX64Arch(), SystemUtil.osArch());
+            LINUX_BASE_DIR, LIBRARY_FILE_NAME, SystemUtil.isX64Arch(), SystemUtil.osArch());
         try (InputStream in = SharedLibraryLoader.class.getResourceAsStream(resourcePath))
         {
             if (null == in)
