@@ -776,13 +776,11 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
                 final int thisValue = elements[i];
                 final int thatValue = thatElements[i];
 
-                if (thisValue != thatValue)
+                if (thisValue == this.nullValue ? thatValue != that.nullValue :
+                    thisValue != thatValue || thatValue == that.nullValue)
                 {
-                    if (thisValue != this.nullValue || thatValue != that.nullValue)
-                    {
-                        isEqual = false;
-                        break;
-                    }
+                    isEqual = false;
+                    break;
                 }
             }
         }

@@ -960,4 +960,36 @@ class IntArrayListTest
         assertEquals(1, list.size());
         assertEquals(2, list.getInt(0));
     }
+
+    @Test
+    void shouldNotEquateNullWithAnIntegerUsingTheOtherListsNullValue()
+    {
+        final IntArrayList nulls = new IntArrayList(1, -1);
+        nulls.add(null);
+        final IntArrayList values = new IntArrayList(1, -2);
+        values.addInt(-1);
+
+        assertFalse(nulls.equals(values));
+        assertFalse(values.equals(nulls));
+        assertNotEquals((Object)nulls, values);
+        assertNotEquals(new ArrayList<>(nulls), new ArrayList<>(values));
+    }
+
+    @Test
+    void shouldCompareLogicalValuesWithDifferentNullValues()
+    {
+        final IntArrayList first = new IntArrayList(3, -1);
+        final IntArrayList second = new IntArrayList(3, -2);
+        first.add(null);
+        first.addInt(42);
+        first.add(null);
+        second.add(null);
+        second.addInt(42);
+        second.add(null);
+
+        assertEquals(first, second);
+        assertEquals(second, first);
+        assertEquals(first.hashCode(), second.hashCode());
+    }
+
 }
