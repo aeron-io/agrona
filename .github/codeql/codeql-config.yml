@@ -7,8 +7,6 @@ query-filters:
   - exclude:
       id: java/jdk-internal-api-access
   - exclude:
-      id: java/missing-override-annotation
-  - exclude:
       id: java/confusing-method-signature
   - exclude:
       id: java/unused-parameter
