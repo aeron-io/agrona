@@ -173,6 +173,7 @@ public class ExpandableArrayBuffer extends AbstractMutableDirectBuffer
             '}';
     }
 
+    @Override
     protected final void ensureCapacity(final int index, final int length)
     {
         if (index < 0 || length < 0)

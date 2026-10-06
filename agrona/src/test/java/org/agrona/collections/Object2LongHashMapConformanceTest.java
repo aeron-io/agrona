@@ -34,16 +34,19 @@ public class Object2LongHashMapConformanceTest
     {
         return mapTestSuite(new TestMapGenerator<Long, Long>()
         {
+            @Override
             public Long[] createKeyArray(final int length)
             {
                 return new Long[length];
             }
 
+            @Override
             public Long[] createValueArray(final int length)
             {
                 return new Long[length];
             }
 
+            @Override
             public SampleElements<Map.Entry<Long, Long>> samples()
             {
                 return new SampleElements<>(
@@ -54,6 +57,7 @@ public class Object2LongHashMapConformanceTest
                     Helpers.mapEntry(777L, 666L));
             }
 
+            @Override
             public Map<Long, Long> create(final Object... entries)
             {
                 final Object2LongHashMap<Long> map = new Object2LongHashMap<>(
@@ -69,12 +73,14 @@ public class Object2LongHashMapConformanceTest
                 return map;
             }
 
+            @Override
             @SuppressWarnings({"unchecked", "rawtypes"})
             public Map.Entry<Long, Long>[] createArray(final int length)
             {
                 return new Map.Entry[length];
             }
 
+            @Override
             public Iterable<Map.Entry<Long, Long>> order(final List<Map.Entry<Long, Long>> insertionOrder)
             {
                 return insertionOrder;

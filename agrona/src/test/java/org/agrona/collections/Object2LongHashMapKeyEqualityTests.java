@@ -19,11 +19,13 @@ import java.util.Map;
 
 class Object2LongHashMapKeyEqualityTests extends MapKeyEqualityTests<Long>
 {
+    @Override
     Map<Object, Long> newMap()
     {
         return new Object2LongHashMap<>(Long.MIN_VALUE);
     }
 
+    @Override
     Long convert(final Integer value)
     {
         return null == value ? null : Long.valueOf(value);

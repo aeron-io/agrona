@@ -161,6 +161,7 @@ public class AgentRunner implements Runnable, AutoCloseable
      * <p>
      * This method does not return until the run loop is stopped via {@link #close()}.
      */
+    @Override
     public void run()
     {
         try
@@ -214,6 +215,7 @@ public class AgentRunner implements Runnable, AutoCloseable
      * using the default {@link AgentRunner#RETRY_CLOSE_TIMEOUT_MS} value and a
      * {@code null} action.
      */
+    @Override
     public final void close()
     {
         close(RETRY_CLOSE_TIMEOUT_MS, null);

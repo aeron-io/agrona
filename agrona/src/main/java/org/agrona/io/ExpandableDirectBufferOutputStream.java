@@ -123,6 +123,7 @@ public class ExpandableDirectBufferOutputStream extends OutputStream
      *
      * @param b to be written.
      */
+    @Override
     public void write(final int b)
     {
         buffer.putByte(offset + position, (byte)b);
@@ -136,6 +137,7 @@ public class ExpandableDirectBufferOutputStream extends OutputStream
      * @param srcOffset at which to begin reading bytes from the srcBytes.
      * @param length    of the srcBytes to read.
      */
+    @Override
     public void write(final byte[] srcBytes, final int srcOffset, final int length)
     {
         buffer.putBytes(offset + position, srcBytes, srcOffset, length);

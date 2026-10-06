@@ -24,21 +24,25 @@ final class CharSequenceKey implements CharSequence
         this.data = data;
     }
 
+    @Override
     public int length()
     {
         return data.length();
     }
 
+    @Override
     public char charAt(final int index)
     {
         return data.charAt(index);
     }
 
+    @Override
     public CharSequence subSequence(final int start, final int end)
     {
         return data.substring(start, end);
     }
 
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -76,11 +80,13 @@ final class CharSequenceKey implements CharSequence
         return false;
     }
 
+    @Override
     public int hashCode()
     {
         return data.hashCode();
     }
 
+    @Override
     public String toString()
     {
         return data;

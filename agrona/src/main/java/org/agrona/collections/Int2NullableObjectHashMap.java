@@ -66,11 +66,13 @@ public class Int2NullableObjectHashMap<V> extends Int2ObjectHashMap<V>
         super(mapToCopy);
     }
 
+    @Override
     protected Object mapNullValue(final Object value)
     {
         return null == value ? NullReference.INSTANCE : value;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected V unmapNullValue(final Object value)
     {

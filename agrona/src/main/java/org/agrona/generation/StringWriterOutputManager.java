@@ -49,6 +49,7 @@ public class StringWriterOutputManager implements DynamicPackageOutputManager
 
         return new FilterWriter(stringWriter)
         {
+            @Override
             public void close() throws IOException
             {
                 super.close();
@@ -66,6 +67,7 @@ public class StringWriterOutputManager implements DynamicPackageOutputManager
      *
      * @param packageName to be used for source files.
      */
+    @Override
     public void setPackageName(final String packageName)
     {
         this.packageName = packageName;

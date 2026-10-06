@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class Object2IntHashMapNotAvoidingAllocationTest extends Object2IntHashMapTest
 {
+    @Override
     <T> Object2IntHashMap<T> newMap(final float loadFactor, final int initialCapacity)
     {
         return new Object2IntHashMap<>(initialCapacity, loadFactor, MISSING_VALUE, false);

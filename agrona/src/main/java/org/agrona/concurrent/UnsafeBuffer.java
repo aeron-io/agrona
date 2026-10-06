@@ -864,6 +864,7 @@ public class UnsafeBuffer extends AbstractMutableDirectBuffer implements AtomicB
             '}';
     }
 
+    @Override
     protected final void ensureCapacity(final int index, final int length)
     {
         if (SHOULD_BOUNDS_CHECK)

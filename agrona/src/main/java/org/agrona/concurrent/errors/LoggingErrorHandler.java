@@ -59,6 +59,7 @@ public class LoggingErrorHandler implements ErrorHandler, AutoCloseable
     /**
      * Close error handler so that is does not attempt to write to underlying storage which may be unmapped.
      */
+    @Override
     public void close()
     {
         isClosed = true;

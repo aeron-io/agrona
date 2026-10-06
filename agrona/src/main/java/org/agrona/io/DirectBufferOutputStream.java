@@ -137,6 +137,7 @@ public class DirectBufferOutputStream extends OutputStream
      * @param b to be written.
      * @throws IllegalStateException if insufficient capacity remains in the buffer.
      */
+    @Override
     public void write(final int b)
     {
         if (position == length)
@@ -156,6 +157,7 @@ public class DirectBufferOutputStream extends OutputStream
      * @param length    of the srcBytes to read.
      * @throws IllegalStateException if insufficient capacity remains in the buffer.
      */
+    @Override
     public void write(final byte[] srcBytes, final int srcOffset, final int length)
     {
         final long resultingOffset = position + ((long)length);
@@ -174,6 +176,7 @@ public class DirectBufferOutputStream extends OutputStream
      * @param srcBytes to write
      * @throws IllegalStateException if insufficient capacity remains in the buffer.
      */
+    @Override
     public void write(final byte[] srcBytes)
     {
         write(srcBytes, 0, srcBytes.length);
@@ -182,6 +185,7 @@ public class DirectBufferOutputStream extends OutputStream
     /**
      * Override to remove {@link IOException}. This method does nothing.
      */
+    @Override
     public void flush()
     {
     }
@@ -189,6 +193,7 @@ public class DirectBufferOutputStream extends OutputStream
     /**
      * Override to remove {@link IOException}. This method does nothing.
      */
+    @Override
     public void close()
     {
     }

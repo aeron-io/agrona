@@ -587,11 +587,13 @@ class Int2ObjectHashMapTest
         {
             private final Object nullRef = new Object();
 
+            @Override
             protected Object mapNullValue(final Object value)
             {
                 return value == null ? nullRef : value;
             }
 
+            @Override
             protected String unmapNullValue(final Object value)
             {
                 return value == nullRef ? null : (String)value;

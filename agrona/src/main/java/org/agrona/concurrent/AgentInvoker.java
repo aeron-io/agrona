@@ -194,6 +194,7 @@ public class AgentInvoker implements AutoCloseable
      * <p>
      * The cleanup logic will only be performed once.
      */
+    @Override
     public final void close()
     {
         try

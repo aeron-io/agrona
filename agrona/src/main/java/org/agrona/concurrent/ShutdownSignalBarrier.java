@@ -183,6 +183,7 @@ public final class ShutdownSignalBarrier implements AutoCloseable
     /**
      * Close this {@link ShutdownSignalBarrier} to allow JVM termination.
      */
+    @Override
     public void close()
     {
         try

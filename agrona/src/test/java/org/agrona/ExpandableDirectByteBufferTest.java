@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ExpandableDirectByteBufferTest extends MutableDirectBufferTests
 {
+    @Override
     protected MutableDirectBuffer newBuffer(final int capacity)
     {
         return new ExpandableDirectByteBuffer(capacity);

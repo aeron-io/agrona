@@ -77,6 +77,7 @@ public final class ControllableIdleStrategy implements IdleStrategy
      * @param workCount performed in last duty cycle.
      * @see IdleStrategy#idle(int)
      */
+    @Override
     public void idle(final int workCount)
     {
         if (workCount > 0)

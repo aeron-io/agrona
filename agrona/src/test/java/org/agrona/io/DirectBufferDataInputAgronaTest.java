@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DirectBufferDataInputAgronaTest extends DirectBufferDataInputTest
 {
+    @Override
     UnsafeBuffer toUnsafeBuffer(final ThrowingConsumer<DataOutput> dataProvider) throws Throwable
     {
         final ExpandableArrayBuffer out = new ExpandableArrayBuffer();
@@ -44,6 +45,7 @@ class DirectBufferDataInputAgronaTest extends DirectBufferDataInputTest
         return ByteOrder.LITTLE_ENDIAN;
     }
 
+    @Override
     @Test
     void shouldReadUtf()
     {
@@ -59,6 +61,7 @@ class DirectBufferDataInputAgronaTest extends DirectBufferDataInputTest
         assertEquals("zażółć gęślą jaźń北查爾斯頓", dataInput.readStringUTF8());
     }
 
+    @Override
     @Test
     void shouldThrowWhenCannotReadSizeOfUtfString() throws Throwable
     {
@@ -70,6 +73,7 @@ class DirectBufferDataInputAgronaTest extends DirectBufferDataInputTest
         assertThrows(IndexOutOfBoundsException.class, dataInput::readStringUTF8);
     }
 
+    @Override
     @Test
     void shouldThrowExceptionWhenCannotReadString() throws Throwable
     {
@@ -147,77 +151,90 @@ class DirectBufferDataInputAgronaTest extends DirectBufferDataInputTest
             this.index = index;
         }
 
+        @Override
         public void write(final int b)
         {
             out.putByte(index.get(), (byte)b);
             index.increment();
         }
 
+        @Override
         public void write(final byte[] b)
         {
             out.putBytes(index.get(), b);
             index.addAndGet(b.length);
         }
 
+        @Override
         public void write(final byte[] b, final int off, final int len)
         {
             out.putBytes(index.get(), b, off, len);
             index.addAndGet(len);
         }
 
+        @Override
         public void writeBoolean(final boolean v)
         {
             out.putByte(index.get(), (byte)(v ? 1 : 0));
             index.increment();
         }
 
+        @Override
         public void writeByte(final int v)
         {
             out.putByte(index.get(), (byte)v);
             index.increment();
         }
 
+        @Override
         public void writeShort(final int v)
         {
             out.putShort(index.get(), (short)v);
             index.addAndGet(2);
         }
 
+        @Override
         public void writeChar(final int v)
         {
             out.putChar(index.get(), (char)v);
             index.addAndGet(2);
         }
 
+        @Override
         public void writeInt(final int v)
         {
             out.putInt(index.get(), v);
             index.addAndGet(4);
         }
 
+        @Override
         public void writeLong(final long v)
         {
             out.putLong(index.get(), v);
             index.addAndGet(8);
         }
 
+        @Override
         public void writeFloat(final float v)
         {
             out.putFloat(index.get(), v);
             index.addAndGet(4);
         }
 
+        @Override
         public void writeDouble(final double v)
         {
             out.putDouble(index.get(), v);
             index.addAndGet(8);
         }
 
+        @Override
         public void writeBytes(final String s)
         {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public void writeChars(final String s)
         {
             for (int i = 0; i < s.length(); i++)
@@ -228,6 +245,7 @@ class DirectBufferDataInputAgronaTest extends DirectBufferDataInputTest
             }
         }
 
+        @Override
         public void writeUTF(final String s)
         {
             final int startingPosition = index.get();

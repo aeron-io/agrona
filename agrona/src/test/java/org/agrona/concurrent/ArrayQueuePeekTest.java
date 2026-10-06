@@ -72,6 +72,7 @@ class ArrayQueuePeekTest
             this.queue = queue;
         }
 
+        @Override
         public void run()
         {
             for (int i = 0; i < REPETITIONS; i++)

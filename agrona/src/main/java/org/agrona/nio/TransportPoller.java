@@ -69,6 +69,7 @@ public class TransportPoller implements AutoCloseable
     /**
      * Close NioSelector down. Returns immediately.
      */
+    @Override
     public void close()
     {
         selector.wakeup();

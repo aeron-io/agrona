@@ -565,6 +565,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
      * @param index of the element to be removed.
      * @return the existing value at this index.
      */
+    @Override
     public Integer remove(
         @DoNotSub final int index)
     {

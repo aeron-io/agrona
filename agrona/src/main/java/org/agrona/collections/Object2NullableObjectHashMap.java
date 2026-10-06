@@ -64,11 +64,13 @@ public class Object2NullableObjectHashMap<K, V> extends Object2ObjectHashMap<K, 
         super(mapToCopy);
     }
 
+    @Override
     protected Object mapNullValue(final Object value)
     {
         return value == null ? NullReference.INSTANCE : value;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected V unmapNullValue(final Object value)
     {

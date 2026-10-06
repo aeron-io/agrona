@@ -38,6 +38,7 @@ public class UnsafeApiSourceGenerator extends DefaultTask
 {
     private static final ClassValue<String> TYPE_NAME = new ClassValue<>()
     {
+        @Override
         protected String computeValue(@NotNull final Class<?> type)
         {
             final TypeVariable<? extends Class<?>>[] typeParameters = type.getTypeParameters();

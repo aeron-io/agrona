@@ -41,11 +41,13 @@ public class BiInt2NullableObjectMap<V> extends BiInt2ObjectMap<V>
         super(initialCapacity, loadFactor);
     }
 
+    @Override
     protected Object mapNullValue(final Object value)
     {
         return null == value ? NullReference.INSTANCE : value;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected V unmapNullValue(final Object value)
     {

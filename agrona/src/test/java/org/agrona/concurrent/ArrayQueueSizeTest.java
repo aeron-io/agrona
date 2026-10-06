@@ -82,6 +82,7 @@ class ArrayQueueSizeTest
             return isRunning;
         }
 
+        @Override
         public void run()
         {
             try
@@ -120,6 +121,7 @@ class ArrayQueueSizeTest
             return isRunning;
         }
 
+        @Override
         public void run()
         {
             try

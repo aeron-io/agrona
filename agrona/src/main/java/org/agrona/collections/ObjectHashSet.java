@@ -157,6 +157,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
      * @return true if the collection has changed, false otherwise.
      * @throws NullPointerException if the value is null.
      */
+    @Override
     public boolean add(final T value)
     {
         Objects.requireNonNull(value);
@@ -228,6 +229,7 @@ public class ObjectHashSet<T> extends AbstractSet<T>
      * @param value the value to remove.
      * @return true if the value was present, false otherwise.
      */
+    @Override
     public boolean remove(final Object value)
     {
         final Object[] values = this.values;

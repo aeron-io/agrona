@@ -191,6 +191,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
      * @return current value associated with key, or null if none found
      * @throws IllegalArgumentException if value is null
      */
+    @Override
     public V put(final K key, final V value)
     {
         final Object val = mapNullValue(value);
@@ -269,6 +270,7 @@ public class Object2ObjectHashMap<K, V> implements Map<K, V>
      * @param value to be tested against contained values.
      * @return true if contained otherwise false.
      */
+    @Override
     public boolean containsValue(final Object value)
     {
         final Object val = mapNullValue(value);

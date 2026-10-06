@@ -292,11 +292,13 @@ class ShutdownSignalBarrierTest
                 System.out.println("Resource created: " + name);
             }
 
+            @Override
             public void close()
             {
                 System.out.println("Resource closed: " + name);
             }
 
+            @Override
             public String toString()
             {
                 return "MyResource{" +

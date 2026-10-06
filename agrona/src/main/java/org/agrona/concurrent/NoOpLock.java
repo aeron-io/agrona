@@ -41,6 +41,7 @@ public final class NoOpLock implements Lock
     /**
      * Proceeds as if the lock has been acquired.
      */
+    @Override
     public void lock()
     {
     }
@@ -48,6 +49,7 @@ public final class NoOpLock implements Lock
     /**
      * Proceeds as if the lock has been acquired.
      */
+    @Override
     public void lockInterruptibly()
     {
     }
@@ -57,6 +59,7 @@ public final class NoOpLock implements Lock
      *
      * @return always true.
      */
+    @Override
     public boolean tryLock()
     {
         return true;
@@ -69,6 +72,7 @@ public final class NoOpLock implements Lock
      * @param unit which is ignored.
      * @return always true.
      */
+    @Override
     public boolean tryLock(final long time, final TimeUnit unit)
     {
         return true;
@@ -77,6 +81,7 @@ public final class NoOpLock implements Lock
     /**
      * The lock has never been taken so no effect.
      */
+    @Override
     public void unlock()
     {
     }
@@ -87,6 +92,7 @@ public final class NoOpLock implements Lock
      * @return never returns.
      * @throws UnsupportedOperationException if used.
      */
+    @Override
     public Condition newCondition()
     {
         throw new UnsupportedOperationException();

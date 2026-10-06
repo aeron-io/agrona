@@ -50,6 +50,7 @@ public class ClassFileManager<M extends JavaFileManager> extends ForwardingJavaF
     {
         return new SecureClassLoader()
         {
+            @Override
             protected Class<?> findClass(final String name)
             {
                 final byte[] buffer = classObjectByNameMap.get(name).getBytes();

@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class Int2IntHashMapNotAvoidingAllocationTest extends Int2IntHashMapTest
 {
+    @Override
     @BeforeEach
     void before()
     {

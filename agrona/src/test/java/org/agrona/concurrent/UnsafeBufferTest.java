@@ -49,6 +49,7 @@ class UnsafeBufferTest extends MutableDirectBufferTests
     private final byte[] wobbleBytes = "Wobble".getBytes(US_ASCII);
     private final byte[] wibbleBytes2 = "Wibble2".getBytes(US_ASCII);
 
+    @Override
     protected MutableDirectBuffer newBuffer(final int capacity)
     {
         return new UnsafeBuffer(new byte[capacity]);

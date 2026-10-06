@@ -27,11 +27,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class Object2ObjectNullableHashMapKeyEqualityTests extends Object2ObjectHashMapKeyEqualityTests
 {
+    @Override
     Map<Object, Integer> newMap()
     {
         return new Object2NullableObjectHashMap<>();
     }
 
+    @Override
     @Test
     void entryEqualsAndHashCode()
     {
@@ -47,6 +49,7 @@ class Object2ObjectNullableHashMapKeyEqualityTests extends Object2ObjectHashMapK
         }
     }
 
+    @Override
     @Test
     void clonedEntryEqualsAndHashCode()
     {
@@ -63,6 +66,7 @@ class Object2ObjectNullableHashMapKeyEqualityTests extends Object2ObjectHashMapK
         }
     }
 
+    @Override
     @Test
     void entrySetValue()
     {
@@ -84,6 +88,7 @@ class Object2ObjectNullableHashMapKeyEqualityTests extends Object2ObjectHashMapK
         }
     }
 
+    @Override
     @Test
     void clonedEntrySetValue()
     {

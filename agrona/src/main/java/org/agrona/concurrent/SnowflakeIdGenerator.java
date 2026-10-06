@@ -207,6 +207,7 @@ public final class SnowflakeIdGenerator extends AbstractSnowflakeIdGeneratorPadd
      *
      * @return the next unique id for this node.
      */
+    @Override
     public long nextId()
     {
         while (true)

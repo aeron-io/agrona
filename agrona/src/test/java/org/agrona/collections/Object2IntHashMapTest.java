@@ -1208,16 +1208,19 @@ class Object2IntHashMapTest
             this.value = value;
         }
 
+        @Override
         public String toString()
         {
             return Integer.toString(value);
         }
 
+        @Override
         public int hashCode()
         {
             return value * 31;
         }
 
+        @Override
         public boolean equals(final Object obj)
         {
             if (this == obj)
@@ -1252,11 +1255,13 @@ class Object2IntHashMapTest
             this.value = value;
         }
 
+        @Override
         public int hashCode()
         {
             return hash;
         }
 
+        @Override
         public boolean equals(final Object obj)
         {
             if (this == obj)
@@ -1266,6 +1271,7 @@ class Object2IntHashMapTest
             return obj instanceof TrickyKey && value == ((TrickyKey)obj).value;
         }
 
+        @Override
         public String toString()
         {
             return "TrickyKey{" +

@@ -19,11 +19,13 @@ import java.util.Map;
 
 class Object2IntHashMapKeyEqualityTests extends MapKeyEqualityTests<Integer>
 {
+    @Override
     Map<Object, Integer> newMap()
     {
         return new Object2IntHashMap<>(Integer.MIN_VALUE);
     }
 
+    @Override
     Integer convert(final Integer value)
     {
         return value;

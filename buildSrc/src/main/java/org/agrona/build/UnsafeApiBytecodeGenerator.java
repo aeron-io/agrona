@@ -205,6 +205,7 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
     /**
      * {@inheritDoc}
      */
+    @Override
     public @NotNull DynamicType.Builder<?> apply(
         final DynamicType.Builder<?> builder,
         final @NotNull TypeDescription typeDescription,
@@ -259,6 +260,7 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close() throws IOException
     {
     }
@@ -266,6 +268,7 @@ public final class UnsafeApiBytecodeGenerator implements Plugin
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean matches(final TypeDescription target)
     {
         return "org.agrona.UnsafeApi".equals(target.getName());

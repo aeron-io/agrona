@@ -29,11 +29,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class Object2ObjectHashMapKeyEqualityTests extends MapKeyEqualityTests<Integer>
 {
+    @Override
     Map<Object, Integer> newMap()
     {
         return new Object2ObjectHashMap<>();
     }
 
+    @Override
     Integer convert(final Integer value)
     {
         return value;
@@ -64,6 +66,7 @@ class Object2ObjectHashMapKeyEqualityTests extends MapKeyEqualityTests<Integer>
         }
     }
 
+    @Override
     @Test
     void entrySetContains()
     {

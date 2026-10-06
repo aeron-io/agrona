@@ -224,6 +224,7 @@ class BiInt2ObjectMapTest
             this.value = value;
         }
 
+        @Override
         public boolean equals(final Object o)
         {
             if (this == o)
@@ -241,6 +242,7 @@ class BiInt2ObjectMapTest
             return keyPartA == that.keyPartA && keyPartB == that.keyPartB && value.equals(that.value);
         }
 
+        @Override
         public int hashCode()
         {
             int result = keyPartA;

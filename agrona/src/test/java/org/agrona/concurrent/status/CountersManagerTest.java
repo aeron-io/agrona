@@ -504,6 +504,7 @@ class CountersManagerTest
             this.id = id;
         }
 
+        @Override
         public void accept(final int counterId, final int typeId, final DirectBuffer keyBuffer, final String label)
         {
             if (counterId == id && typeId == TYPE_ID)

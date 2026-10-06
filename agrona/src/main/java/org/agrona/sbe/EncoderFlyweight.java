@@ -27,6 +27,7 @@ public interface EncoderFlyweight extends Flyweight
      *
      * @return buffer in which the flyweight is encoded.
      */
+    @Override
     MutableDirectBuffer buffer();
 
     /**

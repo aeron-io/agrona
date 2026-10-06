@@ -261,6 +261,7 @@ public class ManyToOneConcurrentLinkedQueue<E> extends ManyToOneConcurrentLinked
      *
      * @return an approximation for the size of the list.
      */
+    @Override
     public int size()
     {
         Node<E> head = this.head;

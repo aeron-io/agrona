@@ -98,6 +98,7 @@ public class AtomicCounter implements AutoCloseable
     /**
      * Close counter and free the counter slot for reuse of connected to {@link CountersManager}.
      */
+    @Override
     public void close()
     {
         if (!isClosed)

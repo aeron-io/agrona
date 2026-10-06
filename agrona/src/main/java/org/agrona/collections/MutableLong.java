@@ -81,6 +81,7 @@ public class MutableLong extends Number implements Comparable<MutableLong>
      *
      * @return value as {@code byte}.
      */
+    @Override
     public byte byteValue()
     {
         return (byte)value;
@@ -91,6 +92,7 @@ public class MutableLong extends Number implements Comparable<MutableLong>
      *
      * @return value as {@code short}.
      */
+    @Override
     public short shortValue()
     {
         return (short)value;
@@ -101,6 +103,7 @@ public class MutableLong extends Number implements Comparable<MutableLong>
      *
      * @return value as {@code int}.
      */
+    @Override
     public int intValue()
     {
         return (int)value;
@@ -111,6 +114,7 @@ public class MutableLong extends Number implements Comparable<MutableLong>
      *
      * @return value as {@code long}.
      */
+    @Override
     public long longValue()
     {
         return value;
@@ -121,6 +125,7 @@ public class MutableLong extends Number implements Comparable<MutableLong>
      *
      * @return value as {@code float}.
      */
+    @Override
     public float floatValue()
     {
         return (float)value;
@@ -131,6 +136,7 @@ public class MutableLong extends Number implements Comparable<MutableLong>
      *
      * @return value as {@code double}.
      */
+    @Override
     public double doubleValue()
     {
         return (double)value;

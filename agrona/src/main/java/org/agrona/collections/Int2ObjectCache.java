@@ -799,6 +799,7 @@ public class Int2ObjectCache<V> implements Map<Integer, V>
      * <p>
      * If an exception occurs the cache should only be used when {@link #size()} reports zero.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void clear()
     {

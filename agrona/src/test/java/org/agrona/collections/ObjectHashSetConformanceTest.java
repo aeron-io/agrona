@@ -43,6 +43,7 @@ public class ObjectHashSetConformanceTest
 
     private static final class Generator implements TestSetGenerator<String>
     {
+        @Override
         public Set<String> create(final Object... elements)
         {
             final ObjectHashSet<String> set = new ObjectHashSet<>(
@@ -56,16 +57,19 @@ public class ObjectHashSetConformanceTest
             return set;
         }
 
+        @Override
         public SampleElements<String> samples()
         {
             return new SampleElements<>("Elani", "von", "der", "Schavener", "Heide");
         }
 
+        @Override
         public String[] createArray(final int length)
         {
             return new String[length];
         }
 
+        @Override
         public Iterable<String> order(final List<String> insertionOrder)
         {
             return insertionOrder;
