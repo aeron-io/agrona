@@ -20,6 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.MappedByteBuffer;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -275,5 +276,23 @@ class IoUtilTest
         IoUtil.deleteIfExists(dir.toFile(), errorHandler);
 
         verify(errorHandler).onError(isA(DirectoryNotEmptyException.class));
+    }
+
+    @Test
+    void deleteAllowedIfExistingMemoryMapping() throws IOException
+    {
+        final Path file = tempDir.resolve("file-to-delete.txt");
+        Files.createFile(file);
+        Files.write(file, new byte[8]);
+
+        final MappedByteBuffer mappedByteBuffer = IoUtil.mapExistingFile(file.toFile(), "test-delete");
+        try
+        {
+            Files.delete(file);
+        }
+        finally
+        {
+            IoUtil.unmap(mappedByteBuffer);
+        }
     }
 }
