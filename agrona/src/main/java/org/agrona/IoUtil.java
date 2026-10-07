@@ -24,7 +24,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.EnumSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
@@ -47,8 +47,8 @@ public final class IoUtil
     private static final int MAP_READ_WRITE = 1;
     private static final int MAP_PRIVATE = 2;
 
-    private static final EnumSet<StandardOpenOption> FILE_OPTIONS_R = EnumSet.of(READ);
-    private static final EnumSet<StandardOpenOption> FILE_OPTIONS_RW = EnumSet.of(READ, WRITE);
+    private static final Set<StandardOpenOption> FILE_OPTIONS_R = Set.of(READ);
+    private static final Set<StandardOpenOption> FILE_OPTIONS_RW = Set.of(READ, WRITE);
 
     private IoUtil()
     {
@@ -344,7 +344,7 @@ public final class IoUtil
         checkFileExists(location, descriptionLabel);
 
         MappedByteBuffer mappedByteBuffer = null;
-        try (FileChannel channel = FileChannel.open(location.toPath(), getFileMode(mapMode)))
+        try (FileChannel channel = FileChannel.open(location.toPath(), getFileChannelOpenOptions(mapMode)))
         {
             mappedByteBuffer = channel.map(mapMode, 0, channel.size());
         }
@@ -379,7 +379,7 @@ public final class IoUtil
         checkFileExists(location, descriptionLabel);
 
         MappedByteBuffer mappedByteBuffer = null;
-        try (FileChannel channel = FileChannel.open(location.toPath(), getFileMode(mapMode)))
+        try (FileChannel channel = FileChannel.open(location.toPath(), getFileChannelOpenOptions(mapMode)))
         {
             mappedByteBuffer = channel.map(mapMode, offset, length);
         }
@@ -518,7 +518,7 @@ public final class IoUtil
         }
     }
 
-    private static EnumSet<StandardOpenOption> getFileMode(final FileChannel.MapMode mode)
+    private static Set<StandardOpenOption> getFileChannelOpenOptions(final FileChannel.MapMode mode)
     {
         return mode == READ_ONLY ? FILE_OPTIONS_R : FILE_OPTIONS_RW;
     }
