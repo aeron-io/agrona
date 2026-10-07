@@ -5,6 +5,8 @@
 === New & Noteworthy
 
 * *[Breaking]* Remove `agrona-agent` module, i.e. `BufferAlignmentAgent` is no longer provided.
+* **[Java]** To memory map a file in IoUtil, use FileChannel#open instead of new RandomAccessFile to open file channel before memory mapping.
+In windows, this additionally adds FILE_SHARE_DELETE for dwShareMode that allows others to access with DELETE for dwDesiredAccess.
 
 === Changelog
 
