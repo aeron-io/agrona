@@ -15,6 +15,8 @@
  */
 package org.agrona.concurrent.affinity;
 
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -24,21 +26,21 @@ class SharedLibraryLoaderTest
 {
     @ParameterizedTest
     @ValueSource(strings = { "amd64", "x86_64", "x64" })
+    @EnabledOnOs(OS.LINUX)
     void resolvesX64Architectures(final String osArch)
     {
         assertEquals(
-            "/native/linux/x86_64/libagrona-native-lib.so",
-            SharedLibraryLoader.resolveNativeLibraryResourcePath(
-                "/native/linux", "libagrona-native-lib.so", true, osArch));
+            "/native/libagrona-x86_64-linux.so",
+            SharedLibraryLoader.resolveNativeLibraryResourcePath(true, osArch));
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "aarch64", "ppc64le" })
+    @EnabledOnOs(OS.LINUX)
     void resolvesNonX64ArchitecturesToRawOsArchDirectory(final String osArch)
     {
         assertEquals(
-            "/native/linux/" + osArch + "/libagrona-native-lib.so",
-            SharedLibraryLoader.resolveNativeLibraryResourcePath(
-                "/native/linux", "libagrona-native-lib.so", false, osArch));
+            "/native/libagrona-" + osArch + "-linux.so",
+            SharedLibraryLoader.resolveNativeLibraryResourcePath(false, osArch));
     }
 }

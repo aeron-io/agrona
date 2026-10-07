@@ -269,8 +269,6 @@ project(':agrona-native-lib') {
     def buildScriptFile = file('src/build.zig')
     def javaHome = Jvm.current().javaHome
 
-    def targetArchitectures = ['x86_64', 'aarch64']
-
     def zigVersion = libs.versions.zig.get()
     def isWindows = OperatingSystem.current().isWindows()
     def zigInstallDir = file('scripts/zig')
@@ -312,45 +310,33 @@ project(':agrona-native-lib') {
         commandLine 'bash', installScript.absolutePath, zigVersion, zigInstallDir.absolutePath
     }
 
-    def compileNativeTasks = targetArchitectures.collect { arch ->
-        def buildDir = layout.buildDirectory.dir("zig/${arch}")
-        def outputDir = layout.buildDirectory.dir("lib/${arch}")
-        def archName = arch.capitalize()
-
-        tasks.register("compileNative${archName}", Exec) {
-            description = "Compiles the JNI shared library for ThreadAffinity (${arch} Linux target)."
-            group = 'build'
-
-            dependsOn bootstrapZig
-
-            onlyIf("requires zig ${zigVersion} on Windows") {
-                !isWindows || zigOverride.isPresent() || systemZigMatches.get()
-            }
-
-            inputs.dir(cSourcesDir)
-            inputs.file(buildScriptFile)
-            inputs.dir(headersDir)
-            outputs.file(outputDir.map { it.file('libagrona-native-lib.so') })
-
-            workingDir = project.projectDir
-            doFirst {
-                executable = zigExecutable.get()
-            }
-            args = ['build',
-                    '--build-file', buildScriptFile.absolutePath,
-                    '--cache-dir', buildDir.get().dir('cache').asFile.absolutePath,
-                    '--prefix', buildDir.get().asFile.absolutePath,
-                    '--prefix-lib-dir', outputDir.get().asFile.absolutePath,
-                    "-Dtarget=${arch}-linux-gnu",
-                    '-Doptimize=ReleaseFast',
-                    "-Djava_home=${javaHome}"]
-        }
-    }
-
-    tasks.register('compileNative') {
+    tasks.register('compileNative', Exec) {
         description = 'Compiles the JNI shared library for every supported Linux architecture.'
         group = 'build'
-        dependsOn compileNativeTasks
+        dependsOn bootstrapZig
+
+        onlyIf("requires zig ${zigVersion} on Windows") {
+            !isWindows || zigOverride.isPresent() || systemZigMatches.get()
+        }
+
+        def buildDir = layout.buildDirectory.dir("zig")
+        def outputDir = layout.buildDirectory.dir("lib")
+
+        inputs.dir(cSourcesDir)
+        inputs.file(buildScriptFile)
+        inputs.dir(headersDir)
+        outputs.dir(outputDir)
+
+        workingDir = project.projectDir
+        doFirst {
+            executable = zigExecutable.get()
+        }
+        args = ['build',
+                '--build-file', buildScriptFile.absolutePath,
+                '--cache-dir', buildDir.get().dir('cache').asFile.absolutePath,
+                '--prefix', buildDir.get().asFile.absolutePath,
+                '--prefix-lib-dir', outputDir.get().asFile.absolutePath,
+                "-Djava_home=${javaHome}"]
     }
 
     tasks.named('assemble') {
@@ -426,7 +412,7 @@ project(':agrona') {
         }
         dependsOn project(':agrona-native-lib').tasks.named('compileNative')
         from(project(':agrona-native-lib').layout.buildDirectory.dir('lib'))
-        into generatedResourceDir.get().dir('native/linux')
+        into generatedResourceDir.get().dir('native')
     }
 
     processResources {
