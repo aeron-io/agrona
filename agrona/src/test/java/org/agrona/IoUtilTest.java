@@ -279,7 +279,7 @@ class IoUtilTest
     }
 
     @Test
-    void allowFileDeleteWithMappedFile() throws Exception
+    void deleteAllowedIfExistingMemoryMapping() throws IOException
     {
         final Path file = tempDir.resolve("file-to-delete.txt");
         Files.createFile(file);
