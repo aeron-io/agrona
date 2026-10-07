@@ -352,7 +352,20 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
         if (numElements > 0)
         {
             ensureCapacityPrivate(size + numElements);
-            System.arraycopy(list.elements, 0, elements, size, numElements);
+            if (nullValue == list.nullValue)
+            {
+                System.arraycopy(list.elements, 0, elements, size, numElements);
+            }
+            else
+            {
+                final int[] listElements = list.elements;
+                final int listNullValue = list.nullValue;
+                for (@DoNotSub int i = 0; i < numElements; i++)
+                {
+                    final int value = listElements[i];
+                    elements[size + i] = value == listNullValue ? nullValue : value;
+                }
+            }
             size += numElements;
             return true;
         }
@@ -384,7 +397,20 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
             {
                 elements[i + numElements] = elements[i];
             }
-            System.arraycopy(list.elements, 0, elements, index, numElements);
+            if (nullValue == list.nullValue)
+            {
+                System.arraycopy(list.elements, 0, elements, index, numElements);
+            }
+            else
+            {
+                final int[] listElements = list.elements;
+                final int listNullValue = list.nullValue;
+                for (@DoNotSub int i = 0; i < numElements; i++)
+                {
+                    final int value = listElements[i];
+                    elements[index + i] = value == listNullValue ? nullValue : value;
+                }
+            }
             this.size += numElements;
             return true;
         }
@@ -405,7 +431,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
         for (@DoNotSub int i = 0, size = list.size; i < size; i++)
         {
             final int value = listElements[i];
-            if (!(containsInt(value) || hasNulls && listNullValue == value))
+            if (value == listNullValue ? !hasNulls : value == nullValue || !containsInt(value))
             {
                 return false;
             }
@@ -434,13 +460,14 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
             }
 
             final int nullValue = this.nullValue;
+            final int listNullValue = list.nullValue;
             final boolean listHasNulls = list.contains(null);
             int[] filteredElements = null;
             @DoNotSub int j = -1;
             for (@DoNotSub int i = 0; i < size; i++)
             {
                 final int value = elements[i];
-                if (!(list.containsInt(value) || (listHasNulls && nullValue == value)))
+                if (value == nullValue ? !listHasNulls : value == listNullValue || !list.containsInt(value))
                 {
                     if (null == filteredElements)
                     {
@@ -478,13 +505,14 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
         if (size > 0 && !list.isEmpty())
         {
             final int nullValue = this.nullValue;
+            final int listNullValue = list.nullValue;
             final boolean listHasNulls = list.contains(null);
             int[] filteredElements = null;
             @DoNotSub int j = -1;
             for (@DoNotSub int i = 0; i < size; i++)
             {
                 final int value = elements[i];
-                if (list.containsInt(value) || (listHasNulls && nullValue == value))
+                if (value == nullValue ? listHasNulls : value != listNullValue && list.containsInt(value))
                 {
                     if (null == filteredElements)
                     {

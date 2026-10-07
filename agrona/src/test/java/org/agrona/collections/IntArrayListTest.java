@@ -582,8 +582,83 @@ class IntArrayListTest
         list.addInt(1);
         list.addInt(2);
         list.addInt(42);
+        list.add(null);
 
         assertTrue(list.containsAll(other));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void containsAllShouldDistinguishNullFromAnInteger(final boolean reverse)
+    {
+        final IntArrayList nulls = new IntArrayList(new int[]{ -1 }, 1, -1);
+        final IntArrayList values = new IntArrayList(new int[]{ -1 }, 1, -2);
+
+        assertFalse(reverse ? values.containsAll(nulls) : nulls.containsAll(values));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void retainAllShouldDistinguishNullFromAnInteger(final boolean reverse)
+    {
+        final IntArrayList nulls = new IntArrayList(new int[]{ -1, 42, -1, 7 }, 4, -1);
+        final IntArrayList values = new IntArrayList(new int[]{ -1, 42, -1, 8 }, 4, -2);
+        final IntArrayList target = reverse ? values : nulls;
+        final IntArrayList source = reverse ? nulls : values;
+        final List<Integer> sourceBefore = new ArrayList<>(source);
+
+        assertTrue(target.retainAll(source));
+
+        assertEquals(List.of(42), target);
+        assertEquals(sourceBefore, source);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void removeAllShouldDistinguishNullFromAnInteger(final boolean reverse)
+    {
+        final IntArrayList nulls = new IntArrayList(new int[]{ -1, 42, -1 }, 3, -1);
+        final IntArrayList values = new IntArrayList(new int[]{ -1, 42, -1 }, 3, -2);
+        final IntArrayList target = reverse ? values : nulls;
+        final IntArrayList source = reverse ? nulls : values;
+        final List<Integer> sourceBefore = new ArrayList<>(source);
+
+        assertTrue(target.removeAll(source));
+
+        assertEquals(reverse ? Arrays.asList(-1, -1) : Arrays.asList(null, null), target);
+        assertEquals(sourceBefore, source);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { DEFAULT_NULL_VALUE, -1, 42 })
+    void addAllShouldTranslateNullValues(final int nullValue)
+    {
+        final IntArrayList source = new IntArrayList(3, nullValue);
+        source.add(null);
+        source.addInt(7);
+        source.add(null);
+        list.addInt(10);
+
+        assertTrue(list.addAll(source));
+
+        assertEquals(Arrays.asList(10, null, 7, null), list);
+        assertEquals(Arrays.asList(null, 7, null), source);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 0, 1, 2 })
+    void addAllWithIndexShouldTranslateNullValues(final int index)
+    {
+        final IntArrayList source = new IntArrayList(new int[]{ -1, 7, -1 }, 3, -1);
+        list.addInt(10);
+        list.addInt(20);
+        final List<Integer> expected = new ArrayList<>(list);
+        expected.addAll(index, Arrays.asList(null, 7, null));
+
+        assertTrue(list.addAll(index, source));
+
+        assertEquals(expected, list);
+        assertEquals(Arrays.asList(null, 7, null), source);
     }
 
     @Test
