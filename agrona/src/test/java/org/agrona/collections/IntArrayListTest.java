@@ -21,6 +21,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -696,6 +697,45 @@ class IntArrayListTest
         list.addInt(-1);
 
         assertTrue(list.containsAll(other));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { DEFAULT_NULL_VALUE, -1, 0 })
+    void containsShouldDistinguishNullFromItsSentinel(final int nullValue)
+    {
+        final IntArrayList target = new IntArrayList(2, nullValue);
+        assertFalse(target.contains(null));
+        assertFalse(target.contains(nullValue));
+
+        target.addInt(nullValue);
+        target.addInt(7);
+
+        assertTrue(target.contains(null));
+        assertFalse(target.contains(nullValue));
+        assertTrue(target.containsInt(nullValue));
+        assertTrue(target.contains(7));
+        assertFalse(target.contains(8));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void containsAllOverloadsShouldAgreeForDifferentNullValues(final boolean reverse)
+    {
+        final IntArrayList nulls = new IntArrayList(new int[]{ -1 }, 1, -1);
+        final IntArrayList values = new IntArrayList(new int[]{ -1 }, 1, -2);
+        final IntArrayList target = reverse ? values : nulls;
+        final IntArrayList source = reverse ? nulls : values;
+
+        assertFalse(target.containsAll(source));
+        assertFalse(target.containsAll((Collection<Integer>)source));
+        assertFalse(target.containsAll(new ArrayList<>(source)));
+
+        values.clear();
+        values.add(null);
+
+        assertTrue(target.containsAll(source));
+        assertTrue(target.containsAll((Collection<Integer>)source));
+        assertTrue(target.containsAll(new ArrayList<>(source)));
     }
 
     @Test

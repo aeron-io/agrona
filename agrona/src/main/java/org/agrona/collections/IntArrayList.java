@@ -283,7 +283,8 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     @Override
     public boolean contains(final Object o)
     {
-        return containsInt(null == o ? nullValue : (int)o);
+        final int value = null == o ? nullValue : (int)o;
+        return (null == o || value != nullValue) && containsInt(value);
     }
 
     /**
