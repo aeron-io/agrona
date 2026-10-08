@@ -352,18 +352,16 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
         if (numElements > 0)
         {
             ensureCapacityPrivate(size + numElements);
-            if (nullValue == list.nullValue)
+            System.arraycopy(list.elements, 0, elements, size, numElements);
+            if (nullValue != list.nullValue)
             {
-                System.arraycopy(list.elements, 0, elements, size, numElements);
-            }
-            else
-            {
-                final int[] listElements = list.elements;
                 final int listNullValue = list.nullValue;
-                for (@DoNotSub int i = 0; i < numElements; i++)
+                for (@DoNotSub int i = size, end = size + numElements; i < end; i++)
                 {
-                    final int value = listElements[i];
-                    elements[size + i] = value == listNullValue ? nullValue : value;
+                    if (listNullValue == elements[i])
+                    {
+                        elements[i] = nullValue;
+                    }
                 }
             }
             size += numElements;
@@ -397,18 +395,16 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
             {
                 elements[i + numElements] = elements[i];
             }
-            if (nullValue == list.nullValue)
+            System.arraycopy(list.elements, 0, elements, index, numElements);
+            if (nullValue != list.nullValue)
             {
-                System.arraycopy(list.elements, 0, elements, index, numElements);
-            }
-            else
-            {
-                final int[] listElements = list.elements;
                 final int listNullValue = list.nullValue;
-                for (@DoNotSub int i = 0; i < numElements; i++)
+                for (@DoNotSub int i = index, end = index + numElements; i < end; i++)
                 {
-                    final int value = listElements[i];
-                    elements[index + i] = value == listNullValue ? nullValue : value;
+                    if (listNullValue == elements[i])
+                    {
+                        elements[i] = nullValue;
+                    }
                 }
             }
             this.size += numElements;
