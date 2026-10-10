@@ -105,7 +105,7 @@ public final class IoUtil
     }
 
     /**
-     * Recursively delete a file or directory tree.
+     * Recursively delete a file or directory tree. Symbolic links are not followed; the link itself is deleted.
      *
      * @param file           to be deleted.
      * @param ignoreFailures don't throw an exception if delete fails.
@@ -142,7 +142,7 @@ public final class IoUtil
     }
 
     /**
-     * Recursively delete a file or directory tree.
+     * Recursively delete a file or directory tree. Symbolic links are not followed; the link itself is deleted.
      *
      * @param file         to be deleted.
      * @param errorHandler to delegate errors to on exception.
