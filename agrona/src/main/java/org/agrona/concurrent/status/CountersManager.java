@@ -560,7 +560,8 @@ public class CountersManager extends CountersReader
 
     private void appendLabel(final int recordOffset, final String suffix)
     {
-        final int existingLength = metaDataBuffer.getIntVolatile(recordOffset + LABEL_OFFSET);
+        final int storedLength = metaDataBuffer.getIntVolatile(recordOffset + LABEL_OFFSET);
+        final int existingLength = Math.max(0, Math.min(storedLength, MAX_LABEL_LENGTH));
         final int maxSuffixLength = MAX_LABEL_LENGTH - existingLength;
 
         if (StandardCharsets.US_ASCII == labelCharset)
