@@ -422,7 +422,7 @@ public class DirectBufferDataInput implements DataInput
     {
         final String stringAscii = buffer.getStringAscii(position, byteOrder);
 
-        position += stringAscii.length();
+        position += stringAscii.length() + BitUtil.SIZE_OF_INT;
         return stringAscii;
     }
 
@@ -437,7 +437,7 @@ public class DirectBufferDataInput implements DataInput
     public int readStringAscii(final Appendable appendable)
     {
         final int bytesRead = buffer.getStringAscii(position, appendable, byteOrder);
-        position += bytesRead;
+        position += bytesRead + BitUtil.SIZE_OF_INT;
 
         return bytesRead;
     }

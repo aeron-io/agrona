@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.ThrowingConsumer;
 
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.nio.ByteOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -138,6 +139,25 @@ class DirectBufferDataInputAgronaTest extends DirectBufferDataInputTest
         dataInput.readStringAscii(actual);
 
         assertEquals("Cupcake ipsum dolor sit amet.", actual.toString());
+    }
+
+    @Test
+    void shouldAdvancePositionPastAsciiStringAndItsLength() throws EOFException
+    {
+        final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer();
+        int index = buffer.putStringAscii(0, "abc");
+        index += buffer.putStringAscii(index, "defg");
+        buffer.putInt(index, 42);
+
+        final DirectBufferDataInput dataInput = new DirectBufferDataInput(buffer, 0, index + 4);
+        dataInput.byteOrder(ByteOrder.LITTLE_ENDIAN);
+
+        assertEquals("abc", dataInput.readStringAscii());
+        final StringBuilder actual = new StringBuilder();
+        assertEquals(4, dataInput.readStringAscii(actual));
+        assertEquals("defg", actual.toString());
+        assertEquals(42, dataInput.readInt());
+        assertEquals(0, dataInput.remaining());
     }
 
     private static class DataOutputForTest implements DataOutput
