@@ -568,11 +568,11 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     @Override
     public void putBytes(final int index, final byte[] src, final int offset, final int length)
     {
-        ensureCapacity(index, length);
         if (SHOULD_BOUNDS_CHECK)
         {
             Objects.checkFromIndexSize(offset, length, src.length);
         }
+        ensureCapacity(index, length);
 
         UnsafeApi.copyMemory(src, ARRAY_BASE_OFFSET + offset, byteArray, addressOffset + index, length);
     }
@@ -594,11 +594,11 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     @Override
     public void putBytes(final int index, final ByteBuffer srcBuffer, final int srcIndex, final int length)
     {
-        ensureCapacity(index, length);
         if (SHOULD_BOUNDS_CHECK)
         {
             Objects.checkFromIndexSize(srcIndex, length, srcBuffer.capacity());
         }
+        ensureCapacity(index, length);
 
         final byte[] srcByteArray;
         final long srcBaseOffset;
@@ -622,11 +622,11 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
     @Override
     public void putBytes(final int index, final DirectBuffer srcBuffer, final int srcIndex, final int length)
     {
-        ensureCapacity(index, length);
         if (SHOULD_BOUNDS_CHECK)
         {
             srcBuffer.boundsCheck(srcIndex, length);
         }
+        ensureCapacity(index, length);
 
         UnsafeApi.copyMemory(
             srcBuffer.byteArray(),
