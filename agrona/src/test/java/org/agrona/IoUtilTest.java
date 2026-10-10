@@ -16,6 +16,8 @@
 package org.agrona;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -294,5 +297,41 @@ class IoUtilTest
         {
             IoUtil.unmap(mappedByteBuffer);
         }
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void deleteIgnoreFailuresShouldNotFollowSymbolicLinks() throws IOException
+    {
+        final Path outside = Files.createDirectory(tempDir.resolve("outside"));
+        final Path outsideFile = Files.createFile(outside.resolve("keep.txt"));
+        final Path dir = Files.createDirectory(tempDir.resolve("dir"));
+        Files.createSymbolicLink(dir.resolve("link"), outside);
+        Files.createSymbolicLink(dir.resolve("dangling"), tempDir.resolve("missing"));
+
+        IoUtil.delete(dir.toFile(), false);
+
+        assertFalse(Files.exists(dir));
+        assertTrue(Files.exists(outsideFile));
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void deleteErrorHandlerShouldNotFollowSymbolicLinks() throws IOException
+    {
+        final Path outside = Files.createDirectory(tempDir.resolve("outside"));
+        final Path outsideFile = Files.createFile(outside.resolve("keep.txt"));
+        final Path dir = Files.createDirectory(tempDir.resolve("dir"));
+        Files.createSymbolicLink(dir.resolve("link"), outside);
+        final Path rootLink = Files.createSymbolicLink(tempDir.resolve("rootLink"), outside);
+        final ErrorHandler errorHandler = mock(ErrorHandler.class);
+
+        IoUtil.delete(dir.toFile(), errorHandler);
+        IoUtil.delete(rootLink.toFile(), errorHandler);
+
+        assertFalse(Files.exists(dir));
+        assertFalse(Files.exists(rootLink, LinkOption.NOFOLLOW_LINKS));
+        assertTrue(Files.exists(outsideFile));
+        verifyNoInteractions(errorHandler);
     }
 }

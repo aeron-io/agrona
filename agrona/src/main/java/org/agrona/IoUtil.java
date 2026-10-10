@@ -22,6 +22,8 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Set;
@@ -110,9 +112,10 @@ public final class IoUtil
      */
     public static void delete(final File file, final boolean ignoreFailures)
     {
-        if (file.exists())
+        final Path path = file.toPath();
+        if (Files.exists(path, LinkOption.NOFOLLOW_LINKS))
         {
-            if (file.isDirectory())
+            if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS))
             {
                 final File[] files = file.listFiles();
                 if (null != files)
@@ -128,7 +131,7 @@ public final class IoUtil
             {
                 try
                 {
-                    Files.delete(file.toPath());
+                    Files.delete(path);
                 }
                 catch (final IOException ex)
                 {
@@ -148,9 +151,10 @@ public final class IoUtil
     {
         try
         {
-            if (file.exists())
+            final Path path = file.toPath();
+            if (Files.exists(path, LinkOption.NOFOLLOW_LINKS))
             {
-                if (file.isDirectory())
+                if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS))
                 {
                     final File[] files = file.listFiles();
                     if (null != files)
@@ -164,7 +168,7 @@ public final class IoUtil
 
                 if (!file.delete())
                 {
-                    Files.delete(file.toPath());
+                    Files.delete(path);
                 }
             }
         }
