@@ -615,7 +615,8 @@ public class CountersReader
 
     private String labelValue(final AtomicBuffer metaDataBuffer, final int recordOffset)
     {
-        final int labelLength = metaDataBuffer.getIntVolatile(recordOffset + LABEL_OFFSET);
+        final int storedLength = metaDataBuffer.getIntVolatile(recordOffset + LABEL_OFFSET);
+        final int labelLength = Math.max(0, Math.min(storedLength, MAX_LABEL_LENGTH));
         final byte[] stringInBytes = new byte[labelLength];
         metaDataBuffer.getBytes(recordOffset + LABEL_OFFSET + SIZE_OF_INT, stringInBytes);
 

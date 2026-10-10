@@ -525,4 +525,31 @@ class CountersManagerTest
             assertEquals("original label with update", counter.label());
         }
     }
+
+    @Test
+    void shouldClampCorruptedLabelLengthWhenReadingLabel()
+    {
+        final int counterId = manager.allocate(LABEL);
+        final int labelLengthOffset = metaDataOffset(counterId) + LABEL_OFFSET;
+
+        metadataBuffer.putInt(labelLengthOffset, Integer.MAX_VALUE);
+        assertEquals(MAX_LABEL_LENGTH, reader.getCounterLabel(counterId).length());
+
+        metadataBuffer.putInt(labelLengthOffset, -1);
+        assertEquals("", reader.getCounterLabel(counterId));
+    }
+
+    @Test
+    void shouldNotAppendLabelOutsideRecordWhenLabelLengthIsCorrupted()
+    {
+        final int counterId = manager.allocate(LABEL);
+        final int nextCounterId = manager.allocate(LABEL);
+        final int labelLengthOffset = metaDataOffset(counterId) + LABEL_OFFSET;
+
+        metadataBuffer.putInt(labelLengthOffset, METADATA_LENGTH);
+        manager.appendToLabel(counterId, "suffix");
+
+        assertEquals(MAX_LABEL_LENGTH, metadataBuffer.getInt(labelLengthOffset));
+        assertEquals(LABEL, manager.getCounterLabel(nextCounterId));
+    }
 }
