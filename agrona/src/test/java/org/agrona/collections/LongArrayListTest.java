@@ -19,13 +19,42 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LongArrayListTest
 {
+    @ParameterizedTest
+    @ValueSource(longs = { Long.MIN_VALUE, -1, 1099511627776L })
+    void removeShouldDistinguishNullFromItsSentinel(final long nullValue)
+    {
+        final LongArrayList target = new LongArrayList(4, nullValue);
+        assertFalse(target.remove(Long.valueOf(nullValue)));
+        assertFalse(target.remove(null));
+
+        target.addLong(7L);
+        target.add(null);
+        target.addLong(8L);
+        target.add(null);
+
+        assertFalse(target.remove(Long.valueOf(nullValue)));
+        assertEquals(Arrays.asList(7L, null, 8L, null), target);
+
+        assertTrue(target.remove(null));
+        assertEquals(Arrays.asList(7L, 8L, null), target);
+
+        assertTrue(target.removeLong(nullValue));
+        assertEquals(Arrays.asList(7L, 8L), target);
+
+        assertTrue(target.remove(Long.valueOf(7L)));
+        assertFalse(target.remove(Long.valueOf(9L)));
+        assertEquals(Arrays.asList(8L), target);
+    }
+
     @ParameterizedTest
     @ValueSource(longs = { Long.MIN_VALUE, -1, 1099511627776L })
     void containsShouldDistinguishNullFromItsSentinel(final long nullValue)

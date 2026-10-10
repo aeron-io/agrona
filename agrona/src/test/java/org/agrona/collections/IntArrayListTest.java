@@ -701,6 +701,33 @@ class IntArrayListTest
 
     @ParameterizedTest
     @ValueSource(ints = { DEFAULT_NULL_VALUE, -1, 0 })
+    void removeShouldDistinguishNullFromItsSentinel(final int nullValue)
+    {
+        final IntArrayList target = new IntArrayList(4, nullValue);
+        assertFalse(target.remove(Integer.valueOf(nullValue)));
+        assertFalse(target.remove(null));
+
+        target.addInt(7);
+        target.add(null);
+        target.addInt(8);
+        target.add(null);
+
+        assertFalse(target.remove(Integer.valueOf(nullValue)));
+        assertEquals(Arrays.asList(7, null, 8, null), target);
+
+        assertTrue(target.remove(null));
+        assertEquals(Arrays.asList(7, 8, null), target);
+
+        assertTrue(target.removeInt(nullValue));
+        assertEquals(Arrays.asList(7, 8), target);
+
+        assertTrue(target.remove(Integer.valueOf(7)));
+        assertFalse(target.remove(Integer.valueOf(9)));
+        assertEquals(Arrays.asList(8), target);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { DEFAULT_NULL_VALUE, -1, 0 })
     void containsShouldDistinguishNullFromItsSentinel(final int nullValue)
     {
         final IntArrayList target = new IntArrayList(2, nullValue);

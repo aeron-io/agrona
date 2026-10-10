@@ -581,7 +581,8 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     @Override
     public boolean remove(final Object o)
     {
-        return removeInt(null == o ? nullValue : (int)o);
+        final int value = null == o ? nullValue : (int)o;
+        return (null == o || value != nullValue) && removeInt(value);
     }
 
     /**
