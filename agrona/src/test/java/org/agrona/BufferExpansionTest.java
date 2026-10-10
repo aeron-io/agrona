@@ -15,15 +15,18 @@
  */
 package org.agrona;
 
+import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.nio.ByteBuffer;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class BufferExpansionTest
 {
@@ -47,6 +50,21 @@ class BufferExpansionTest
 
         assertThat(buffer.capacity(), greaterThan(capacity));
         assertEquals(buffer.getInt(index), value);
+    }
+
+    @ParameterizedTest
+    @MethodSource("buffers")
+    void shouldNotExpandWhenSourceIsShorterThanLength(final MutableDirectBuffer buffer)
+    {
+        final int capacity = buffer.capacity();
+        final int length = capacity * 4;
+        final byte[] src = new byte[8];
+
+        assertThrows(IndexOutOfBoundsException.class, () -> buffer.putBytes(0, src, 0, length));
+        assertThrows(IndexOutOfBoundsException.class, () -> buffer.putBytes(0, ByteBuffer.wrap(src), 0, length));
+        assertThrows(IndexOutOfBoundsException.class, () -> buffer.putBytes(0, new UnsafeBuffer(src), 0, length));
+
+        assertEquals(capacity, buffer.capacity());
     }
 
     @Test
