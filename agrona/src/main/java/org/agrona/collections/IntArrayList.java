@@ -283,7 +283,8 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     @Override
     public boolean contains(final Object o)
     {
-        return containsInt(null == o ? nullValue : (int)o);
+        final int value = null == o ? nullValue : (int)o;
+        return (null == o || value != nullValue) && containsInt(value);
     }
 
     /**
@@ -353,6 +354,17 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
         {
             ensureCapacityPrivate(size + numElements);
             System.arraycopy(list.elements, 0, elements, size, numElements);
+            if (nullValue != list.nullValue)
+            {
+                final int listNullValue = list.nullValue;
+                for (@DoNotSub int i = size, end = size + numElements; i < end; i++)
+                {
+                    if (listNullValue == elements[i])
+                    {
+                        elements[i] = nullValue;
+                    }
+                }
+            }
             size += numElements;
             return true;
         }
@@ -385,6 +397,17 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
                 elements[i + numElements] = elements[i];
             }
             System.arraycopy(list.elements, 0, elements, index, numElements);
+            if (nullValue != list.nullValue)
+            {
+                final int listNullValue = list.nullValue;
+                for (@DoNotSub int i = index, end = index + numElements; i < end; i++)
+                {
+                    if (listNullValue == elements[i])
+                    {
+                        elements[i] = nullValue;
+                    }
+                }
+            }
             this.size += numElements;
             return true;
         }
@@ -405,7 +428,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
         for (@DoNotSub int i = 0, size = list.size; i < size; i++)
         {
             final int value = listElements[i];
-            if (!(containsInt(value) || hasNulls && listNullValue == value))
+            if (value == listNullValue ? !hasNulls : value == nullValue || !containsInt(value))
             {
                 return false;
             }
@@ -434,13 +457,14 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
             }
 
             final int nullValue = this.nullValue;
+            final int listNullValue = list.nullValue;
             final boolean listHasNulls = list.contains(null);
             int[] filteredElements = null;
             @DoNotSub int j = -1;
             for (@DoNotSub int i = 0; i < size; i++)
             {
                 final int value = elements[i];
-                if (!(list.containsInt(value) || (listHasNulls && nullValue == value)))
+                if (value == nullValue ? !listHasNulls : value == listNullValue || !list.containsInt(value))
                 {
                     if (null == filteredElements)
                     {
@@ -478,13 +502,14 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
         if (size > 0 && !list.isEmpty())
         {
             final int nullValue = this.nullValue;
+            final int listNullValue = list.nullValue;
             final boolean listHasNulls = list.contains(null);
             int[] filteredElements = null;
             @DoNotSub int j = -1;
             for (@DoNotSub int i = 0; i < size; i++)
             {
                 final int value = elements[i];
-                if (list.containsInt(value) || (listHasNulls && nullValue == value))
+                if (value == nullValue ? listHasNulls : value != listNullValue && list.containsInt(value))
                 {
                     if (null == filteredElements)
                     {
@@ -556,7 +581,8 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     @Override
     public boolean remove(final Object o)
     {
-        return removeInt(null == o ? nullValue : (int)o);
+        final int value = null == o ? nullValue : (int)o;
+        return (null == o || value != nullValue) && removeInt(value);
     }
 
     /**
@@ -777,13 +803,11 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
                 final int thisValue = elements[i];
                 final int thatValue = thatElements[i];
 
-                if (thisValue != thatValue)
+                if (thisValue == this.nullValue ? thatValue != that.nullValue :
+                    thisValue != thatValue || thatValue == that.nullValue)
                 {
-                    if (thisValue != this.nullValue || thatValue != that.nullValue)
-                    {
-                        isEqual = false;
-                        break;
-                    }
+                    isEqual = false;
+                    break;
                 }
             }
         }

@@ -4,6 +4,12 @@
 
 === New & Noteworthy
 
+* *[Breaking]* Align `IntArrayList` and `LongArrayList` equality and bulk operations with logical null values when
+lists use different `nullValue` sentinels. `contains(Object)` no longer matches a boxed sentinel integer as a value;
+it matches `null` instead. Use `containsInt` or `containsLong` to search the stored primitive values.
+Likewise, `remove(Object)` no longer removes a null when passed a boxed sentinel integer. Use `remove(null)` to
+remove nulls, or `removeInt` and `removeLong` to remove stored primitive values.
+(https://github.com/aeron-io/agrona/pull/380[#380])
 * *[Breaking]* Remove `agrona-agent` module, i.e. `BufferAlignmentAgent` is no longer provided.
 * **[Java]** To memory map a file in IoUtil, use FileChannel#open instead of new RandomAccessFile to open file channel before memory mapping.
 In windows, this additionally adds FILE_SHARE_DELETE for dwShareMode that allows others to access with DELETE for dwDesiredAccess.
