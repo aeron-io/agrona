@@ -1,6 +1,6 @@
 = Changelog
 
-== 2.7.0 (unreleased)
+== 2.7.0 (2026-10-12)
 
 === New & Noteworthy
 
@@ -13,9 +13,17 @@ remove nulls, or `removeInt` and `removeLong` to remove stored primitive values.
 
 * *[Breaking]* Remove `agrona-agent` module, i.e. `BufferAlignmentAgent` is no longer provided.
 
-* **[Java]** To memory map a file in IoUtil, use `FileChannel#open` instead of new `RandomAccessFile` to open file
-channel before memory mapping. On Windows, this additionally adds `FILE_SHARE_DELETE` for `dwShareMode` that allows
-others to access with `DELETE` for `dwDesiredAccess`. (https://github.com/aeron-io/agrona/pull/381[#381])
+* **[Java]** To memory map a file in `IoUtil`, use `FileChannel#open` instead of new `RandomAccessFile` to open file
+channel before memory mapping. (https://github.com/aeron-io/agrona/pull/381[#381])
++
+TIP: On Windows, this additionally adds `FILE_SHARE_DELETE` for `dwShareMode` that allows others to access with `DELETE`
+permission for `dwDesiredAccess`.
+
+* Add thread affinity support on Linux.
++
+`org.agrona.concurrent.affinity.ThreadAffinity` can be used to get and set thread affinity. This feature only works on Linux.
++
+Additionally `org.agrona.concurrent.AgentRunner` was extended to support thread affinity for the runner thread.
 
 === Changelog
 
