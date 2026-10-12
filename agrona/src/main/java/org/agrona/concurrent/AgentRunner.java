@@ -159,6 +159,10 @@ public class AgentRunner implements Runnable, AutoCloseable
     /**
      * Run an {@link Agent}.
      * <p>
+     * If thread affinity was specified when this {@link AgentRunner} was created it will be applied
+     * <em><strong>after</strong></em> {@link Agent#onStart()} is called, i.e. to ensure that any auxiliary threads
+     * started in {@code onStart} do not interfere with the pinned runner thread.
+     * <p>
      * This method does not return until the run loop is stopped via {@link #close()}.
      */
     @Override
