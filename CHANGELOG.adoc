@@ -32,7 +32,7 @@ others to access with `DELETE` for `dwDesiredAccess`. (https://github.com/aeron-
 * **[Java]** Fix `BiInt2NullableObjectMap#forEach` leaking `NullReference`. (https://github.com/aeron-io/agrona/pull/371[#371])
 * **[Java]** Fix `ExpandableRingBuffer#append` bug when there is not enough contiguous space left and resize fails.
 (https://github.com/aeron-io/agrona/pull/370[#370])
-* **[Java]** Upgrade to `Gradle` 9.8.0.
+* **[Java]** Upgrade to `Gradle` 9.8.1.
 * **[Java]** Upgrade to `ByteBuddy` 1.18.14.
 * **[Java]** Upgrade to `Guava TestLib` 33.7.2-jre.
 * **[Java]** Upgrade to `Versions` 0.65.0.
