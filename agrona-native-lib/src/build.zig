@@ -55,7 +55,7 @@ pub fn build(b: *std.Build) void {
 
         const c_flags = &[_][]const u8{ "-std=c11", "-Wall", "-Wextra" };
 
-        var dir = b.build_root.handle.openDir(io, ".", .{ .iterate = true }) catch |err| {
+        var dir = b.root.openDir(io, ".", .{ .iterate = true }) catch |err| {
             std.debug.print("Failed to open current directory: {}\n", .{err});
             return;
         };
