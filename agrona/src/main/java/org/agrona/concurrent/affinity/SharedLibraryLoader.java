@@ -19,10 +19,12 @@ import org.agrona.SystemUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 final class SharedLibraryLoader
 {
@@ -59,7 +61,11 @@ final class SharedLibraryLoader
             final Path tempFile = Files.createTempFile("agrona-native-lib", suffix);
             tempFile.toFile().deleteOnExit();
 
-            Files.copy(in, tempFile, REPLACE_EXISTING);
+            // Write into the file createTempFile made, keeping its owner-only permissions
+            try (OutputStream out = Files.newOutputStream(tempFile, WRITE, TRUNCATE_EXISTING))
+            {
+                in.transferTo(out);
+            }
 
             System.load(tempFile.toAbsolutePath().toString());
             // Can be safely deleted since the file has been loaded to memory
