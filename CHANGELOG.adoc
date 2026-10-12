@@ -4,18 +4,25 @@
 
 === New & Noteworthy
 
-* *[Breaking]* Align `IntArrayList` and `LongArrayList` equality and bulk operations with logical null values when
+* *[Breaking]* Align `IntArrayList` and `LongArrayList` equality and bulk operations with logical `null` values when
 lists use different `nullValue` sentinels. `contains(Object)` no longer matches a boxed sentinel integer as a value;
 it matches `null` instead. Use `containsInt` or `containsLong` to search the stored primitive values.
 Likewise, `remove(Object)` no longer removes a null when passed a boxed sentinel integer. Use `remove(null)` to
 remove nulls, or `removeInt` and `removeLong` to remove stored primitive values.
 (https://github.com/aeron-io/agrona/pull/380[#380])
+
 * *[Breaking]* Remove `agrona-agent` module, i.e. `BufferAlignmentAgent` is no longer provided.
-* **[Java]** To memory map a file in IoUtil, use FileChannel#open instead of new RandomAccessFile to open file channel before memory mapping.
-In windows, this additionally adds FILE_SHARE_DELETE for dwShareMode that allows others to access with DELETE for dwDesiredAccess.
+
+* **[Java]** To memory map a file in IoUtil, use `FileChannel#open` instead of new `RandomAccessFile` to open file
+channel before memory mapping. On Windows, this additionally adds `FILE_SHARE_DELETE` for `dwShareMode` that allows
+others to access with `DELETE` for `dwDesiredAccess`. (https://github.com/aeron-io/agrona/pull/381[#381])
 
 === Changelog
 
+* **[Java]** Advance `DirectBufferDataInput` position past the ASCII string length prefix. (https://github.com/aeron-io/agrona/pull/382[#382])
+* **[Java]** Clamp stored counter label length before use. (https://github.com/aeron-io/agrona/pull/383[#383])
+* **[Java]** Do not follow symbolic links in `IoUtil.delete`. (https://github.com/aeron-io/agrona/pull/384[#384])
+* **[Java]** Check the source range before expanding the buffer in `AbstractMutableDirectBuffer#putBytes`. (https://github.com/aeron-io/agrona/pull/385[#385])
 * **[Java]** Unmap `null` values returned by `Int2ObjectHashMap.EntryIterator.setValue`. (https://github.com/aeron-io/agrona/pull/374[#374])
 * **[Java]** Unmap `null` values in `BiInt2ObjectMap.toString`. (https://github.com/aeron-io/agrona/pull/373[#373])
 * **[Java]** Unmap `null` values returned by `BiInt2ObjectMap.remove`. (https://github.com/aeron-io/agrona/pull/372[#372])
