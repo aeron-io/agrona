@@ -1,5 +1,7 @@
 = Changelog
 
+== 2.8.0 (unreleased)
+
 == 2.7.0 (2026-10-12)
 
 === New & Noteworthy
