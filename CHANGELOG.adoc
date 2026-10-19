@@ -5,6 +5,7 @@
 * **[Java]** Keep owner-only permissions on the extracted native library. (https://github.com/aeron-io/agrona/pull/387[#387])
 * **[Zig]** Verify the SHA-256 of the downloaded Zig toolchain. (https://github.com/aeron-io/agrona/pull/386[#386])
 * **[Java]** Upgrade to `Versions` 0.66.0.
+* **[Java]** Upgrade to `ByteBuddy` 1.18.15.
 
 == 2.7.0 (2026-10-12)
 
