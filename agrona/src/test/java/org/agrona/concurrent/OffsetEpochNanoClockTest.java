@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2025 Real Logic Limited.
+ * Copyright 2014-2026 Real Logic Limited.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package org.agrona.concurrent;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -55,6 +58,24 @@ class OffsetEpochNanoClockTest
         clock.sample();
 
         assertSaneEpochTimestamp(clock);
+    }
+
+    @Test
+    void shouldMatchHighResolutionClockAfterSampling()
+    {
+        final int clocks = 11;
+        final long[] errors = new long[clocks];
+        for (int i = 0; i < clocks; i++)
+        {
+            final OffsetEpochNanoClock clock = new OffsetEpochNanoClock();
+            final long before = HighResolutionClock.epochNanos();
+            final long nanoTime = clock.nanoTime();
+            final long after = HighResolutionClock.epochNanos();
+            errors[i] = Math.abs(nanoTime - ((before + after) >> 1));
+        }
+
+        Arrays.sort(errors);
+        assertThat(errors[clocks >> 1], lessThanOrEqualTo(MICROSECONDS.toNanos(100)));
     }
 
     private void sleep()
