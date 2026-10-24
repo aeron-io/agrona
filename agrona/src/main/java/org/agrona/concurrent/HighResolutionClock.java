@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2025 Real Logic Limited.
+ * Copyright 2014-2026 Real Logic Limited.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,11 @@ import java.time.Instant;
  * <b>Note:</b> The actual provided resolution may be a higher granularity than the possible precision.
  * For example, on Java 8 many JVMs will only advance a millisecond per tick so when requesting micros or nanos
  * then the returned time may be a multiple of milliseconds. Later JVMs tend to improve on this.
+ * <p>
+ * <b>Note:</b> {@link #epochMicros()} and {@link #epochNanos()} read {@link Instant#now()}, which allocates an
+ * {@link Instant} on each call unless the JIT compiler removes the allocation. C2 removes it once the caller is
+ * compiled and inlined; C1-compiled and interpreted code allocate 24 bytes per call. On a hot path that must not
+ * allocate, consider {@link OffsetEpochNanoClock}.
  */
 public final class HighResolutionClock
 {

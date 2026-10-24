@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2025 Real Logic Limited.
+ * Copyright 2014-2026 Real Logic Limited.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 package org.agrona.concurrent;
 
 /**
- * Implementation that calls {@link HighResolutionClock#epochNanos()}.
+ * Implementation that calls {@link HighResolutionClock#epochNanos()}, which allocates outside C2-compiled code (see
+ * {@link HighResolutionClock}).
  *
  * @see OffsetEpochNanoClock
  */
