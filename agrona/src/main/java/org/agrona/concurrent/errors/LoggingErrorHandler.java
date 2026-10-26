@@ -105,8 +105,22 @@ public class LoggingErrorHandler implements ErrorHandler, AutoCloseable
         {
             errorOverflow.println("error log is closed");
             throwable.printStackTrace(errorOverflow);
+            return;
         }
-        else if (!log.record(throwable))
+
+        final boolean recorded;
+        try
+        {
+            recorded = log.record(throwable);
+        }
+        catch (final Throwable ex)
+        {
+            errorOverflow.println("error log write failed: " + ex);
+            throwable.printStackTrace(errorOverflow);
+            return;
+        }
+
+        if (!recorded)
         {
             errorOverflow.println("error log is full, consider increasing length of error buffer");
             throwable.printStackTrace(errorOverflow);
