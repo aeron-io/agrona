@@ -7,6 +7,7 @@
 * **[Java]** Upgrade to `Gradle` 9.8.2.
 * **[Java]** Upgrade to `Versions` 0.66.0.
 * **[Java]** Upgrade to `ByteBuddy` 1.18.17.
+* **[Java]** Upgrade to `Guava TestLib` 33.8.0-jre.
 
 == 2.7.0 (2026-10-12)
 
