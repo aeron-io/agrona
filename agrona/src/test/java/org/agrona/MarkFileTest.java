@@ -20,6 +20,8 @@ import org.agrona.concurrent.SystemEpochClock;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,10 +30,12 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
@@ -48,6 +52,7 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -280,6 +285,79 @@ class MarkFileTest
         {
             testConcurrentActivation();
         }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void shouldCreateNewMarkFileAsNonSparseFile() throws IOException
+    {
+        final long expectedFileSize = 128 * 1024;
+        final IntConsumer versionCheck = mock(IntConsumer.class);
+        final Consumer<String> logger = mock(Consumer.class);
+        final FileStore fileStore = Files.getFileStore(tempDir.toPath());
+        final File markFile = tempDir.toPath().resolve("new-mark-file.dat").toFile();
+        assertFalse(markFile.exists());
+        final long originalFreeSpace = fileStore.getUsableSpace();
+        assertThat(originalFreeSpace, greaterThanOrEqualTo(expectedFileSize));
+
+        final MappedByteBuffer byteBuffer = MarkFile.mapNewOrExistingMarkFile(
+            markFile,
+            false,
+            0,
+            8,
+            expectedFileSize,
+            100,
+            SystemEpochClock.INSTANCE,
+            versionCheck,
+            logger);
+
+        assertNotNull(byteBuffer);
+        assertTrue(markFile.exists());
+        assertEquals(expectedFileSize, markFile.length());
+        assertEquals(expectedFileSize, byteBuffer.capacity());
+        assertThat(fileStore.getUsableSpace(), lessThanOrEqualTo(originalFreeSpace - expectedFileSize));
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = { 64, 256 * 1024 })
+    @SuppressWarnings("unchecked")
+    void shouldSetExistingMarkFileLengthToTheSpecifiedValue(final long originalFileSize) throws IOException
+    {
+        final int versionFieldOffset = 0;
+        final int timestampFieldOffset = 8;
+        final long targetFileSize = 32 * 1024;
+        final IntConsumer versionCheck = mock(IntConsumer.class);
+        final Consumer<String> logger = mock(Consumer.class);
+        final FileStore fileStore = Files.getFileStore(tempDir.toPath());
+        final Path markFile = tempDir.toPath().resolve("existing-mark-file.dat");
+        final long originalFreeSpace = fileStore.getUsableSpace();
+        assertThat(originalFreeSpace, greaterThanOrEqualTo(targetFileSize));
+
+        final byte[] data = new byte[(int)originalFileSize];
+        Arrays.fill(data, (byte)0xFF);
+        final UnsafeBuffer buffer = new UnsafeBuffer(data);
+        buffer.putLong(timestampFieldOffset, SystemEpochClock.INSTANCE.time() - 5_000);
+        Files.write(markFile, data);
+        assertEquals(originalFileSize, Files.size(markFile));
+        assertThat(fileStore.getUsableSpace(), lessThanOrEqualTo(originalFreeSpace - originalFileSize));
+
+        final MappedByteBuffer byteBuffer = MarkFile.mapNewOrExistingMarkFile(
+            markFile.toFile(),
+            true,
+            versionFieldOffset,
+            timestampFieldOffset,
+            targetFileSize,
+            100,
+            SystemEpochClock.INSTANCE,
+            versionCheck,
+            logger);
+
+        assertNotNull(byteBuffer);
+        assertEquals(targetFileSize, Files.size(markFile));
+        assertEquals(targetFileSize, byteBuffer.capacity());
+        assertThat(fileStore.getUsableSpace(), lessThanOrEqualTo(originalFreeSpace - targetFileSize));
+        buffer.wrap(byteBuffer);
+        assertEquals(originalFileSize < targetFileSize ? 0 : (byte)0xFF, buffer.getByte((int)targetFileSize - 1));
     }
 
     @SuppressWarnings("MethodLength")

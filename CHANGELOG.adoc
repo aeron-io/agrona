@@ -2,6 +2,8 @@
 
 == 2.8.0 (unreleased)
 
+* **[Java]** Fully allocate mark file at creation/load time.
+* **[Java]** Report errors to the overflow stream when `LoggingErrorHandler` cannot write its log. (https://github.com/aeron-io/agrona/pull/392[#392])
 * **[Java]** Keep owner-only permissions on the extracted native library. (https://github.com/aeron-io/agrona/pull/387[#387])
 * **[Zig]** Verify the SHA-256 of the downloaded Zig toolchain. (https://github.com/aeron-io/agrona/pull/386[#386])
 * **[Java]** Upgrade to `Gradle` 9.8.2.

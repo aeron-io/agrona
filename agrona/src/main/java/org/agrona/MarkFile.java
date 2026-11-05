@@ -36,7 +36,6 @@ import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.SPARSE;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.agrona.BitUtil.SIZE_OF_INT;
 import static org.agrona.BitUtil.SIZE_OF_LONG;
@@ -656,7 +655,7 @@ public class MarkFile implements AutoCloseable
         MappedByteBuffer byteBuffer = null;
 
         final EnumSet<StandardOpenOption> openOptions = shouldPreExist ?
-            EnumSet.of(READ, WRITE) : EnumSet.of(CREATE_NEW, SPARSE, READ, WRITE);
+            EnumSet.of(READ, WRITE) : EnumSet.of(CREATE_NEW, READ, WRITE);
 
         try (FileChannel channel = FileChannel.open(markFile.toPath(), openOptions))
         {
@@ -700,6 +699,10 @@ public class MarkFile implements AutoCloseable
                     throw new IllegalStateException("concurrent mark file activation: " + markFile);
                 }
             }
+
+            channel.truncate(totalFileLength); // set file size
+            final int lastByteIndex = Math.toIntExact(totalFileLength - 1);
+            buffer.putByte(lastByteIndex, shouldPreExist ? buffer.getByte(lastByteIndex) : 0);
         }
         catch (final IOException ex)
         {
