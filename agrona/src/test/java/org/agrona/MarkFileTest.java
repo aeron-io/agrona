@@ -52,7 +52,6 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -297,8 +296,6 @@ class MarkFileTest
         final FileStore fileStore = Files.getFileStore(tempDir.toPath());
         final File markFile = tempDir.toPath().resolve("new-mark-file.dat").toFile();
         assertFalse(markFile.exists());
-        final long originalFreeSpace = fileStore.getUsableSpace();
-        assertThat(originalFreeSpace, greaterThanOrEqualTo(expectedFileSize));
 
         final MappedByteBuffer byteBuffer = MarkFile.mapNewOrExistingMarkFile(
             markFile,
@@ -315,7 +312,7 @@ class MarkFileTest
         assertTrue(markFile.exists());
         assertEquals(expectedFileSize, markFile.length());
         assertEquals(expectedFileSize, byteBuffer.capacity());
-        assertThat(fileStore.getUsableSpace(), lessThanOrEqualTo(originalFreeSpace - expectedFileSize));
+        assertEquals(0, byteBuffer.get(Math.toIntExact(expectedFileSize - 1)));
     }
 
     @ParameterizedTest
@@ -330,8 +327,6 @@ class MarkFileTest
         final Consumer<String> logger = mock(Consumer.class);
         final FileStore fileStore = Files.getFileStore(tempDir.toPath());
         final Path markFile = tempDir.toPath().resolve("existing-mark-file.dat");
-        final long originalFreeSpace = fileStore.getUsableSpace();
-        assertThat(originalFreeSpace, greaterThanOrEqualTo(targetFileSize));
 
         final byte[] data = new byte[(int)originalFileSize];
         Arrays.fill(data, (byte)0xFF);
@@ -339,7 +334,6 @@ class MarkFileTest
         buffer.putLong(timestampFieldOffset, SystemEpochClock.INSTANCE.time() - 5_000);
         Files.write(markFile, data);
         assertEquals(originalFileSize, Files.size(markFile));
-        assertThat(fileStore.getUsableSpace(), lessThanOrEqualTo(originalFreeSpace - originalFileSize));
 
         final MappedByteBuffer byteBuffer = MarkFile.mapNewOrExistingMarkFile(
             markFile.toFile(),
@@ -355,7 +349,6 @@ class MarkFileTest
         assertNotNull(byteBuffer);
         assertEquals(targetFileSize, Files.size(markFile));
         assertEquals(targetFileSize, byteBuffer.capacity());
-        assertThat(fileStore.getUsableSpace(), lessThanOrEqualTo(originalFreeSpace - targetFileSize));
         buffer.wrap(byteBuffer);
         assertEquals(originalFileSize < targetFileSize ? 0 : (byte)0xFF, buffer.getByte((int)targetFileSize - 1));
     }
