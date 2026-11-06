@@ -20,8 +20,6 @@ import org.agrona.concurrent.SystemEpochClock;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -315,17 +313,16 @@ class MarkFileTest
         assertEquals(0, byteBuffer.get(Math.toIntExact(expectedFileSize - 1)));
     }
 
-    @ParameterizedTest
-    @ValueSource(longs = { 64, 256 * 1024 })
+    @Test
     @SuppressWarnings("unchecked")
-    void shouldSetExistingMarkFileLengthToTheSpecifiedValue(final long originalFileSize) throws IOException
+    void shouldExtendFileSizeIfItIsTooShort() throws IOException
     {
+        final long originalFileSize = 64;
         final int versionFieldOffset = 0;
         final int timestampFieldOffset = 8;
         final long targetFileSize = 32 * 1024;
         final IntConsumer versionCheck = mock(IntConsumer.class);
         final Consumer<String> logger = mock(Consumer.class);
-        final FileStore fileStore = Files.getFileStore(tempDir.toPath());
         final Path markFile = tempDir.toPath().resolve("existing-mark-file.dat");
 
         final byte[] data = new byte[(int)originalFileSize];
@@ -347,10 +344,47 @@ class MarkFileTest
             logger);
 
         assertNotNull(byteBuffer);
-        assertEquals(targetFileSize, Files.size(markFile));
-        assertEquals(targetFileSize, byteBuffer.capacity());
+        assertEquals(Math.max(targetFileSize, originalFileSize), Files.size(markFile));
+        assertEquals(Math.max(targetFileSize, originalFileSize), byteBuffer.capacity());
         buffer.wrap(byteBuffer);
-        assertEquals(originalFileSize < targetFileSize ? 0 : (byte)0xFF, buffer.getByte((int)targetFileSize - 1));
+        assertEquals(0, buffer.getByte((int)targetFileSize - 1));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void shouldMapTheLargeMarkFileEntirelyWithoutChangingFileLength() throws IOException
+    {
+        final long originalFileSize = 256 * 1024;
+        final int versionFieldOffset = 0;
+        final int timestampFieldOffset = 8;
+        final long targetFileSize = 32 * 1024;
+        final IntConsumer versionCheck = mock(IntConsumer.class);
+        final Consumer<String> logger = mock(Consumer.class);
+        final Path markFile = tempDir.toPath().resolve("existing-mark-file.dat");
+
+        final byte[] data = new byte[(int)originalFileSize];
+        Arrays.fill(data, (byte)0xFF);
+        final UnsafeBuffer buffer = new UnsafeBuffer(data);
+        buffer.putLong(timestampFieldOffset, SystemEpochClock.INSTANCE.time() - 5_000);
+        Files.write(markFile, data);
+        assertEquals(originalFileSize, Files.size(markFile));
+
+        final MappedByteBuffer byteBuffer = MarkFile.mapNewOrExistingMarkFile(
+            markFile.toFile(),
+            true,
+            versionFieldOffset,
+            timestampFieldOffset,
+            targetFileSize,
+            100,
+            SystemEpochClock.INSTANCE,
+            versionCheck,
+            logger);
+
+        assertNotNull(byteBuffer);
+        assertEquals(originalFileSize, Files.size(markFile));
+        assertEquals(originalFileSize, byteBuffer.capacity());
+        buffer.wrap(byteBuffer);
+        assertEquals((byte)0xFF, buffer.getByte((int)targetFileSize - 1));
     }
 
     @SuppressWarnings("MethodLength")

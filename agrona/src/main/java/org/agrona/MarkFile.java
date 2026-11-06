@@ -659,7 +659,8 @@ public class MarkFile implements AutoCloseable
 
         try (FileChannel channel = FileChannel.open(markFile.toPath(), openOptions))
         {
-            byteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, totalFileLength);
+            final long currentFileSize = channel.size();
+            byteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, Math.max(totalFileLength, currentFileSize));
             final UnsafeBuffer buffer = new UnsafeBuffer(byteBuffer);
 
             if (shouldPreExist)
@@ -700,9 +701,10 @@ public class MarkFile implements AutoCloseable
                 }
             }
 
-            channel.truncate(totalFileLength); // set file size
-            final int lastByteIndex = Math.toIntExact(totalFileLength - 1);
-            buffer.putByte(lastByteIndex, shouldPreExist ? buffer.getByte(lastByteIndex) : 0);
+            if (currentFileSize < totalFileLength)
+            {
+                buffer.putByte(Math.toIntExact(totalFileLength - 1), (byte)0);
+            }
         }
         catch (final IOException ex)
         {
