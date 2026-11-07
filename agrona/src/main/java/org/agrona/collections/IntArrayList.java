@@ -694,10 +694,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
      */
     public void pushInt(final int element)
     {
-        ensureCapacityPrivate(size + 1);
-
-        elements[size] = element;
-        size++;
+        addInt(element);
     }
 
     /**
