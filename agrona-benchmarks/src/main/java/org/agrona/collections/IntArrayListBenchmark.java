@@ -15,12 +15,21 @@
  */
 package org.agrona.collections;
 
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,8 +43,6 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 public class IntArrayListBenchmark
 {
-    private static final int SEED = 42;
-
     @Param({ "16", "1024", "65536" })
     private int size;
 
@@ -54,13 +61,17 @@ public class IntArrayListBenchmark
     @Setup
     public void setup()
     {
-        final Random random = new Random(SEED);
-
-        list = new IntArrayList();
-        for (int i = 0; i < size; i++)
+        // grow lists so the JIT profile has seen the resize path, as in a real application
+        for (int r = 0; r < 20_000; r++)
         {
-            list.addInt(random.nextInt());
+            final IntArrayList growing = new IntArrayList();
+            for (int i = 0; i < 100; i++)
+            {
+                growing.addInt(i);
+            }
         }
+
+        list = new IntArrayList(size, Integer.MIN_VALUE);
     }
 
     /**
@@ -71,80 +82,14 @@ public class IntArrayListBenchmark
     @Benchmark
     public IntArrayList addInt()
     {
-        final IntArrayList list = new IntArrayList();
+        final IntArrayList list = this.list;
+        list.clear();
 
         for (int i = 0; i < size; i++)
         {
             list.addInt(i);
         }
-
         return list;
-    }
-
-    /**
-     * Merge sort an existing list of random elements into a new list.
-     *
-     * @return the sorted list.
-     */
-    @Benchmark
-    public IntArrayList mergeSort()
-    {
-        return mergeSort(list, 0, list.size());
-    }
-
-    private static IntArrayList mergeSort(final IntArrayList list, final int from, final int to)
-    {
-        final int length = to - from;
-        if (length <= 1)
-        {
-            final IntArrayList result = new IntArrayList();
-            if (1 == length)
-            {
-                result.addInt(list.getInt(from));
-            }
-
-            return result;
-        }
-
-        final int mid = (from + to) / 2;
-        final IntArrayList left = mergeSort(list, from, mid);
-        final IntArrayList right = mergeSort(list, mid, to);
-
-        final IntArrayList result = new IntArrayList();
-        final int leftSize = left.size();
-        final int rightSize = right.size();
-        int i = 0;
-        int j = 0;
-
-        while (i < leftSize && j < rightSize)
-        {
-            final int l = left.getInt(i);
-            final int r = right.getInt(j);
-            if (l <= r)
-            {
-                result.addInt(l);
-                i++;
-            }
-            else
-            {
-                result.addInt(r);
-                j++;
-            }
-        }
-
-        while (i < leftSize)
-        {
-            result.addInt(left.getInt(i));
-            ++i;
-        }
-
-        while (j < rightSize)
-        {
-            result.addInt(right.getInt(j));
-            ++j;
-        }
-
-        return result;
     }
 
     /**

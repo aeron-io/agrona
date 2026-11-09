@@ -204,13 +204,11 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     {
         if (size < elements.length)
         {
-            elements[size] = element;
-            size++;
-
+            elements[size++] = element;
             return true;
         }
 
-        return addIntSlow(element);
+        return resizeAndInt(element);
     }
 
     /**
@@ -694,7 +692,13 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
      */
     public void pushInt(final int element)
     {
-        addInt(element);
+        if (size < elements.length)
+        {
+            elements[size++] = element;
+            return;
+        }
+
+        resizeAndInt(element);
     }
 
     /**
@@ -939,13 +943,10 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
         return sb.toString();
     }
 
-    private boolean addIntSlow(final int element)
+    private boolean resizeAndInt(final int element)
     {
         ensureCapacityPrivate(size + 1);
-
-        elements[size] = element;
-        size++;
-
+        elements[size++] = element;
         return true;
     }
 
