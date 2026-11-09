@@ -2,6 +2,8 @@
 
 == 2.8.0 (unreleased)
 
+* **[Java]** Replace a custom index check with `java.util.Objects.checkIndex(int, int)` in `IntArrayList`.
+* **[Java]** Carve out `IntArrayList#addInt` fast path. (https://github.com/aeron-io/agrona/pull/393[#393])
 * **[Java]** Upgrade to `Gradle` 9.9.0.
 
 == 2.7.1 (2026-11-06)
