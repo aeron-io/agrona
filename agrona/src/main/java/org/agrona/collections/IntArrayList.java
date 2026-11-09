@@ -180,7 +180,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     public int getInt(
         @DoNotSub final int index)
     {
-        checkIndex(index);
+        Objects.checkIndex(index, size);
 
         return elements[index];
     }
@@ -270,7 +270,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
         @DoNotSub final int index,
         final int element)
     {
-        checkIndex(index);
+        Objects.checkIndex(index, size);
 
         final int previous = elements[index];
         elements[index] = element;
@@ -609,7 +609,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     public int removeAt(
         @DoNotSub final int index)
     {
-        checkIndex(index);
+        Objects.checkIndex(index, size);
 
         final int value = elements[index];
 
@@ -636,7 +636,7 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
     public int fastUnorderedRemove(
         @DoNotSub final int index)
     {
-        checkIndex(index);
+        Objects.checkIndex(index, size);
 
         final int value = elements[index];
         elements[index] = elements[--size];
@@ -975,14 +975,6 @@ public class IntArrayList extends AbstractList<Integer> implements List<Integer>
             final int[] newElements = new int[newCapacity];
             System.arraycopy(elements, 0, newElements, 0, currentCapacity);
             elements = newElements;
-        }
-    }
-
-    private void checkIndex(@DoNotSub final int index)
-    {
-        if (index >= size || index < 0)
-        {
-            throw new IndexOutOfBoundsException("index=" + index + " size=" + size);
         }
     }
 
