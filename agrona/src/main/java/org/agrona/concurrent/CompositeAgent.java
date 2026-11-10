@@ -36,7 +36,7 @@ public class CompositeAgent implements Agent
      */
     public CompositeAgent(final List<? extends Agent> agents)
     {
-        this(agents.toArray(new Agent[0]));
+        this(agents.toArray(new Agent[agents.size()]));
     }
 
     /**
