@@ -53,7 +53,7 @@ class DirectBufferDataInputAgronaTest extends DirectBufferDataInputTest
         final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer();
 
         buffer.putLong(0, 0);
-        final int bytesWritten = buffer.putStringUtf8(8, "zażółć gęślą jaźń北查爾斯頓");
+        final int bytesWritten = buffer.putStringUtf8(8, "zażółć gęślą jaźń北查爾斯頓", ByteOrder.LITTLE_ENDIAN);
         buffer.putLong(8 + bytesWritten, 0);
 
         final DirectBufferDataInput dataInput = new DirectBufferDataInput(buffer, 8, bytesWritten);
