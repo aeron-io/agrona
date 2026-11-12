@@ -28,7 +28,6 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -291,7 +290,6 @@ class MarkFileTest
         final long expectedFileSize = 128 * 1024;
         final IntConsumer versionCheck = mock(IntConsumer.class);
         final Consumer<String> logger = mock(Consumer.class);
-        final FileStore fileStore = Files.getFileStore(tempDir.toPath());
         final File markFile = tempDir.toPath().resolve("new-mark-file.dat").toFile();
         assertFalse(markFile.exists());
 
