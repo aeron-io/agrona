@@ -43,7 +43,7 @@ public class CompositeAgent implements Agent
      * Construct a new composite with a given list {@link Agent}s to begin with.
      *
      * @param agents the parts of this composite, at least one agent and no null agents allowed
-     * @throws IllegalArgumentException if an empty array of agents is provided, or single agent provided
+     * @throws IllegalArgumentException if an empty array of agents is provided
      * @throws NullPointerException     if the array or any element is null
      */
     public CompositeAgent(final Agent... agents)
