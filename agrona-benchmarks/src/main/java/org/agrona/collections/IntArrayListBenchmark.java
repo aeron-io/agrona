@@ -61,16 +61,6 @@ public class IntArrayListBenchmark
     @Setup
     public void setup()
     {
-        // grow lists so the JIT profile has seen the resize path, as in a real application
-        for (int r = 0; r < 20_000; r++)
-        {
-            final IntArrayList growing = new IntArrayList();
-            for (int i = 0; i < 100; i++)
-            {
-                growing.addInt(i);
-            }
-        }
-
         list = new IntArrayList(size, Integer.MIN_VALUE);
     }
 
