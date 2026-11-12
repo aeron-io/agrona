@@ -379,7 +379,7 @@ public class DirectBufferDataInput implements DataInput
     public String readUTF() throws EOFException
     {
         boundsCheck0(BitUtil.SIZE_OF_SHORT);
-        final short size = readShort();
+        final int size = readUnsignedShort();
 
         boundsCheck0(size);
         final String stringUtf8 = buffer.getStringWithoutLengthUtf8(position, size);

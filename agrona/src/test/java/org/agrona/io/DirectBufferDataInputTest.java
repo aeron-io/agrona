@@ -573,6 +573,25 @@ abstract class DirectBufferDataInputTest
     }
 
     @Test
+    void shouldReadUtfLongerThan31Kilobytes() throws Throwable
+    {
+        final String in = "zażółć gęślą jaźń北查爾斯頓".repeat(1024);
+
+        final UnsafeBuffer buffer = toUnsafeBuffer(
+                (out) ->
+                {
+                    out.writeLong(0);
+                    out.writeUTF(in);
+                    out.writeLong(0);
+                });
+
+        final DirectBufferDataInput dataInput = new DirectBufferDataInput(buffer, 8, 41994);
+        dataInput.byteOrder(byteOrder());
+
+        assertEquals(in, dataInput.readUTF());
+    }
+
+    @Test
     void shouldThrowWhenCannotReadSizeOfUtfString() throws Throwable
     {
         final UnsafeBuffer buffer = toUnsafeBuffer((out) -> {});
