@@ -500,14 +500,13 @@ public final class ManyToOneRingBuffer implements RingBuffer
 
         long head = buffer.getLongVolatile(headCachePositionIndex);
 
-        long tail;
+        long tail = buffer.getLongVolatile(tailPositionIndex);
         long newTail;
         int tailIndex;
         int padding;
         int writeIndex;
-        do
+        while (true)
         {
-            tail = buffer.getLongVolatile(tailPositionIndex);
             final int availableCapacity = capacity - (int)(tail - head);
 
             if (requiredCapacity > availableCapacity)
@@ -549,8 +548,14 @@ public final class ManyToOneRingBuffer implements RingBuffer
                 padding = toBufferEndLength;
                 newTail += padding;
             }
+
+            final long witness = buffer.compareAndExchangeLong(tailPositionIndex, tail, newTail);
+            if (witness == tail)
+            {
+                break;
+            }
+            tail = witness;
         }
-        while (!buffer.compareAndSetLong(tailPositionIndex, tail, newTail));
 
         if (0 != padding)
         {
