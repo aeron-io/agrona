@@ -206,8 +206,8 @@ public class CountersManager extends CountersReader
         try
         {
             metaDataBuffer.putInt(recordOffset + TYPE_ID_OFFSET, typeId);
-            metaDataBuffer.putLong(recordOffset + FREE_FOR_REUSE_DEADLINE_OFFSET, NOT_FREE_TO_REUSE);
             putLabel(recordOffset, label);
+            metaDataBuffer.putLong(recordOffset + FREE_FOR_REUSE_DEADLINE_OFFSET, NOT_FREE_TO_REUSE);
 
             metaDataBuffer.putIntRelease(recordOffset, RECORD_ALLOCATED);
         }
@@ -241,8 +241,8 @@ public class CountersManager extends CountersReader
 
             metaDataBuffer.putInt(recordOffset + TYPE_ID_OFFSET, typeId);
             keyFunc.accept(new UnsafeBuffer(metaDataBuffer, recordOffset + KEY_OFFSET, MAX_KEY_LENGTH));
-            metaDataBuffer.putLong(recordOffset + FREE_FOR_REUSE_DEADLINE_OFFSET, NOT_FREE_TO_REUSE);
             putLabel(recordOffset, label);
+            metaDataBuffer.putLong(recordOffset + FREE_FOR_REUSE_DEADLINE_OFFSET, NOT_FREE_TO_REUSE);
 
             metaDataBuffer.putIntRelease(recordOffset, RECORD_ALLOCATED);
         }
@@ -285,7 +285,6 @@ public class CountersManager extends CountersReader
             final int recordOffset = metaDataOffset(counterId);
 
             metaDataBuffer.putInt(recordOffset + TYPE_ID_OFFSET, typeId);
-            metaDataBuffer.putLong(recordOffset + FREE_FOR_REUSE_DEADLINE_OFFSET, NOT_FREE_TO_REUSE);
 
             if (null != keyBuffer)
             {
@@ -296,6 +295,8 @@ public class CountersManager extends CountersReader
             final int length = Math.min(labelLength, MAX_LABEL_LENGTH);
             metaDataBuffer.putInt(recordOffset + LABEL_OFFSET, length);
             metaDataBuffer.putBytes(recordOffset + LABEL_OFFSET + SIZE_OF_INT, labelBuffer, labelOffset, length);
+
+            metaDataBuffer.putLong(recordOffset + FREE_FOR_REUSE_DEADLINE_OFFSET, NOT_FREE_TO_REUSE);
 
             metaDataBuffer.putIntRelease(recordOffset, RECORD_ALLOCATED);
         }

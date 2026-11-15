@@ -24,8 +24,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+import java.nio.charset.Charset;
+
 import static java.nio.ByteBuffer.allocateDirect;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.agrona.concurrent.status.CountersReader.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
@@ -87,31 +90,135 @@ class CountersManagerTest
     @Test
     void shouldCopeWithExceptionKeyFunc()
     {
-        final RuntimeException ex = new RuntimeException();
-
-        try
-        {
+        assertThrows(RuntimeException.class, () ->
             manager.allocate(
                 LABEL,
                 DEFAULT_TYPE_ID,
                 (buffer) ->
                 {
-                    throw ex;
-                });
-        }
-        catch (final RuntimeException caught)
+                    throw new RuntimeException();
+                }));
+
+        assertEquals(4, manager.available());
+
+        try (AtomicCounter counter = manager.newCounter("new label"))
         {
-            assertEquals(ex, caught);
-
-            try (AtomicCounter counter = manager.newCounter("new label"))
-            {
-                assertEquals(0, counter.id());
-            }
-
-            return;
+            assertEquals(0, counter.id());
         }
 
-        fail("Should have thrown exception");
+        assertEquals(4, manager.available());
+    }
+
+    @Test
+    void shouldCopeWithNullLabel()
+    {
+        final CountersManager manager = new CountersManager(metadataBuffer, valuesBuffer, UTF_8);
+        assertEquals(4, manager.available());
+
+        assertThrows(NullPointerException.class, () ->
+            manager.allocate(
+                null,
+                DEFAULT_TYPE_ID,
+                (buffer) -> buffer.putLong(0, 123456L)));
+        assertEquals(4, manager.available());
+
+        assertThrows(NullPointerException.class, () -> manager.allocate(null));
+        assertEquals(4, manager.available());
+
+        try (AtomicCounter counter = manager.newCounter("new label"))
+        {
+            assertEquals(0, counter.id());
+        }
+
+        assertEquals(4, manager.available());
+    }
+
+    @Test
+    void shouldCopeWithNullDirectBufferLabel()
+    {
+        final MutableDirectBuffer keyBuffer = new UnsafeBuffer(new byte[7]);
+        keyBuffer.putStringAscii(0, "def");
+
+        assertThrows(NullPointerException.class, () ->
+                manager.allocate(
+                        TYPE_ID,
+                        keyBuffer,
+                        4,
+                        3,
+                        null,
+                        0,
+                        0
+                     ));
+
+        assertEquals(4, manager.available());
+
+        try (AtomicCounter counter = manager.newCounter("new label"))
+        {
+            assertEquals(0, counter.id());
+        }
+
+        assertEquals(4, manager.available());
+    }
+
+    @Test
+    void shouldCopeWithInvalidDirectBufferLabelOffset()
+    {
+        final MutableDirectBuffer labelBuffer = new UnsafeBuffer(new byte[7]);
+        labelBuffer.putStringAscii(0, "abc");
+
+        final MutableDirectBuffer keyBuffer = new UnsafeBuffer(new byte[7]);
+        keyBuffer.putStringAscii(0, "def");
+
+        assertThrows(IndexOutOfBoundsException.class, () ->
+                manager.allocate(
+                        TYPE_ID,
+                        keyBuffer,
+                        4,
+                        3,
+                        labelBuffer,
+                        4,
+                        4
+                ));
+
+        assertEquals(4, manager.available());
+
+        try (AtomicCounter counter = manager.newCounter("new label"))
+        {
+            assertEquals(0, counter.id());
+        }
+
+        assertEquals(4, manager.available());
+    }
+
+    @Test
+    void shouldCopeWithUnusualCharset()
+    {
+        final Charset decodeOnlyCharset = Charset.forName("ISO-2022-CN");
+        final CountersManager manager = new CountersManager(metadataBuffer, valuesBuffer, decodeOnlyCharset);
+
+        assertThrows(UnsupportedOperationException.class, () ->
+            manager.allocate(
+                LABEL,
+                DEFAULT_TYPE_ID,
+                (buffer) -> buffer.putLong(0, 123456L)));
+        assertEquals(4, manager.available());
+
+        assertThrows(UnsupportedOperationException.class, () -> manager.allocate("label"));
+        assertEquals(4, manager.available());
+
+        final MutableDirectBuffer labelBuffer = new UnsafeBuffer(new byte[7]);
+        labelBuffer.putStringAscii(0, "abc");
+
+        final MutableDirectBuffer keyBuffer = new UnsafeBuffer(new byte[7]);
+        keyBuffer.putStringAscii(0, "def");
+
+        try (AtomicCounter counter = manager.newCounter(TYPE_ID, keyBuffer, 4, 3, labelBuffer, 4, 3))
+        {
+            assertEquals(0, counter.id());
+            assertEquals("abc", counter.label());
+        }
+
+        assertEquals(4, manager.available());
     }
 
     @Test
