@@ -619,7 +619,7 @@ abstract class DirectBufferDataInputTest
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(64));
 
         int offset = 0;
-        offset += buffer.putStringUtf8(offset, "€");
+        offset += buffer.putStringUtf8(offset, "€", ByteOrder.BIG_ENDIAN);
 
         buffer.putInt(offset, 42, ByteOrder.BIG_ENDIAN);
 
