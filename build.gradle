@@ -173,6 +173,14 @@ subprojects {
 
     checkstyle.toolVersion = libs.versions.checkstyle.get()
 
+    // Run Checkstyle on the JVM running Gradle rather than the build toolchain, as early access JDKs
+    // reject the reflection Gradle uses to create the Checkstyle worker parameters (JDK-8396027).
+    tasks.withType(Checkstyle).configureEach {
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
+        }
+    }
+
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(buildJavaVersion)
