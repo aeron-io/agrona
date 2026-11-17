@@ -15,13 +15,17 @@
  */
 package org.agrona.io;
 
+import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.ThrowingConsumer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.nio.ByteOrder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DirectBufferDataInputJDKTest extends DirectBufferDataInputTest
 {
@@ -41,5 +45,21 @@ class DirectBufferDataInputJDKTest extends DirectBufferDataInputTest
     ByteOrder byteOrder()
     {
         return ByteOrder.BIG_ENDIAN;
+    }
+
+    @Override
+    @Test
+    void shouldReadUtf()
+    {
+        final ExpandableArrayBuffer buffer = new ExpandableArrayBuffer();
+
+        buffer.putLong(0, 0);
+        final int bytesWritten = buffer.putStringUtf8(8, "zażółć gęślą jaźń北查爾斯頓", ByteOrder.BIG_ENDIAN);
+        buffer.putLong(8 + bytesWritten, 0);
+
+        final DirectBufferDataInput dataInput = new DirectBufferDataInput(buffer, 8, bytesWritten);
+        dataInput.byteOrder(ByteOrder.BIG_ENDIAN);
+
+        assertEquals("zażółć gęślą jaźń北查爾斯頓", dataInput.readStringUTF8());
     }
 }

@@ -403,7 +403,7 @@ public class DirectBufferDataInput implements DataInput
         // increment. So first load the length of the utf string, and use this value
         // to safely increment the position.
 
-        final int length = buffer.getInt(position);
+        final int length = buffer.getInt(position, byteOrder);
         final String stringUtf8 = buffer.getStringWithoutLengthUtf8(position + BitUtil.SIZE_OF_INT, length);
         position += length + BitUtil.SIZE_OF_INT;
         return stringUtf8;
