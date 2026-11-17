@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  GRADLE_OPTS: '-Dorg.gradle.daemon=false -Djdk.reflect.allowNonSerializableConstruction=true'
+  GRADLE_OPTS: '-Dorg.gradle.daemon=false'
   JAVA_VERSION: '17'
 
 jobs:
