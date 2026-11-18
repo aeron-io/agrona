@@ -135,6 +135,16 @@ public class AgentRunner implements Runnable, AutoCloseable
     }
 
     /**
+     * Has the {@link Agent} been running?
+     *
+     * @return has the {@link Agent} been started successfully and not closed?
+     */
+    public boolean isRunning()
+    {
+        return isRunning;
+    }
+
+    /**
      * Has the {@link Agent} been closed?
      *
      * @return has the {@link Agent} been closed?
@@ -168,47 +178,41 @@ public class AgentRunner implements Runnable, AutoCloseable
     @Override
     public void run()
     {
-        try
+        if (thread.compareAndSet(null, Thread.currentThread()))
         {
-            if (thread.compareAndSet(null, Thread.currentThread()))
+            try
             {
-                try
+                agent.onStart();
+                if (ThreadAffinity.NO_AFFINITY != threadAffinity)
                 {
-                    agent.onStart();
-                    if (ThreadAffinity.NO_AFFINITY != threadAffinity)
-                    {
-                        ThreadAffinity.setAffinity(ThreadAffinity.CURRENT_THREAD, new int[]{ threadAffinity });
-                    }
-                }
-                catch (final Throwable t)
-                {
-                    isRunning = false;
-                    errorHandler.onError(t);
-                    if (t instanceof Error)
-                    {
-                        throw (Error)t;
-                    }
-                }
-
-                workLoop(idleStrategy, agent);
-
-                try
-                {
-                    agent.onClose();
-                }
-                catch (final Throwable t)
-                {
-                    errorHandler.onError(t);
-                    if (t instanceof Error)
-                    {
-                        throw (Error)t;
-                    }
+                    ThreadAffinity.setAffinity(ThreadAffinity.CURRENT_THREAD, new int[]{ threadAffinity });
                 }
             }
-        }
-        finally
-        {
-            isClosed = true;
+            catch (final Throwable t)
+            {
+                isRunning = false;
+                errorHandler.onError(t);
+                if (t instanceof Error)
+                {
+                    throw (Error)t;
+                }
+            }
+
+            workLoop(idleStrategy, agent);
+
+            try
+            {
+                isClosed = true;
+                agent.onClose();
+            }
+            catch (final Throwable t)
+            {
+                errorHandler.onError(t);
+                if (t instanceof Error)
+                {
+                    throw (Error)t;
+                }
+            }
         }
     }
 
