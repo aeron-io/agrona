@@ -2,6 +2,9 @@
 
 == 2.8.0 (unreleased)
 
+* **[Java]** Validate key/label buffers and their coordinates before allocating counters.
+* **[Java]** Ensure label is written before setting free-for-reuse deadline to prevent counter leak.
+(https://github.com/aeron-io/agrona/pull/403[#403])
 * **[Java]** Use more optimal `compareAndExchangeLong` in `ManyToOneRingBuffer#claimCapacity`.
 (https://github.com/aeron-io/agrona/pull/398[#398])
 * **[Java]** Fix `null` check for LoggingErrorHandler overflow stream.

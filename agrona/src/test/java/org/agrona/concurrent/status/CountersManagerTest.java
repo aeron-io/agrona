@@ -18,19 +18,40 @@ package org.agrona.concurrent.status;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.IntObjConsumer;
+import org.agrona.collections.MutableBoolean;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import java.nio.charset.Charset;
+import java.util.function.Consumer;
 
 import static java.nio.ByteBuffer.allocateDirect;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.agrona.concurrent.status.CountersReader.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.agrona.concurrent.status.CountersReader.COUNTER_LENGTH;
+import static org.agrona.concurrent.status.CountersReader.DEFAULT_OWNER_ID;
+import static org.agrona.concurrent.status.CountersReader.DEFAULT_REFERENCE_ID;
+import static org.agrona.concurrent.status.CountersReader.DEFAULT_REGISTRATION_ID;
+import static org.agrona.concurrent.status.CountersReader.DEFAULT_TYPE_ID;
+import static org.agrona.concurrent.status.CountersReader.LABEL_OFFSET;
+import static org.agrona.concurrent.status.CountersReader.MAX_KEY_LENGTH;
+import static org.agrona.concurrent.status.CountersReader.MAX_LABEL_LENGTH;
+import static org.agrona.concurrent.status.CountersReader.METADATA_LENGTH;
+import static org.agrona.concurrent.status.CountersReader.MetaData;
+import static org.agrona.concurrent.status.CountersReader.NULL_COUNTER_ID;
+import static org.agrona.concurrent.status.CountersReader.metaDataOffset;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -140,15 +161,15 @@ class CountersManagerTest
         keyBuffer.putStringAscii(0, "def");
 
         assertThrows(NullPointerException.class, () ->
-                manager.allocate(
-                        TYPE_ID,
-                        keyBuffer,
-                        4,
-                        3,
-                        null,
-                        0,
-                        0
-                     ));
+            manager.allocate(
+                TYPE_ID,
+                keyBuffer,
+                4,
+                3,
+                null,
+                0,
+                0
+            ));
 
         assertEquals(4, manager.available());
 
@@ -170,15 +191,15 @@ class CountersManagerTest
         keyBuffer.putStringAscii(0, "def");
 
         assertThrows(IndexOutOfBoundsException.class, () ->
-                manager.allocate(
-                        TYPE_ID,
-                        keyBuffer,
-                        4,
-                        3,
-                        labelBuffer,
-                        4,
-                        4
-                ));
+            manager.allocate(
+                TYPE_ID,
+                keyBuffer,
+                4,
+                3,
+                labelBuffer,
+                4,
+                4
+            ));
 
         assertEquals(4, manager.available());
 
@@ -667,5 +688,102 @@ class CountersManagerTest
         final UnsafeBuffer valuesBuffer = new UnsafeBuffer(allocateDirect(10 * COUNTER_LENGTH));
         assertThrows(IllegalArgumentException.class, () -> new CountersManager(metadataBuffer, valuesBuffer, US_ASCII));
         assertThrows(IllegalArgumentException.class, () -> new CountersReader(metadataBuffer, valuesBuffer));
+    }
+
+    @Test
+    void shouldRejectAllocateIfLabelBufferIsNull()
+    {
+        final UnsafeBuffer keyBuffer = new UnsafeBuffer(new UnsafeBuffer(new byte[4]));
+        final NullPointerException exception =
+            assertThrowsExactly(NullPointerException.class, () -> manager.allocate(5, keyBuffer, 0, 0, null, 0, 5));
+        assertEquals("labelBuffer", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "-1,0", "0,100", "3,-2" })
+    void shouldRejectAllocateIKeyBufferCoordinatesAreOff(final int keyOffset, final int keyLength)
+    {
+        final UnsafeBuffer buffer = new UnsafeBuffer(new UnsafeBuffer(new byte[16]));
+        assertThrowsExactly(
+            IndexOutOfBoundsException.class,
+            () -> manager.allocate(5, buffer, keyOffset, keyLength, buffer, 4, 10));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "-1,0", "0,100", "3,-2" })
+    void shouldRejectAllocateILabelBufferCoordinatesAreOff(final int labelOffset, final int labelLength)
+    {
+        final UnsafeBuffer buffer = new UnsafeBuffer(new UnsafeBuffer(new byte[16]));
+        assertThrowsExactly(
+            IndexOutOfBoundsException.class,
+            () -> manager.allocate(5, null, 0, 0, buffer, labelOffset, labelLength));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void shouldRejectAllocateWithLabelAndConsumerIfLabelIsNull()
+    {
+        final Consumer<MutableDirectBuffer> keyFunc = mock(Consumer.class);
+        final NullPointerException exception =
+            assertThrowsExactly(NullPointerException.class, () -> manager.allocate(null, 42, keyFunc));
+        assertEquals("label", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectAllocateWithLabelAndConsumerIfConsumerIsNull()
+    {
+        final NullPointerException exception =
+            assertThrowsExactly(NullPointerException.class, () -> manager.allocate("test", 42, null));
+        assertEquals("keyFunc", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectAllocateWithLabelIfLabelIsNull()
+    {
+        final NullPointerException exception =
+            assertThrowsExactly(NullPointerException.class, () -> manager.allocate(null, 42));
+        assertEquals("label", exception.getMessage());
+    }
+
+    @Test
+    void shouldAllowNullKeyBuffer()
+    {
+        final UnsafeBuffer labelBuffer = new UnsafeBuffer("test".getBytes(US_ASCII));
+        final int id = manager.allocate(
+            42, null, 0, 0, labelBuffer, 0, labelBuffer.capacity());
+        assertNotEquals(NULL_COUNTER_ID, id);
+
+        final MutableBoolean found = new MutableBoolean();
+        manager.forEach(
+            (counterId, typeId, keyBuffer, label) ->
+            {
+                found.set(true);
+                assertEquals(id, counterId);
+                assertEquals(42, typeId);
+                assertNotNull(keyBuffer);
+                assertEquals(MAX_KEY_LENGTH, keyBuffer.capacity());
+            });
+        assertTrue(found.get());
+    }
+
+    @Test
+    void shouldAllowEmptyKeyBuffer()
+    {
+        final UnsafeBuffer labelBuffer = new UnsafeBuffer("test".getBytes(US_ASCII));
+        final int id = manager.allocate(
+            42, labelBuffer, 0, 0, labelBuffer, 0, labelBuffer.capacity());
+        assertNotEquals(NULL_COUNTER_ID, id);
+
+        final MutableBoolean found = new MutableBoolean();
+        manager.forEach(
+            (counterId, typeId, keyBuffer, label) ->
+            {
+                found.set(true);
+                assertEquals(id, counterId);
+                assertEquals(42, typeId);
+                assertNotNull(keyBuffer);
+                assertEquals(MAX_KEY_LENGTH, keyBuffer.capacity());
+            });
+        assertTrue(found.get());
     }
 }
