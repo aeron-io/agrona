@@ -2,6 +2,7 @@
 
 == 2.8.0 (unreleased)
 
+* **[Java]** Validate that the number of counters in metadata buffer contains at least the number of counters in values buffer for CountersReader constructor.
 * **[Java]** Replace a custom index check with `java.util.Objects.checkIndex(int, int)` in `IntArrayList`.
 * **[Java]** Carve out `IntArrayList#addInt` fast path. (https://github.com/aeron-io/agrona/pull/393[#393])
 * **[Java]** Upgrade to `Gradle` 9.9.0.

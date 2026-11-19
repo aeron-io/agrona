@@ -112,11 +112,6 @@ public class CountersManager extends CountersReader
         valuesBuffer.verifyAlignment();
         this.epochClock = epochClock;
         this.freeToReuseTimeoutMs = freeToReuseTimeoutMs;
-
-        if (metaDataBuffer.capacity() < (valuesBuffer.capacity() * (METADATA_LENGTH / COUNTER_LENGTH)))
-        {
-            throw new IllegalArgumentException("metadata buffer is too small");
-        }
     }
 
     /**
