@@ -346,7 +346,7 @@ public class DirectBufferDataInput implements DataInput
 
         while (remaining() > 0)
         {
-            final int nextByte = readByte();
+            final int nextByte = readUnsignedByte();
             if (nextByte == '\n')
             {
                 return position - startingPosition;
