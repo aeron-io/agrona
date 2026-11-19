@@ -50,7 +50,7 @@ public class LoggingErrorHandler implements ErrorHandler, AutoCloseable
     public LoggingErrorHandler(final DistinctErrorLog log, final PrintStream errorOverflow)
     {
         Objects.requireNonNull(log, "log");
-        Objects.requireNonNull(log, "errorOverflow");
+        Objects.requireNonNull(errorOverflow, "errorOverflow");
 
         this.log = log;
         this.errorOverflow = errorOverflow;
