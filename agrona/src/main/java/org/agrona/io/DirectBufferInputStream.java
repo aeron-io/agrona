@@ -18,6 +18,7 @@ package org.agrona.io;
 import org.agrona.DirectBuffer;
 
 import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * An {@link InputStream} that wraps a {@link DirectBuffer}.
@@ -84,6 +85,8 @@ public class DirectBufferInputStream extends InputStream
             throw new NullPointerException("buffer cannot be null");
         }
 
+        Objects.checkFromIndexSize(offset, length, buffer.capacity());
+
         this.buffer = buffer;
         this.offset = offset;
         this.length = length;
@@ -144,7 +147,7 @@ public class DirectBufferInputStream extends InputStream
     @Override
     public long skip(final long n)
     {
-        final int skipped = (int)Math.min(n, available());
+        final int skipped = Math.max(-position, Math.min((int)n, available()));
         position += skipped;
 
         return skipped;

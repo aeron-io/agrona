@@ -32,7 +32,7 @@ class DirectBufferInputStreamTest
         final DirectBuffer buffer = new UnsafeBuffer(data);
         final DirectBufferInputStream inputStream = new DirectBufferInputStream(buffer);
 
-        assertEquals(inputStream.read(), 255);
+        assertEquals(255, inputStream.read());
     }
 
     @Test
@@ -43,8 +43,26 @@ class DirectBufferInputStreamTest
         final DirectBuffer buffer = new UnsafeBuffer(data);
         final DirectBufferInputStream inputStream = new DirectBufferInputStream(buffer);
 
-        assertEquals(inputStream.read(), 1);
-        assertEquals(inputStream.read(), 2);
-        assertEquals(inputStream.read(), END_OF_STREAM_MARKER);
+        assertEquals(1, inputStream.read());
+        assertEquals(2, inputStream.read());
+        assertEquals(END_OF_STREAM_MARKER, inputStream.read());
+    }
+
+    @Test
+    void shouldClampSkippedBytes()
+    {
+        final byte[] data = { 1, 2, 3, 4, 5 };
+
+        final DirectBuffer buffer = new UnsafeBuffer(data);
+        final DirectBufferInputStream inputStream = new DirectBufferInputStream(buffer);
+
+        assertEquals(0, inputStream.skip(-1));
+        assertEquals(5, inputStream.skip(10));
+        assertEquals(-2, inputStream.skip(-2));
+        assertEquals(-3, inputStream.skip(-3));
+        assertEquals(0, inputStream.skip(-4));
+        assertEquals(4, inputStream.skip(4));
+        assertEquals(1, inputStream.skip(5));
+        assertEquals(0, inputStream.skip(Integer.MAX_VALUE));
     }
 }
