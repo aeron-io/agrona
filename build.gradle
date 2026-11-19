@@ -215,6 +215,10 @@ subprojects {
             jvmArgs('-XX:+EnableDynamicAgentLoading')
         }
 
+        if (buildJavaVersion >= 28) {
+            jvmArgs('-Djdk.reflect.allowNonSerializableConstruction=true')
+        }
+
         def baseLogFileName = "${layout.buildDirectory.get()}/${layout.projectDirectory.asFile.getName()}-${test.name}-%p"
         jvmArgs("-XX:MaxDirectMemorySize=2g",
                 "-Xms2048m",
