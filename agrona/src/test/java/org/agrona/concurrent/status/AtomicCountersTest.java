@@ -19,15 +19,17 @@ import org.agrona.concurrent.AtomicBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AtomicCountersTest
 {
+    private final AtomicBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(8));
 
     @Test
     public void testPlain()
     {
-        final AtomicBuffer buffer = new UnsafeBuffer(new byte[8]);
         final AtomicCounter counter = new AtomicCounter(buffer, 0);
 
         assertEquals(0, counter.getPlain());
@@ -48,7 +50,6 @@ public class AtomicCountersTest
     @Test
     public void testVolatile()
     {
-        final AtomicBuffer buffer = new UnsafeBuffer(new byte[8]);
         final AtomicCounter counter = new AtomicCounter(buffer, 0);
 
         assertEquals(0, counter.get());
@@ -69,7 +70,6 @@ public class AtomicCountersTest
     @Test
     public void testOpaque()
     {
-        final AtomicBuffer buffer = new UnsafeBuffer(new byte[8]);
         final AtomicCounter counter = new AtomicCounter(buffer, 0);
 
         assertEquals(0, counter.getOpaque());
@@ -90,7 +90,6 @@ public class AtomicCountersTest
     @Test
     public void testReleaseAcquire()
     {
-        final AtomicBuffer buffer = new UnsafeBuffer(new byte[8]);
         final AtomicCounter counter = new AtomicCounter(buffer, 0);
 
         assertEquals(0, counter.getAcquire());

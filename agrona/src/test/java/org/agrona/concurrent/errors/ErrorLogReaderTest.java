@@ -157,7 +157,7 @@ class ErrorLogReaderTest
     @Test
     void shouldNotExceedEndOfBufferWhenReadinErrorMessage()
     {
-        final UnsafeBuffer buffer = new UnsafeBuffer(new byte[64]);
+        final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(64));
         buffer.setMemory(0, buffer.capacity(), (byte)'?');
         final long lastTimestamp = 347923749327L;
         final long firstTimestamp = -8530458948593L;
