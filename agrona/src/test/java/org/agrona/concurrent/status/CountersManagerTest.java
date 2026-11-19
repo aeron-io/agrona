@@ -552,4 +552,13 @@ class CountersManagerTest
         assertEquals(MAX_LABEL_LENGTH, metadataBuffer.getInt(labelLengthOffset));
         assertEquals(LABEL, manager.getCounterLabel(nextCounterId));
     }
+
+    @Test
+    void shouldMetadataNumberOfCountersNotBeSmallerThanValuesNumberOfCounters()
+    {
+        final UnsafeBuffer metadataBuffer = new UnsafeBuffer(allocateDirect(1 * METADATA_LENGTH));
+        final UnsafeBuffer valuesBuffer = new UnsafeBuffer(allocateDirect(10 * COUNTER_LENGTH));
+        assertThrows(IllegalArgumentException.class, () -> new CountersManager(metadataBuffer, valuesBuffer, US_ASCII));
+        assertThrows(IllegalArgumentException.class, () -> new CountersReader(metadataBuffer, valuesBuffer));
+    }
 }

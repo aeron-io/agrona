@@ -274,6 +274,13 @@ public class CountersReader
         this.valuesBuffer = valuesBuffer;
         this.metaDataBuffer = metaDataBuffer;
         this.labelCharset = labelCharset;
+
+        if (metaDataBuffer.capacity() < (valuesBuffer.capacity() * (METADATA_LENGTH / COUNTER_LENGTH)))
+        {
+            final String message = "Counter buffer lengths invalid, metadata length: " + metaDataBuffer.capacity() +
+                 ", values length: " + valuesBuffer.capacity();
+            throw new IllegalArgumentException(message);
+        }
     }
 
     /**
