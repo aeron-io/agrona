@@ -594,7 +594,7 @@ class AtomicBufferTest
     @Test
     void verifyIntOpaqueOperations()
     {
-        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(new byte[4]);
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(8));
         final int index = 0;
         assertEquals(0, unsafeBuffer.getIntOpaque(index));
         unsafeBuffer.putIntOpaque(index, 10);
@@ -606,7 +606,7 @@ class AtomicBufferTest
     @Test
     void verifyIntReleaseAcquireOperations()
     {
-        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(new byte[4]);
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(8));
         final int index = 0;
         assertEquals(0, unsafeBuffer.getIntAcquire(index));
         unsafeBuffer.putIntRelease(index, 10);
@@ -618,7 +618,7 @@ class AtomicBufferTest
     @Test
     void verifyLongOpaqueOperations()
     {
-        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(new byte[8]);
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(8));
         final int index = 0;
         assertEquals(0, unsafeBuffer.getLongOpaque(index));
         unsafeBuffer.putLongOpaque(index, 10);
@@ -630,7 +630,7 @@ class AtomicBufferTest
     @Test
     void verifyLongReleaseAcquireOperations()
     {
-        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(new byte[8]);
+        final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(8));
         final int index = 0;
         assertEquals(0, unsafeBuffer.getLongAcquire(index));
         unsafeBuffer.putLongRelease(index, 10);
