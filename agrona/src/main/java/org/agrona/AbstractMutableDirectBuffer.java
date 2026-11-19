@@ -1589,6 +1589,14 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
         final long addressOffset = this.addressOffset;
         int remainder = value;
         int index = endExclusive;
+
+        if (0 == value)
+        {
+            index--;
+            UnsafeApi.putByte(array, addressOffset + index, ZERO);
+            return index;
+        }
+
         while (remainder > 0)
         {
             index--;

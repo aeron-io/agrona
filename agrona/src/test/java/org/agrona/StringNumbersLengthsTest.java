@@ -29,6 +29,7 @@ class StringNumbersLengthsTest
     {
         return new int[][]
             {
+                { 0, 1 },
                 { 1, 1 },
                 { 10, 2 },
                 { 100, 3 },
@@ -53,6 +54,18 @@ class StringNumbersLengthsTest
 
         final int length = buffer.putNaturalIntAscii(1, value);
         assertValueAndLengthEquals(valueAndLength, buffer, length);
+    }
+
+    @ParameterizedTest
+    @MethodSource("valuesAndLengths")
+    void shouldPutNaturalPaddedInt(final int[] valueAndLength)
+    {
+        final int value = valueAndLength[0];
+
+        final UnsafeBuffer buffer = new UnsafeBuffer(new byte[128]);
+
+        buffer.putNaturalPaddedIntAscii(1, 5, value);
+        assertEquals(String.format("%5s", value).replace(' ', '0'), buffer.getStringWithoutLengthAscii(1, 5));
     }
 
     @ParameterizedTest
