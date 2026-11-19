@@ -17,6 +17,9 @@ package org.agrona.concurrent.errors;
 
 import org.agrona.concurrent.AtomicBuffer;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import static org.agrona.BitUtil.SIZE_OF_INT;
 import static org.agrona.BitUtil.align;
 import static org.agrona.concurrent.errors.DistinctErrorLog.*;
@@ -65,6 +68,21 @@ public final class ErrorLogReader
      */
     public static int read(final AtomicBuffer buffer, final ErrorConsumer consumer, final long sinceTimestamp)
     {
+        return read(buffer, consumer, sinceTimestamp, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Read all the errors in a log since a given timestamp.
+     *
+     * @param buffer         containing the {@link DistinctErrorLog}.
+     * @param consumer       to be called for each exception encountered.
+     * @param sinceTimestamp for filtering errors that have been recorded since this time.
+     * @param charset        to be used for decoding the error message.
+     * @return the number of entries that has been read.
+     */
+    public static int read(final AtomicBuffer buffer, final ErrorConsumer consumer, final long sinceTimestamp,
+        final Charset charset)
+    {
         int entries = 0;
         int offset = 0;
         final int capacity = buffer.capacity();
@@ -82,16 +100,58 @@ public final class ErrorLogReader
             {
                 ++entries;
 
-                consumer.accept(
-                    buffer.getInt(offset + OBSERVATION_COUNT_OFFSET),
-                    buffer.getLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET),
-                    lastObservationTimestamp,
-                    buffer.getStringWithoutLengthUtf8(offset + ENCODED_ERROR_OFFSET, length - ENCODED_ERROR_OFFSET));
+                if (StandardCharsets.US_ASCII == charset)
+                {
+                    consumer.accept(
+                        buffer.getInt(offset + OBSERVATION_COUNT_OFFSET),
+                        buffer.getLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET),
+                        lastObservationTimestamp,
+                        buffer.getStringWithoutLengthAscii(offset + ENCODED_ERROR_OFFSET,
+                            length - ENCODED_ERROR_OFFSET));
+                }
+                else if (StandardCharsets.UTF_8 == charset)
+                {
+                    consumer.accept(
+                        buffer.getInt(offset + OBSERVATION_COUNT_OFFSET),
+                        buffer.getLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET),
+                        lastObservationTimestamp,
+                        buffer.getStringWithoutLengthUtf8(offset + ENCODED_ERROR_OFFSET,
+                            length - ENCODED_ERROR_OFFSET));
+                }
+                else
+                {
+                    final String error = decodeErrorWithoutLength(buffer, offset + ENCODED_ERROR_OFFSET,
+                        length - ENCODED_ERROR_OFFSET, charset);
+
+                    consumer.accept(
+                        buffer.getInt(offset + OBSERVATION_COUNT_OFFSET),
+                        buffer.getLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET),
+                        lastObservationTimestamp,
+                        error);
+                }
             }
 
             offset += align(length, RECORD_ALIGNMENT);
         }
 
         return entries;
+    }
+
+    /**
+     * Decodes an error message from the supplied buffer using the specified character set.
+     *
+     * @param buffer  containing the encoded error message bytes.
+     * @param offset  at which the encoded error message begins.
+     * @param length  of the encoded error message in bytes.
+     * @param charset to be used for decoding the error message.
+     * @return the decoded error message.
+     */
+    private static String decodeErrorWithoutLength(final AtomicBuffer buffer, final int offset, final int length,
+        final Charset charset)
+    {
+        final byte[] bytes = new byte[length];
+        buffer.getBytes(offset, bytes);
+
+        return new String(bytes, charset);
     }
 }

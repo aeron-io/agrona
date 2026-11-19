@@ -19,11 +19,14 @@ import org.agrona.concurrent.AtomicBuffer;
 import org.agrona.concurrent.EpochClock;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.agrona.concurrent.errors.DistinctErrorLog.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -62,6 +65,52 @@ class ErrorLogReaderTest
         assertThat(ErrorLogReader.read(buffer, consumer), is(1));
 
         verify(consumer).accept(eq(1), eq(timestamp), eq(timestamp), any(String.class));
+    }
+
+    @Test
+    void shouldReadFirstObservationUsingAscii()
+    {
+        final DistinctErrorLog log = new DistinctErrorLog(buffer, clock, StandardCharsets.US_ASCII);
+        final ErrorConsumer consumer = mock(ErrorConsumer.class);
+
+        final long timestamp = 7;
+        final RuntimeException error = new RuntimeException("Hello!");
+
+        when(clock.time()).thenReturn(timestamp);
+
+        log.record(error);
+
+        assertThat(ErrorLogReader.read(buffer, consumer, 0, StandardCharsets.US_ASCII), is(1));
+
+        final ArgumentCaptor<String> encodedExceptionCaptor = ArgumentCaptor.forClass(String.class);
+        verify(consumer).accept(eq(1), eq(timestamp), eq(timestamp), encodedExceptionCaptor.capture());
+
+        final String encodedException = encodedExceptionCaptor.getValue();
+        final String exceptionHeader = getNormalizedExceptionHeader(encodedException);
+        assertEquals("java.lang.RuntimeException: Hello!", exceptionHeader);
+    }
+
+    @Test
+    void shouldReadFirstObservationUsingCustomCharset()
+    {
+        final DistinctErrorLog log = new DistinctErrorLog(buffer, clock, StandardCharsets.UTF_16);
+        final ErrorConsumer consumer = mock(ErrorConsumer.class);
+
+        final long timestamp = 7;
+        final RuntimeException error = new RuntimeException("Hello, 日本");
+
+        when(clock.time()).thenReturn(timestamp);
+
+        log.record(error);
+
+        assertThat(ErrorLogReader.read(buffer, consumer, 0, StandardCharsets.UTF_16), is(1));
+
+        final ArgumentCaptor<String> encodedExceptionCaptor = ArgumentCaptor.forClass(String.class);
+        verify(consumer).accept(eq(1), eq(timestamp), eq(timestamp), encodedExceptionCaptor.capture());
+
+        final String encodedException = encodedExceptionCaptor.getValue();
+        final String exceptionHeader = getNormalizedExceptionHeader(encodedException);
+        assertEquals("java.lang.RuntimeException: Hello, 日本", exceptionHeader);
     }
 
     @Test
@@ -110,6 +159,74 @@ class ErrorLogReaderTest
     }
 
     @Test
+    void shouldReadTwoDistinctObservationsUsingAscii()
+    {
+        final DistinctErrorLog log = new DistinctErrorLog(buffer, clock, StandardCharsets.US_ASCII);
+        final ErrorConsumer consumer = mock(ErrorConsumer.class);
+
+        final long timestampOne = 7;
+        final long timestampTwo = 10;
+        final RuntimeException errorOne = new RuntimeException("Test Error One");
+        final IllegalStateException errorTwo = new IllegalStateException("Test Error Two");
+
+        when(clock.time()).thenReturn(timestampOne).thenReturn(timestampTwo);
+
+        log.record(errorOne);
+        log.record(errorTwo);
+
+        assertThat(ErrorLogReader.read(buffer, consumer, 0, StandardCharsets.US_ASCII), is(2));
+
+        final InOrder inOrder = inOrder(consumer);
+
+        final ArgumentCaptor<String> encodedExceptionCaptor = ArgumentCaptor.forClass(String.class);
+        inOrder.verify(consumer).accept(eq(1), eq(timestampOne), eq(timestampOne), encodedExceptionCaptor.capture());
+        inOrder.verify(consumer).accept(eq(1), eq(timestampTwo), eq(timestampTwo), encodedExceptionCaptor.capture());
+
+        final List<String> encodedExceptions = encodedExceptionCaptor.getAllValues();
+        assertEquals(2, encodedExceptions.size());
+
+        final String exceptionHeader1 = getNormalizedExceptionHeader(encodedExceptions.get(0));
+        assertEquals("java.lang.RuntimeException: Test Error One", exceptionHeader1);
+
+        final String exceptionHeader2 = getNormalizedExceptionHeader(encodedExceptions.get(1));
+        assertEquals("java.lang.IllegalStateException: Test Error Two", exceptionHeader2);
+    }
+
+    @Test
+    void shouldReadTwoDistinctObservationsUsingCustomCharset()
+    {
+        final DistinctErrorLog log = new DistinctErrorLog(buffer, clock, StandardCharsets.UTF_16);
+        final ErrorConsumer consumer = mock(ErrorConsumer.class);
+
+        final long timestampOne = 7;
+        final long timestampTwo = 10;
+        final RuntimeException errorOne = new RuntimeException("Test Error One: 日本");
+        final IllegalStateException errorTwo = new IllegalStateException("Test Error Two: 日本");
+
+        when(clock.time()).thenReturn(timestampOne).thenReturn(timestampTwo);
+
+        log.record(errorOne);
+        log.record(errorTwo);
+
+        assertThat(ErrorLogReader.read(buffer, consumer, 0, StandardCharsets.UTF_16), is(2));
+
+        final InOrder inOrder = inOrder(consumer);
+
+        final ArgumentCaptor<String> encodedExceptionCaptor = ArgumentCaptor.forClass(String.class);
+        inOrder.verify(consumer).accept(eq(1), eq(timestampOne), eq(timestampOne), encodedExceptionCaptor.capture());
+        inOrder.verify(consumer).accept(eq(1), eq(timestampTwo), eq(timestampTwo), encodedExceptionCaptor.capture());
+
+        final List<String> encodedExceptions = encodedExceptionCaptor.getAllValues();
+        assertEquals(2, encodedExceptions.size());
+
+        final String exceptionHeader1 = getNormalizedExceptionHeader(encodedExceptions.get(0));
+        assertEquals("java.lang.RuntimeException: Test Error One: 日本", exceptionHeader1);
+
+        final String exceptionHeader2 = getNormalizedExceptionHeader(encodedExceptions.get(1));
+        assertEquals("java.lang.IllegalStateException: Test Error Two: 日本", exceptionHeader2);
+    }
+
+    @Test
     void shouldReadOneObservationSinceTimestamp()
     {
         final ErrorConsumer consumer = mock(ErrorConsumer.class);
@@ -134,6 +251,66 @@ class ErrorLogReaderTest
     }
 
     @Test
+    void shouldReadOneObservationSinceTimestampUsingAscii()
+    {
+        final DistinctErrorLog log = new DistinctErrorLog(buffer, clock, StandardCharsets.US_ASCII);
+        final ErrorConsumer consumer = mock(ErrorConsumer.class);
+
+        final long timestampOne = 7;
+        final long timestampTwo = 10;
+        final RuntimeException errorOne = new RuntimeException("Test Error One");
+        final IllegalStateException errorTwo = new IllegalStateException("Test Error Two");
+
+        when(clock.time()).thenReturn(timestampOne).thenReturn(timestampTwo);
+
+        assertFalse(ErrorLogReader.hasErrors(buffer));
+
+        log.record(errorOne);
+        log.record(errorTwo);
+
+        assertTrue(ErrorLogReader.hasErrors(buffer));
+        assertThat(ErrorLogReader.read(buffer, consumer, timestampTwo, StandardCharsets.US_ASCII), is(1));
+
+        final ArgumentCaptor<String> encodedExceptionCaptor = ArgumentCaptor.forClass(String.class);
+        verify(consumer).accept(eq(1), eq(timestampTwo), eq(timestampTwo), encodedExceptionCaptor.capture());
+        verifyNoMoreInteractions(consumer);
+
+        final String encodedException = encodedExceptionCaptor.getValue();
+        final String exceptionHeader = getNormalizedExceptionHeader(encodedException);
+        assertEquals("java.lang.IllegalStateException: Test Error Two", exceptionHeader);
+    }
+
+    @Test
+    void shouldReadOneObservationSinceTimestampUsingCustomCharset()
+    {
+        final DistinctErrorLog log = new DistinctErrorLog(buffer, clock, StandardCharsets.UTF_16);
+        final ErrorConsumer consumer = mock(ErrorConsumer.class);
+
+        final long timestampOne = 7;
+        final long timestampTwo = 10;
+        final RuntimeException errorOne = new RuntimeException("Test Error One: 日本");
+        final IllegalStateException errorTwo = new IllegalStateException("Test Error Two: 日本");
+
+        when(clock.time()).thenReturn(timestampOne).thenReturn(timestampTwo);
+
+        assertFalse(ErrorLogReader.hasErrors(buffer));
+
+        log.record(errorOne);
+        log.record(errorTwo);
+
+        assertTrue(ErrorLogReader.hasErrors(buffer));
+        assertThat(ErrorLogReader.read(buffer, consumer, timestampTwo, StandardCharsets.UTF_16), is(1));
+
+        final ArgumentCaptor<String> encodedExceptionCaptor = ArgumentCaptor.forClass(String.class);
+        verify(consumer).accept(eq(1), eq(timestampTwo), eq(timestampTwo), encodedExceptionCaptor.capture());
+        verifyNoMoreInteractions(consumer);
+
+        final String encodedException = encodedExceptionCaptor.getValue();
+        final String exceptionHeader = getNormalizedExceptionHeader(encodedException);
+        assertEquals("java.lang.IllegalStateException: Test Error Two: 日本", exceptionHeader);
+    }
+
+    @Test
     void readShouldNotReadIfRemainingSpaceIsLessThanOneErrorPrefix()
     {
         final UnsafeBuffer buffer = new UnsafeBuffer(new byte[64]);
@@ -155,7 +332,7 @@ class ErrorLogReaderTest
     }
 
     @Test
-    void shouldNotExceedEndOfBufferWhenReadinErrorMessage()
+    void shouldNotExceedEndOfBufferWhenReadingErrorMessage()
     {
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(64));
         buffer.setMemory(0, buffer.capacity(), (byte)'?');
@@ -174,5 +351,15 @@ class ErrorLogReaderTest
         assertEquals(1, ErrorLogReader.read(buffer, errorConsumer, 0));
 
         verify(errorConsumer).accept(count, firstTimestamp, lastTimestamp, expectedErrorString);
+    }
+
+    private static String getNormalizedExceptionHeader(final String exception)
+    {
+        return exception
+            .replace("\r\n", "\n")
+            .replace('\r', '\n')
+            .lines()
+            .findFirst()
+            .orElseThrow();
     }
 }
