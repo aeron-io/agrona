@@ -23,6 +23,7 @@ import org.agrona.concurrent.*;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static org.agrona.BitUtil.SIZE_OF_INT;
@@ -195,6 +196,7 @@ public class CountersManager extends CountersReader
      */
     public int allocate(final String label, final int typeId)
     {
+        Objects.requireNonNull(label, "label");
         final int counterId = nextCounterId();
         final int recordOffset = metaDataOffset(counterId);
 
@@ -228,6 +230,8 @@ public class CountersManager extends CountersReader
      */
     public int allocate(final String label, final int typeId, final Consumer<MutableDirectBuffer> keyFunc)
     {
+        Objects.requireNonNull(label, "label");
+        Objects.requireNonNull(keyFunc, "keyFunc");
         final int counterId = nextCounterId();
 
         try
@@ -273,6 +277,12 @@ public class CountersManager extends CountersReader
         final int labelOffset,
         final int labelLength)
     {
+        Objects.requireNonNull(labelBuffer, "labelBuffer");
+        if (null != keyBuffer)
+        {
+            Objects.checkFromIndexSize(keyOffset, keyLength, keyBuffer.capacity());
+        }
+        Objects.checkFromIndexSize(labelOffset, labelLength, labelBuffer.capacity());
         final int counterId = nextCounterId();
 
         try
@@ -283,13 +293,14 @@ public class CountersManager extends CountersReader
 
             if (null != keyBuffer)
             {
-                final int length = Math.min(keyLength, MAX_KEY_LENGTH);
-                metaDataBuffer.putBytes(recordOffset + KEY_OFFSET, keyBuffer, keyOffset, length);
+                final int cappedKeyLength = Math.min(keyLength, MAX_KEY_LENGTH);
+                metaDataBuffer.putBytes(recordOffset + KEY_OFFSET, keyBuffer, keyOffset, cappedKeyLength);
             }
 
-            final int length = Math.min(labelLength, MAX_LABEL_LENGTH);
-            metaDataBuffer.putInt(recordOffset + LABEL_OFFSET, length);
-            metaDataBuffer.putBytes(recordOffset + LABEL_OFFSET + SIZE_OF_INT, labelBuffer, labelOffset, length);
+            final int cappedLabelLength = Math.min(labelLength, MAX_LABEL_LENGTH);
+            metaDataBuffer.putInt(recordOffset + LABEL_OFFSET, cappedLabelLength);
+            metaDataBuffer.putBytes(
+                recordOffset + LABEL_OFFSET + SIZE_OF_INT, labelBuffer, labelOffset, cappedLabelLength);
 
             metaDataBuffer.putLong(recordOffset + FREE_FOR_REUSE_DEADLINE_OFFSET, NOT_FREE_TO_REUSE);
 
