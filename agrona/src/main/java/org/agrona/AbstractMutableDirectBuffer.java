@@ -1773,13 +1773,17 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
 
         for (int end = length & ~7; i < end; i += 8)
         {
-            final int cmp = Long.compare(
-                UnsafeApi.getLong(thisArray, thisOffset + i),
-                UnsafeApi.getLong(thatArray, thatOffset + i));
+            final long thisValue = UnsafeApi.getLong(thisArray, thisOffset + i);
+            final long thatValue = UnsafeApi.getLong(thatArray, thatOffset + i);
 
-            if (0 != cmp)
+            if (thisValue != thatValue)
             {
-                return cmp;
+                // the first non-equal byte in memory order decides, as in a byte-by-byte comparison
+                final long diff = thisValue ^ thatValue;
+                final int shift = NATIVE_BYTE_ORDER == LITTLE_ENDIAN ?
+                    Long.numberOfTrailingZeros(diff) & ~7 : 56 - (Long.numberOfLeadingZeros(diff) & ~7);
+
+                return Byte.compare((byte)(thisValue >>> shift), (byte)(thatValue >>> shift));
             }
         }
 
