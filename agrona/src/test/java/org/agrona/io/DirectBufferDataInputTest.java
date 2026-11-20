@@ -541,6 +541,24 @@ abstract class DirectBufferDataInputTest
     }
 
     @Test
+    void shouldReadLinesIntoAppendableAlternativeCharset() throws Throwable
+    {
+        final String text = "£ café babé £";
+
+        final UnsafeBuffer buffer = toUnsafeBuffer((out) -> out.write(text.getBytes(StandardCharsets.ISO_8859_1)));
+
+        final DirectBufferDataInput dataInput = new DirectBufferDataInput(buffer);
+        dataInput.byteOrder(byteOrder());
+
+        final StringBuilder actual = new StringBuilder();
+        final int bytesRead = dataInput.readLine(actual);
+
+        final String expected = "£ café babé £";
+        assertEquals(expected, actual.toString());
+        assertEquals(expected.length(), bytesRead);
+    }
+
+    @Test
     void shouldReadLinesIntoAppendableWhenEmpty() throws Throwable
     {
         final UnsafeBuffer buffer = toUnsafeBuffer((out) -> {});
