@@ -9,6 +9,8 @@
 
 === Changelog
 
+* **[Java]** Fix `DirectBufferDataInput#readLine` for unsigned bytes.
+(https://github.com/aeron-io/agrona/pull/406[#406])
 * **[Java]** Validate key/label buffers and their coordinates before allocating counters.
 * **[Java]** Ensure label is written before setting free-for-reuse deadline to prevent counter leak.
 (https://github.com/aeron-io/agrona/pull/403[#403])

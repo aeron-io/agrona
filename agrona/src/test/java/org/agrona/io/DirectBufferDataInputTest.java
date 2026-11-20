@@ -553,9 +553,8 @@ abstract class DirectBufferDataInputTest
         final StringBuilder actual = new StringBuilder();
         final int bytesRead = dataInput.readLine(actual);
 
-        final String expected = "£ café babé £";
-        assertEquals(expected, actual.toString());
-        assertEquals(expected.length(), bytesRead);
+        assertEquals(text.length(), bytesRead);
+        assertEquals(text, actual.toString());
     }
 
     @Test
