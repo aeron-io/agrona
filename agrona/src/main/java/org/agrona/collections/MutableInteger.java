@@ -70,7 +70,7 @@ public class MutableInteger extends Number implements Comparable<MutableInteger>
      * @param value to be assigned.
      * @return the value that was assigned.
      */
-    public long setAndGet(final int value)
+    public int setAndGet(final int value)
     {
         set(value);
         return value;

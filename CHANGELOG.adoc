@@ -2,6 +2,12 @@
 
 == 2.8.0 (unreleased)
 
+=== New & Noteworthy
+
+* *[Breaking]* Change return type on the `MutableInteger.setAndGet` to `int` instead of `long`.
+
+=== Changelog
+
 * **[Java]** Validate key/label buffers and their coordinates before allocating counters.
 * **[Java]** Ensure label is written before setting free-for-reuse deadline to prevent counter leak.
 (https://github.com/aeron-io/agrona/pull/403[#403])
