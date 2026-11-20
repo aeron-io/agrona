@@ -4,6 +4,7 @@
 
 === New & Noteworthy
 
+* Add charset support to `ErrorLogReader`. (https://github.com/aeron-io/agrona/pull/407[#407])
 * *[Breaking]* Change return type on the `MutableInteger.setAndGet` to `int` instead of `long`.
 
 === Changelog

@@ -18,11 +18,17 @@ package org.agrona.concurrent.errors;
 import org.agrona.concurrent.AtomicBuffer;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.agrona.BitUtil.SIZE_OF_INT;
 import static org.agrona.BitUtil.align;
-import static org.agrona.concurrent.errors.DistinctErrorLog.*;
+import static org.agrona.concurrent.errors.DistinctErrorLog.ENCODED_ERROR_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.FIRST_OBSERVATION_TIMESTAMP_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.LAST_OBSERVATION_TIMESTAMP_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.LENGTH_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.OBSERVATION_COUNT_OFFSET;
+import static org.agrona.concurrent.errors.DistinctErrorLog.RECORD_ALIGNMENT;
 
 /**
  * Reader for the log created by a {@link DistinctErrorLog} encoded as UTF-8 errors.
@@ -68,7 +74,7 @@ public final class ErrorLogReader
      */
     public static int read(final AtomicBuffer buffer, final ErrorConsumer consumer, final long sinceTimestamp)
     {
-        return read(buffer, consumer, sinceTimestamp, StandardCharsets.UTF_8);
+        return read(buffer, consumer, sinceTimestamp, UTF_8);
     }
 
     /**
@@ -100,35 +106,12 @@ public final class ErrorLogReader
             {
                 ++entries;
 
-                if (StandardCharsets.US_ASCII == charset)
-                {
-                    consumer.accept(
-                        buffer.getInt(offset + OBSERVATION_COUNT_OFFSET),
-                        buffer.getLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET),
-                        lastObservationTimestamp,
-                        buffer.getStringWithoutLengthAscii(offset + ENCODED_ERROR_OFFSET,
-                            length - ENCODED_ERROR_OFFSET));
-                }
-                else if (StandardCharsets.UTF_8 == charset)
-                {
-                    consumer.accept(
-                        buffer.getInt(offset + OBSERVATION_COUNT_OFFSET),
-                        buffer.getLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET),
-                        lastObservationTimestamp,
-                        buffer.getStringWithoutLengthUtf8(offset + ENCODED_ERROR_OFFSET,
-                            length - ENCODED_ERROR_OFFSET));
-                }
-                else
-                {
-                    final String error = decodeErrorWithoutLength(buffer, offset + ENCODED_ERROR_OFFSET,
-                        length - ENCODED_ERROR_OFFSET, charset);
-
-                    consumer.accept(
-                        buffer.getInt(offset + OBSERVATION_COUNT_OFFSET),
-                        buffer.getLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET),
-                        lastObservationTimestamp,
-                        error);
-                }
+                consumer.accept(
+                    buffer.getInt(offset + OBSERVATION_COUNT_OFFSET),
+                    buffer.getLong(offset + FIRST_OBSERVATION_TIMESTAMP_OFFSET),
+                    lastObservationTimestamp,
+                    decodeErrorWithoutLength(
+                        buffer, offset + ENCODED_ERROR_OFFSET, length - ENCODED_ERROR_OFFSET, charset));
             }
 
             offset += align(length, RECORD_ALIGNMENT);
@@ -137,21 +120,26 @@ public final class ErrorLogReader
         return entries;
     }
 
-    /**
-     * Decodes an error message from the supplied buffer using the specified character set.
-     *
-     * @param buffer  containing the encoded error message bytes.
-     * @param offset  at which the encoded error message begins.
-     * @param length  of the encoded error message in bytes.
-     * @param charset to be used for decoding the error message.
-     * @return the decoded error message.
-     */
-    private static String decodeErrorWithoutLength(final AtomicBuffer buffer, final int offset, final int length,
-        final Charset charset)
+    private static String decodeErrorWithoutLength(
+        final AtomicBuffer buffer, final int offset, final int length, final Charset charset)
     {
-        final byte[] bytes = new byte[length];
-        buffer.getBytes(offset, bytes);
-
-        return new String(bytes, charset);
+        if (UTF_8 == charset)
+        {
+            return buffer.getStringWithoutLengthUtf8(offset, length);
+        }
+        else if (US_ASCII == charset)
+        {
+            return buffer.getStringWithoutLengthAscii(offset, length);
+        }
+        else
+        {
+            if (0 == length)
+            {
+                return "";
+            }
+            final byte[] bytes = new byte[length];
+            buffer.getBytes(offset, bytes);
+            return new String(bytes, charset);
+        }
     }
 }
