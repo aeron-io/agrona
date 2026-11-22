@@ -387,10 +387,9 @@ public final class PrintBufferUtil
             }
             else
             {
-                final int rows = length / 16 + (length % 15 == 0 ? 0 : 1) + 4;
+                final int rows = ((length + 15) >>> 4) + 4;
                 final StringBuilder stringBuilder = new StringBuilder(rows * 80);
                 appendPrettyHexDump(stringBuilder, buffer, offset, length);
-
                 return stringBuilder.toString();
             }
         }
