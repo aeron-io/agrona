@@ -133,7 +133,7 @@ public class UnsafeBufferStatusIndicator extends StatusIndicator
     {
         return "UnsafeBufferStatusIndicator{" +
             "counterId=" + counterId +
-            "value=" + getVolatile() +
+            ", value=" + getVolatile() +
             '}';
     }
 }

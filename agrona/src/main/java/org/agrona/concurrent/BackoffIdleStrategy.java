@@ -150,7 +150,7 @@ public final class BackoffIdleStrategy extends BackoffIdleStrategyData implement
 
     /**
      * Default constructor using {@link #DEFAULT_MAX_SPINS}, {@link #DEFAULT_MAX_YIELDS},
-     * {@link #DEFAULT_MIN_PARK_PERIOD_NS}, and {@link #DEFAULT_MAX_YIELDS}.
+     * {@link #DEFAULT_MIN_PARK_PERIOD_NS}, and {@link #DEFAULT_MAX_PARK_PERIOD_NS}.
      */
     public BackoffIdleStrategy()
     {
