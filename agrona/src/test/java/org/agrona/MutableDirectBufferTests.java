@@ -26,6 +26,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
@@ -507,6 +509,127 @@ public abstract class MutableDirectBufferTests
     }
 
     @ParameterizedTest
+    @CsvSource({ "IBM,GOOG", "131,129", "BAAAAAAA,ABCDEFGH", "AAAAAAAB,AAAAAAAA", "ZZZZZZZZB,ZZZZZZZZA" })
+    void compareToOrdersByTheFirstNonEqualByte(final String greater, final String lesser)
+    {
+        final int capacity = Math.max(8, Math.max(greater.length(), lesser.length()));
+        final MutableDirectBuffer buffer1 = newBuffer(capacity);
+        final MutableDirectBuffer buffer2 = newBuffer(capacity);
+        buffer1.putStringWithoutLengthAscii(0, greater);
+        buffer2.putStringWithoutLengthAscii(0, lesser);
+
+        assertTrue(buffer1.compareTo(buffer2) > 0);
+        assertTrue(buffer2.compareTo(buffer1) < 0);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 1, 7, 8, 15, 16, 19 })
+    void compareToComparesBytesAsSigned(final int capacity)
+    {
+        for (int index = 0; index < capacity; index++)
+        {
+            final MutableDirectBuffer buffer1 = newBuffer(capacity);
+            final MutableDirectBuffer buffer2 = newBuffer(capacity);
+            buffer1.putByte(index, (byte)-1);
+            buffer2.putByte(index, (byte)1);
+
+            assertTrue(buffer1.compareTo(buffer2) < 0, "index=" + index);
+            assertTrue(buffer2.compareTo(buffer1) > 0, "index=" + index);
+        }
+    }
+
+    @Test
+    void compareToIsTransitiveForBuffersOfDifferentCapacity()
+    {
+        final MutableDirectBuffer a = newBuffer(5);
+        final MutableDirectBuffer b = newBuffer(12);
+        final MutableDirectBuffer c = newBuffer(12);
+        a.putByte(0, (byte)1);
+        b.putByte(7, (byte)9);
+        c.putByte(0, (byte)2);
+
+        assertTrue(b.compareTo(a) < 0);
+        assertTrue(a.compareTo(c) < 0);
+        assertTrue(b.compareTo(c) < 0);
+        assertTrue(c.compareTo(b) > 0);
+    }
+
+    @Test
+    void compareToIsConsistentWithByteBufferCompareTo()
+    {
+        final long seed = System.nanoTime();
+        final Random random = new Random(seed);
+        final byte[] base = new byte[40];
+        random.nextBytes(base);
+
+        for (int i = 0; i < 10_000; i++)
+        {
+            final byte[] bytes1 = randomKey(random, base);
+            final byte[] bytes2 = randomKey(random, base);
+            final int offset = random.nextInt(16);
+            final byte[] array = new byte[offset + bytes2.length + random.nextInt(16)];
+            System.arraycopy(bytes2, 0, array, offset, bytes2.length);
+
+            final MutableDirectBuffer buffer1 = newBuffer(bytes1.length);
+            buffer1.putBytes(0, bytes1);
+            final DirectBuffer buffer2;
+            if (random.nextBoolean())
+            {
+                buffer2 = new UnsafeBuffer(array, offset, bytes2.length);
+            }
+            else
+            {
+                final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(array.length);
+                byteBuffer.put(0, array);
+                buffer2 = new UnsafeBuffer(byteBuffer, offset, bytes2.length);
+            }
+
+            final int expected = Integer.signum(
+                ByteBuffer.wrap(bytes1).compareTo(ByteBuffer.wrap(array, offset, bytes2.length)));
+            assertEquals(expected, Integer.signum(
+                Arrays.compare(bytes1, 0, bytes1.length, array, offset, offset + bytes2.length)));
+
+            assertEquals(expected, Integer.signum(buffer1.compareTo(buffer2)), "seed=" + seed);
+            assertEquals(-expected, Integer.signum(buffer2.compareTo(buffer1)), "seed=" + seed);
+        }
+    }
+
+    @Test
+    void compareToIsConsistentWithSortingAndTreeMap()
+    {
+        final long seed = System.nanoTime();
+        final Random random = new Random(seed);
+        final byte[] base = new byte[24];
+        random.nextBytes(base);
+
+        final int count = 2000;
+        final MutableDirectBuffer[] buffers = new MutableDirectBuffer[count];
+        final byte[][] keys = new byte[count][];
+        final TreeMap<DirectBuffer, byte[]> map = new TreeMap<>();
+        for (int i = 0; i < count; i++)
+        {
+            keys[i] = randomKey(random, base);
+            buffers[i] = newBuffer(keys[i].length);
+            buffers[i].putBytes(0, keys[i]);
+            map.put(buffers[i], keys[i]);
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            assertArrayEquals(keys[i], map.get(buffers[i]), "seed=" + seed);
+        }
+
+        Arrays.sort(buffers);
+        Arrays.sort(keys, Arrays::compare);
+        for (int i = 0; i < count; i++)
+        {
+            final byte[] actual = new byte[buffers[i].capacity()];
+            buffers[i].getBytes(0, actual);
+            assertArrayEquals(keys[i], actual, "seed=" + seed);
+        }
+    }
+
+    @ParameterizedTest
     @ValueSource(ints = { 1, 5, 9, 16, 33, 100, 256 })
     void setMemoryCopiesTheSameByteAcross(final int length)
     {
@@ -521,6 +644,17 @@ public abstract class MutableDirectBufferTests
         final byte[] actual = new byte[length];
         buffer.getBytes(index, actual);
         assertArrayEquals(expected, actual);
+    }
+
+    private static byte[] randomKey(final Random random, final byte[] base)
+    {
+        final byte[] key = Arrays.copyOf(base, random.nextInt(base.length + 1));
+        for (int i = random.nextInt(3); i > 0 && key.length > 0; i--)
+        {
+            key[random.nextInt(key.length)] = (byte)random.nextInt();
+        }
+
+        return key;
     }
 
     private static List<Arguments> valuesAndLengths()
