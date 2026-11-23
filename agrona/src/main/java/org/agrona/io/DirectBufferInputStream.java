@@ -147,7 +147,12 @@ public class DirectBufferInputStream extends InputStream
     @Override
     public long skip(final long n)
     {
-        final int skipped = Math.max(-position, Math.min((int)n, available()));
+        if (n <= 0)
+        {
+            return 0;
+        }
+
+        final int skipped = (int)Math.min(n, available());
         position += skipped;
 
         return skipped;

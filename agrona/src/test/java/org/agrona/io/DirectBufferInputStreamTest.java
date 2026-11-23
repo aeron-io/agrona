@@ -18,6 +18,8 @@ package org.agrona.io;
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -48,21 +50,16 @@ class DirectBufferInputStreamTest
         assertEquals(END_OF_STREAM_MARKER, inputStream.read());
     }
 
-    @Test
-    void shouldClampSkippedBytes()
+    @ParameterizedTest
+    @CsvSource({
+        "-1,0", "-1000,0", "100,5", "1,1", "0,0", "4,4", "5,5", "9223372036854775807,5", "-9223372036854775808,0" })
+    void shouldClampSkippedBytes(final long n, final int expected)
     {
         final byte[] data = { 1, 2, 3, 4, 5 };
 
         final DirectBuffer buffer = new UnsafeBuffer(data);
         final DirectBufferInputStream inputStream = new DirectBufferInputStream(buffer);
 
-        assertEquals(0, inputStream.skip(-1));
-        assertEquals(5, inputStream.skip(10));
-        assertEquals(-2, inputStream.skip(-2));
-        assertEquals(-3, inputStream.skip(-3));
-        assertEquals(0, inputStream.skip(-4));
-        assertEquals(4, inputStream.skip(4));
-        assertEquals(1, inputStream.skip(5));
-        assertEquals(0, inputStream.skip(Integer.MAX_VALUE));
+        assertEquals(expected, inputStream.skip(n));
     }
 }
