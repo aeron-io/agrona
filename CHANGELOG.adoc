@@ -9,6 +9,8 @@
 
 === Changelog
 
+* **[Java]** Fix minor documentation and toString formatting issues. (https://github.com/aeron-io/agrona/pull/410[#410])
+* **[Java]** Fix `DirectBufferDataInput.readLine` for unsigned bytes. (https://github.com/aeron-io/agrona/pull/406[#406])
 * **[Java]** Remove misleading statement about single agent not being allowed in the `IllegalArgumentException`
 description. (https://github.com/aeron-io/agrona/pull/400[#400])
 * **[Java]** Fix byte order handling in `DirectBufferDataInput.readStringUTF8`.
@@ -40,6 +42,10 @@ buffer for `CountersReader` constructor.
 
 == 2.7.2 (2026-11-23)
 
+* **[Java]** Fix minor documentation and toString formatting issues. (https://github.com/aeron-io/agrona/pull/410[#410])
+* **[Java]** Fix `DirectBufferDataInput.readLine` for unsigned bytes. (https://github.com/aeron-io/agrona/pull/406[#406])
+* **[Java]** Remove misleading statement about single agent not being allowed in the `IllegalArgumentException`
+description. (https://github.com/aeron-io/agrona/pull/400[#400])
 * **[Java]** Fix byte order handling in `DirectBufferDataInput.readStringUTF8`.
 (https://github.com/aeron-io/agrona/pull/401[#401])
 * **[Java]** Fix `DirectBufferDataInput.readUTF` to support strings longer than `32767` bytes.
