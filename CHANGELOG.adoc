@@ -9,6 +9,12 @@
 
 === Changelog
 
+* **[Java]** Remove misleading statement about single agent not being allowed in the `IllegalArgumentException`
+description. (https://github.com/aeron-io/agrona/pull/400[#400])
+* **[Java]** Fix byte order handling in `DirectBufferDataInput.readStringUTF8`.
+(https://github.com/aeron-io/agrona/pull/401[#401])
+* **[Java]** Fix `DirectBufferDataInput.readUTF` to support strings longer than `32767` bytes.
+(https://github.com/aeron-io/agrona/pull/397[#397])
 *  **[Java]** Validate `DirectBufferInputStream` bounds and clamp skip.
 (https://github.com/aeron-io/agrona/pull/412[#412])
 * **[Java]** Simplify `PrintBufferUtil` pretty hex dump row calculation.
@@ -34,6 +40,10 @@ buffer for `CountersReader` constructor.
 
 == 2.7.2 (2026-11-23)
 
+* **[Java]** Fix byte order handling in `DirectBufferDataInput.readStringUTF8`.
+(https://github.com/aeron-io/agrona/pull/401[#401])
+* **[Java]** Fix `DirectBufferDataInput.readUTF` to support strings longer than `32767` bytes.
+(https://github.com/aeron-io/agrona/pull/397[#397])
 * **[Java]** Handle zero in `AbstractMutableDirectBuffer#putNaturalIntAsciiFromEnd`.
 (https://github.com/aeron-io/agrona/pull/411[#411])
 * **[Java]** Fix `DirectBuffer#compareTo` to order by the first non-equal byte.
