@@ -9,7 +9,10 @@
 
 === Changelog
 
-* **[Java]** Fix `PrintBufferUtil` pretty hex dump row calculation. (https://github.com/aeron-io/agrona/pull/409[#409])
+*  **[Java]** Validate `DirectBufferInputStream` bounds and clamp skip.
+(https://github.com/aeron-io/agrona/pull/412[#412])
+* **[Java]** Simplify `PrintBufferUtil` pretty hex dump row calculation.
+(https://github.com/aeron-io/agrona/pull/409[#409])
 * **[Java]** Handle zero in `AbstractMutableDirectBuffer#putNaturalIntAsciiFromEnd`.
 (https://github.com/aeron-io/agrona/pull/411[#411])
 * **[Java]** Fix `DirectBuffer#compareTo` to order by the first non-equal byte.
@@ -29,11 +32,29 @@ buffer for `CountersReader` constructor.
 * **[Java]** Carve out `IntArrayList#addInt` fast path. (https://github.com/aeron-io/agrona/pull/393[#393])
 * **[Java]** Upgrade to `Gradle` 9.9.2.
 
+== 2.7.2 (2026-11-23)
+
+* **[Java]** Handle zero in `AbstractMutableDirectBuffer#putNaturalIntAsciiFromEnd`.
+(https://github.com/aeron-io/agrona/pull/411[#411])
+* **[Java]** Fix `DirectBuffer#compareTo` to order by the first non-equal byte.
+(https://github.com/aeron-io/agrona/pull/408[#408])
+* **[Java]** Fix `DirectBufferDataInput#readLine` for unsigned bytes.
+(https://github.com/aeron-io/agrona/pull/406[#406])
+* **[Java]** Validate key/label buffers and their coordinates before allocating counters.
+* **[Java]** Ensure label is written before setting free-for-reuse deadline to prevent counter leak.
+(https://github.com/aeron-io/agrona/pull/403[#403])
+* **[Java]** Fix `null` check for LoggingErrorHandler overflow stream.
+(https://github.com/aeron-io/agrona/pull/404[#404])
+* **[Java]** Validate that the number of counters in metadata buffer contains at least the number of counters in values
+buffer for `CountersReader` constructor.
+* **[Java]** Upgrade to `Gradle` 9.9.2.
+
 == 2.7.1 (2026-11-06)
 
 * **[Java]** Do not truncate existing mark file and memory map its entire length.
 * **[Java]** Fully allocate mark file at creation/load time, i.e. do not apply sparse.
-* **[Java]** Report errors to the overflow stream when `LoggingErrorHandler` cannot write its log. (https://github.com/aeron-io/agrona/pull/392[#392])
+* **[Java]** Report errors to the overflow stream when `LoggingErrorHandler` cannot write its log.
+(https://github.com/aeron-io/agrona/pull/392[#392])
 * **[Java]** Keep owner-only permissions on the extracted native library. (https://github.com/aeron-io/agrona/pull/387[#387])
 * **[Zig]** Verify the SHA-256 of the downloaded Zig toolchain. (https://github.com/aeron-io/agrona/pull/386[#386])
 * **[Java]** Upgrade to `Gradle` 9.8.2.
