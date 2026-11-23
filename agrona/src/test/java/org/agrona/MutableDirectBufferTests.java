@@ -660,6 +660,7 @@ public abstract class MutableDirectBufferTests
     private static List<Arguments> valuesAndLengths()
     {
         return Arrays.asList(
+            Arguments.arguments(0, 1),
             Arguments.arguments(1, 1),
             Arguments.arguments(10, 2),
             Arguments.arguments(100, 3),
