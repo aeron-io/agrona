@@ -9,6 +9,11 @@
 
 === Changelog
 
+* **[Java]** Fix `PrintBufferUtil` pretty hex dump row calculation. (https://github.com/aeron-io/agrona/pull/409[#409])
+* **[Java]** Handle zero in `AbstractMutableDirectBuffer#putNaturalIntAsciiFromEnd`.
+(https://github.com/aeron-io/agrona/pull/411[#411])
+* **[Java]** Fix `DirectBuffer#compareTo` to order by the first non-equal byte.
+(https://github.com/aeron-io/agrona/pull/408[#408])
 * **[Java]** Fix `DirectBufferDataInput#readLine` for unsigned bytes.
 (https://github.com/aeron-io/agrona/pull/406[#406])
 * **[Java]** Validate key/label buffers and their coordinates before allocating counters.
@@ -22,7 +27,7 @@
 buffer for `CountersReader` constructor.
 * **[Java]** Replace a custom index check with `java.util.Objects.checkIndex(int, int)` in `IntArrayList`.
 * **[Java]** Carve out `IntArrayList#addInt` fast path. (https://github.com/aeron-io/agrona/pull/393[#393])
-* **[Java]** Upgrade to `Gradle` 9.9.1.
+* **[Java]** Upgrade to `Gradle` 9.9.2.
 
 == 2.7.1 (2026-11-06)
 
