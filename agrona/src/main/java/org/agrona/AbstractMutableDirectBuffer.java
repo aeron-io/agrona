@@ -1719,7 +1719,8 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
         int i = 0;
         for (int end = length & ~7; i < end; i += 8)
         {
-            if (UnsafeApi.getLong(thisArray, thisOffset + i) != UnsafeApi.getLong(thatArray, thatOffset + i))
+            if (UnsafeApi.getLongUnaligned(thisArray, thisOffset + i) !=
+                UnsafeApi.getLongUnaligned(thatArray, thatOffset + i))
             {
                 return false;
             }
@@ -1781,8 +1782,8 @@ public abstract class AbstractMutableDirectBuffer implements MutableDirectBuffer
 
         for (int end = length & ~7; i < end; i += 8)
         {
-            final long thisValue = UnsafeApi.getLong(thisArray, thisOffset + i);
-            final long thatValue = UnsafeApi.getLong(thatArray, thatOffset + i);
+            final long thisValue = UnsafeApi.getLongUnaligned(thisArray, thisOffset + i);
+            final long thatValue = UnsafeApi.getLongUnaligned(thatArray, thatOffset + i);
 
             if (thisValue != thatValue)
             {
