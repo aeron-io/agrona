@@ -77,6 +77,6 @@ public final class HighResolutionTimer
         {
         }
 
-        THREAD.set(null);
+        THREAD.compareAndSet(Thread.currentThread(), null);
     }
 }
