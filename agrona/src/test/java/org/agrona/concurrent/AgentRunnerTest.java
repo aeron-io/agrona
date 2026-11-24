@@ -45,11 +45,14 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class AgentRunnerTest
@@ -392,6 +395,101 @@ class AgentRunnerTest
         verify(mockAgent).onClose();
         verify(mockErrorHandler).onError(isA(expectedException));
         assertTrue(runner.isClosed());
+    }
+
+    @Test
+    void shouldCloseAgentWhenInterruptedExceptionIsThrown() throws Exception
+    {
+        doReturn("test-agent").when(mockAgent).roleName();
+        final InterruptedException exception = new InterruptedException();
+        doThrow(exception).when(mockAgent).doWork();
+
+        final Thread thread = AgentRunner.startOnThread(runner);
+        thread.join();
+
+        verify(mockAgent).roleName();
+        verify(mockAgent).onStart();
+        verify(mockAgent).doWork();
+        verify(mockAgent).onClose();
+        verifyNoMoreInteractions(mockAgent);
+        verifyNoMoreInteractions(mockErrorHandler);
+
+        assertEquals(0, mockAtomicCounter.get());
+        assertFalse(runner.isRunning());
+        assertTrue(runner.isClosed());
+    }
+
+    @Test
+    void shouldCloseAgentWhenAgentTerminationExceptionIsThrown() throws Exception
+    {
+        doReturn("test-agent").when(mockAgent).roleName();
+        final AgentTerminationException exception = new AgentTerminationException();
+        doThrow(exception).when(mockAgent).doWork();
+
+        final Thread thread = AgentRunner.startOnThread(runner);
+        thread.join();
+
+        verify(mockAgent).roleName();
+        verify(mockAgent).onStart();
+        verify(mockAgent).doWork();
+        verify(mockAgent).onClose();
+        verifyNoMoreInteractions(mockAgent);
+        verify(mockErrorHandler).onError(exception);
+        verifyNoMoreInteractions(mockErrorHandler);
+
+        assertEquals(0, mockAtomicCounter.get());
+        assertFalse(runner.isRunning());
+        assertTrue(runner.isClosed());
+    }
+
+    @Test
+    void shouldCloseAgentWhenRuntimeExceptionIsThrownAndThreadIsInterrupted() throws Exception
+    {
+        doReturn("test-agent").when(mockAgent).roleName();
+        final RuntimeException exception = new RuntimeException();
+        doAnswer(invocation ->
+        {
+            Thread.currentThread().interrupt();
+            throw exception;
+        }).when(mockAgent).doWork();
+
+        final Thread thread = AgentRunner.startOnThread(runner);
+        thread.join();
+
+        verify(mockAgent).roleName();
+        verify(mockAgent).onStart();
+        verify(mockAgent).doWork();
+        verify(mockAgent).onClose();
+        verifyNoMoreInteractions(mockAgent);
+        verify(mockErrorHandler).onError(exception);
+        verifyNoMoreInteractions(mockErrorHandler);
+
+        assertEquals(0, mockAtomicCounter.get());
+        assertFalse(runner.isRunning());
+        assertTrue(runner.isClosed());
+    }
+
+    @Test
+    void shouldNotCloseAgentWhenErrorIsThrown() throws Exception
+    {
+        doReturn("test-agent").when(mockAgent).roleName();
+        final UnsatisfiedLinkError exception = new UnsatisfiedLinkError();
+        doThrow(exception).when(mockAgent).doWork();
+
+        final Thread thread = AgentRunner.startOnThread(runner);
+        thread.join();
+
+        verify(mockAgent).roleName();
+        verify(mockAgent).onStart();
+        verify(mockAgent).doWork();
+        verify(mockAgent, never()).onClose();
+        verifyNoMoreInteractions(mockAgent);
+        verify(mockErrorHandler).onError(exception);
+        verifyNoMoreInteractions(mockErrorHandler);
+
+        assertEquals(0, mockAtomicCounter.get());
+        assertTrue(runner.isRunning());
+        assertFalse(runner.isClosed());
     }
 
     private static int pickAvailableCpu()

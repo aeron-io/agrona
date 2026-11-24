@@ -25,7 +25,9 @@ import java.nio.channels.ClosedByInterruptException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -228,6 +230,97 @@ class AgentInvokerTest
 
         assertExceptionNotReported();
         assertTrue(Thread.interrupted()); // by throwing ClosedByInterruptException
+    }
+
+    @Test
+    void shouldCloseAgentWhenInterruptedExceptionIsThrown() throws Exception
+    {
+        final InterruptedException exception = new InterruptedException();
+        doThrow(exception).when(mockAgent).doWork();
+
+        invoker.start();
+        invoker.invoke();
+
+        verify(mockAgent, never()).roleName();
+        verify(mockAgent).onStart();
+        verify(mockAgent).doWork();
+        verify(mockAgent).onClose();
+        verifyNoMoreInteractions(mockAgent);
+        verifyNoMoreInteractions(mockErrorHandler);
+
+        assertEquals(0, mockAtomicCounter.get());
+        assertFalse(invoker.isRunning());
+        assertTrue(invoker.isClosed());
+    }
+
+    @Test
+    void shouldCloseAgentWhenAgentTerminationExceptionIsThrown() throws Exception
+    {
+        final AgentTerminationException exception = new AgentTerminationException();
+        doThrow(exception).when(mockAgent).doWork();
+
+        invoker.start();
+        invoker.invoke();
+
+        verify(mockAgent, never()).roleName();
+        verify(mockAgent).onStart();
+        verify(mockAgent).doWork();
+        verify(mockAgent).onClose();
+        verifyNoMoreInteractions(mockAgent);
+        verify(mockErrorHandler).onError(exception);
+        verifyNoMoreInteractions(mockErrorHandler);
+
+        assertEquals(0, mockAtomicCounter.get());
+        assertFalse(invoker.isRunning());
+        assertTrue(invoker.isClosed());
+    }
+
+    @Test
+    void shouldCloseAgentWhenRuntimeExceptionIsThrownAndThreadIsInterrupted() throws Exception
+    {
+        final RuntimeException exception = new RuntimeException();
+        doAnswer(invocation ->
+        {
+            Thread.currentThread().interrupt();
+            throw exception;
+        }).when(mockAgent).doWork();
+
+        invoker.start();
+        invoker.invoke();
+
+        verify(mockAgent).onStart();
+        verify(mockAgent).doWork();
+        verify(mockAgent).onClose();
+        verifyNoMoreInteractions(mockAgent);
+        verify(mockErrorHandler).onError(exception);
+        verifyNoMoreInteractions(mockErrorHandler);
+
+        assertEquals(0, mockAtomicCounter.get());
+        assertFalse(invoker.isRunning());
+        assertTrue(invoker.isClosed());
+    }
+
+    @Test
+    void shouldNotCloseAgentWhenErrorIsThrown() throws Exception
+    {
+        final UnsatisfiedLinkError exception = new UnsatisfiedLinkError();
+        doThrow(exception).when(mockAgent).doWork();
+
+        invoker.start();
+
+        final UnsatisfiedLinkError thrownException = assertThrows(UnsatisfiedLinkError.class, invoker::invoke);
+        assertEquals(exception, thrownException);
+
+        verify(mockAgent).onStart();
+        verify(mockAgent).doWork();
+        verify(mockAgent, never()).onClose();
+        verifyNoMoreInteractions(mockAgent);
+        verify(mockErrorHandler).onError(exception);
+        verifyNoMoreInteractions(mockErrorHandler);
+
+        assertEquals(0, mockAtomicCounter.get());
+        assertTrue(invoker.isRunning());
+        assertFalse(invoker.isClosed());
     }
 
     private void assertExceptionNotReported()
