@@ -59,6 +59,7 @@ public class DeadlineTimerWheel
     private int tickAllocation;
     private int allocationBitsToShift;
     private int pollIndex;
+    private boolean isPollingExpiredTick;
 
     private final TimeUnit timeUnit;
     private long[] wheel;
@@ -274,7 +275,8 @@ public class DeadlineTimerWheel
      */
     public long scheduleTimer(final long deadline)
     {
-        final long deadlineTick = Math.max((deadline - startTime) >> resolutionBitsToShift, currentTick);
+        final long earliestTick = isPollingExpiredTick ? currentTick + 1 : currentTick;
+        final long deadlineTick = Math.max((deadline - startTime) >> resolutionBitsToShift, earliestTick);
         final int spokeIndex = (int)(deadlineTick & tickMask);
         final int tickStartIndex = spokeIndex << allocationBitsToShift;
 
@@ -336,27 +338,37 @@ public class DeadlineTimerWheel
         {
             final int spokeIndex = (int)currentTick & tickMask;
 
-            for (int i = 0, length = tickAllocation; i < length && expiryLimit > timersExpired; i++)
+            // Once now is past the current tick this poll is due to advance the wheel, so a timer the handler schedules
+            // with a deadline already due goes into the next tick rather than a slot this poll may have passed.
+            isPollingExpiredTick = now >= currentTickTime0();
+            try
             {
-                final int wheelIndex = (spokeIndex << allocationBitsToShift) + pollIndex;
-                final long deadline = wheel[wheelIndex];
-
-                if (now >= deadline)
+                for (int i = 0, length = tickAllocation; i < length && expiryLimit > timersExpired; i++)
                 {
-                    wheel[wheelIndex] = NULL_DEADLINE;
-                    timerCount--;
-                    timersExpired++;
+                    final int wheelIndex = (spokeIndex << allocationBitsToShift) + pollIndex;
+                    final long deadline = wheel[wheelIndex];
 
-                    if (!handler.onTimerExpiry(timeUnit, now, timerIdForSlot(spokeIndex, pollIndex)))
+                    if (now >= deadline)
                     {
-                        wheel[wheelIndex] = deadline;
-                        timerCount++;
+                        wheel[wheelIndex] = NULL_DEADLINE;
+                        timerCount--;
+                        timersExpired++;
 
-                        return --timersExpired;
+                        if (!handler.onTimerExpiry(timeUnit, now, timerIdForSlot(spokeIndex, pollIndex)))
+                        {
+                            wheel[wheelIndex] = deadline;
+                            timerCount++;
+
+                            return --timersExpired;
+                        }
                     }
-                }
 
-                pollIndex = (pollIndex + 1) >= length ? 0 : (pollIndex + 1);
+                    pollIndex = (pollIndex + 1) >= length ? 0 : (pollIndex + 1);
+                }
+            }
+            finally
+            {
+                isPollingExpiredTick = false;
             }
 
             if (expiryLimit > timersExpired && now >= currentTickTime0())

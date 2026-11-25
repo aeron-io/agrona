@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DeadlineTimerWheelTest
@@ -609,6 +610,93 @@ class DeadlineTimerWheelTest
         while (-1 == firedTimestamp.value);
 
         assertThat(firedTimestamp.value, greaterThan(deadline));
+    }
+
+    @Test
+    void shouldExpireTimerScheduledFromHandlerWithDeadlineInThePastOnNextPoll()
+    {
+        long controlTimestamp = 0;
+        final MutableLong firedTimestamp1 = new MutableLong(-1);
+        final MutableLong firedTimestamp2 = new MutableLong(-1);
+        final DeadlineTimerWheel wheel = new DeadlineTimerWheel(TIME_UNIT, controlTimestamp, RESOLUTION, 8);
+
+        final long deadline = controlTimestamp + (5 * wheel.tickResolution()) + 1;
+        wheel.scheduleTimer(deadline);
+
+        do
+        {
+            wheel.poll(
+                controlTimestamp,
+                (timeUnit, now, timerId) ->
+                {
+                    if (-1 == firedTimestamp1.value)
+                    {
+                        firedTimestamp1.value = now;
+                        wheel.scheduleTimer(deadline);
+                    }
+                    else
+                    {
+                        firedTimestamp2.value = now;
+                    }
+
+                    return true;
+                },
+                Integer.MAX_VALUE);
+
+            controlTimestamp += wheel.tickResolution();
+        }
+        while (-1 == firedTimestamp2.value && controlTimestamp < (64 * wheel.tickResolution()));
+
+        // the poll which expires the first timer also advances the wheel, the timer scheduled from its handler with
+        // a deadline already passed expires on the next poll rather than one revolution of the wheel later
+        assertEquals(6 * wheel.tickResolution(), firedTimestamp1.value);
+        assertEquals(7 * wheel.tickResolution(), firedTimestamp2.value);
+        assertEquals(0L, wheel.timerCount());
+    }
+
+    @Test
+    void shouldCatchUpFixedRateTimerScheduledFromHandlerAfterStall()
+    {
+        final long period = TimeUnit.MILLISECONDS.toNanos(1);
+        final long pollInterval = TimeUnit.MICROSECONDS.toNanos(100);
+        final long stallStartTime = TimeUnit.MILLISECONDS.toNanos(50);
+        final long stallEndTime = stallStartTime + TimeUnit.MILLISECONDS.toNanos(30);
+        final long endTime = TimeUnit.SECONDS.toNanos(1);
+        final MutableLong deadline = new MutableLong(period);
+        final MutableLong expiryCount = new MutableLong();
+        final MutableLong lastFiredTimestamp = new MutableLong();
+        final MutableLong maxGap = new MutableLong();
+        final DeadlineTimerWheel wheel = new DeadlineTimerWheel(TIME_UNIT, 0, RESOLUTION, 512);
+
+        wheel.scheduleTimer(deadline.value);
+
+        for (long controlTimestamp = 0; controlTimestamp <= endTime; controlTimestamp += pollInterval)
+        {
+            if (controlTimestamp > stallStartTime && controlTimestamp < stallEndTime)
+            {
+                continue;
+            }
+
+            wheel.poll(
+                controlTimestamp,
+                (timeUnit, now, timerId) ->
+                {
+                    expiryCount.increment();
+                    maxGap.value = Math.max(maxGap.value, now - lastFiredTimestamp.value);
+                    lastFiredTimestamp.value = now;
+
+                    deadline.value += period;
+                    wheel.scheduleTimer(deadline.value);
+
+                    return true;
+                },
+                Integer.MAX_VALUE);
+        }
+
+        // the period is shorter than a tick, so after the stall the timer is re-armed into ticks already polled and
+        // must keep expiring on the following polls until it catches up, rather than wait for the wheel to come round
+        assertEquals(endTime / period, expiryCount.value);
+        assertThat(maxGap.value, lessThanOrEqualTo(stallEndTime - stallStartTime + pollInterval));
     }
 
     @Test
