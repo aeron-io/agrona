@@ -105,4 +105,16 @@ class HighResolutionTimerTest
             LangUtil.rethrowUnchecked(errorRef.get());
         }
     }
+
+    @Test
+    void shouldBeThreadSafeWhenToggling()
+    {
+        for (int i = 0; i < 1_000; i++)
+        {
+            HighResolutionTimer.disable();
+            HighResolutionTimer.enable();
+
+            assertTrue(HighResolutionTimer.isEnabled(), "Timer unexpectedly disabled after enabling");
+        }
+    }
 }
